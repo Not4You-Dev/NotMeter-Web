@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260823-3">
+  <link rel="stylesheet" href="./assets/app.css?v=20260823-5">
   <link rel="stylesheet" href="./assets/character.css?v=20260823-1">
   <script>
     (() => {
@@ -181,10 +181,10 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7318383767094918" crossorigin="anonymous"></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260823-3" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260823-5" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260822-1" defer></script>
   <script src="./assets/character.js?v=20260823-1" defer></script>
-  <script src="./assets/app.js?v=20260823-3" defer></script>
+  <script src="./assets/app.js?v=20260823-5" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -281,7 +281,11 @@
           <span data-i18n="dailyUsers">일일 사용자</span>
           <strong id="daily-user-count">—</strong>
         </div>
-        <button class="ghost-button" id="language-button" type="button" aria-label="언어 전환" data-i18n-aria-label="languageSwitchAria">EN</button>
+        <select class="ghost-button language-select" id="language-button" aria-label="언어 선택" data-i18n-aria-label="languageSwitchAria">
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+          <option value="zh-TW">繁體中文</option>
+        </select>
       </div>
     </header>
 

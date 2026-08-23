@@ -731,6 +731,20 @@ p {
   background: rgba(18, 65, 74, 0.96);
 }
 
+.language-select {
+  min-width: 96px;
+  padding: 0 30px 0 12px;
+  color-scheme: dark;
+  text-align: center;
+  text-align-last: center;
+}
+
+.language-select option {
+  background: #0c2f38;
+  color: #eaffff;
+  font-weight: 700;
+}
+
 .field-boss-surface {
   display: grid;
   gap: 10px;
@@ -5336,6 +5350,11 @@ tr:nth-child(3) .rank-badge {
     min-width: 56px;
     min-height: 32px;
     padding: 0 8px;
+  }
+
+  .language-select {
+    min-width: 88px;
+    padding: 0 24px 0 8px;
   }
 
   .service-link {

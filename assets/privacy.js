@@ -2,7 +2,6 @@
   "use strict";
 
   const supported = ["ko", "en", "zh-TW"];
-  const labels = { ko: "한국어", en: "English", "zh-TW": "繁中" };
   const copy = {
     ko: {
       title: "개인정보처리방침",
@@ -59,20 +58,20 @@
   if (!supported.includes(locale)) {
     locale = browser.startsWith("zh") ? "zh-TW" : browser.startsWith("ko") ? "ko" : "en";
   }
-  const button = document.getElementById("privacy-language");
+  const select = document.getElementById("privacy-language");
 
   function render() {
     document.documentElement.lang = locale;
     document.title = `${copy[locale].title} | NotMeter`;
-    button.textContent = labels[locale];
+    select.value = locale;
     for (const element of document.querySelectorAll("[data-privacy-i18n]")) {
       element.textContent = copy[locale][element.dataset.privacyI18n] ||
         copy.ko[element.dataset.privacyI18n] || "";
     }
   }
 
-  button.addEventListener("click", () => {
-    locale = supported[(supported.indexOf(locale) + 1) % supported.length];
+  select.addEventListener("change", event => {
+    locale = supported.includes(event.currentTarget.value) ? event.currentTarget.value : "ko";
     localStorage.setItem("notmeter-stats-locale", locale);
     render();
   });

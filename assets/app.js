@@ -26,11 +26,6 @@
   const FIELD_BOSS_CACHE_SCHEMA = "notmeter-field-boss-public-cache-v1";
   const ZH_TW_GAME_DATA_URL = "./assets/game-data.zh-TW.json?v=20260812-2";
   const SUPPORTED_LOCALES = ["ko", "en", "zh-TW"];
-  const LANGUAGE_BUTTON_LABELS = {
-    ko: "한국어",
-    en: "English",
-    "zh-TW": "繁中",
-  };
   const DETAIL_ENDPOINTS = [
     `${VPS_RANKING_CACHE_ROOT}/details/`,
   ];
@@ -1110,10 +1105,9 @@
   }
 
   function bindEvents() {
-    elements["language-button"].addEventListener("click", () => {
+    elements["language-button"].addEventListener("change", event => {
       const openDetail = state.selectedDetail;
-      const currentIndex = SUPPORTED_LOCALES.indexOf(state.locale);
-      state.locale = SUPPORTED_LOCALES[(currentIndex + 1) % SUPPORTED_LOCALES.length];
+      state.locale = normalizeLocale(event.currentTarget.value);
       localStorage.setItem("notmeter-stats-locale", state.locale);
       applyLocale();
       populateFilters();
@@ -4458,6 +4452,7 @@
       },
     };
     renderCombatDetail();
+    resetCombatDetailScrollPosition();
     elements["combat-detail-modal"].hidden = false;
     document.body.classList.add("detail-open");
     elements["detail-close"].focus({ preventScroll: true });
@@ -4490,6 +4485,7 @@
       },
     };
     renderCombatDetail();
+    resetCombatDetailScrollPosition();
     elements["combat-detail-modal"].hidden = false;
     document.body.classList.add("detail-open");
     elements["detail-close"].focus({ preventScroll: true });
@@ -4516,6 +4512,7 @@
       };
       row.removeAttribute("title");
       renderCombatDetail();
+      resetCombatDetailScrollPosition();
       elements["combat-detail-modal"].hidden = false;
       document.body.classList.add("detail-open");
       elements["detail-close"].focus({ preventScroll: true });
@@ -4720,11 +4717,27 @@
     }
   }
 
+  function resetCombatDetailScrollPosition() {
+    const modal = elements["combat-detail-modal"];
+    const scrollTargets = [
+      elements["detail-skill-rows"],
+      elements["detail-buffs-section"],
+      modal?.querySelector(".detail-content"),
+      modal?.querySelector(".detail-summary"),
+    ];
+    for (const target of scrollTargets) {
+      if (target) {
+        target.scrollTop = 0;
+      }
+    }
+  }
+
   function closeCombatDetail() {
     if (!state.selectedDetail && elements["combat-detail-modal"]?.hidden) {
       return;
     }
     state.selectedDetail = null;
+    resetCombatDetailScrollPosition();
     if (elements["combat-detail-modal"]) {
       elements["combat-detail-modal"].hidden = true;
     }
@@ -4887,6 +4900,7 @@
       button.addEventListener("click", () => {
         state.selectedDetail.actorId = actorId;
         renderCombatDetail();
+        resetCombatDetailScrollPosition();
       });
       fragment.append(button);
     }
@@ -5848,7 +5862,7 @@
 
   function applyLocale() {
     document.documentElement.lang = state.locale;
-    elements["language-button"].textContent = LANGUAGE_BUTTON_LABELS[state.locale] || "EN";
+    elements["language-button"].value = state.locale;
     document.querySelectorAll("[data-i18n]").forEach(element => {
       const key = element.dataset.i18n;
       if (COPY[state.locale]?.[key] || COPY.ko[key]) {

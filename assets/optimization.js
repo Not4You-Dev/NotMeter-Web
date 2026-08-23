@@ -510,7 +510,6 @@ let activeIssueKeys = [];
 let tune = { ...DEFAULT_TUNE };
 let locale = normalizeLocale(localStorage.getItem(LOCALE_STORAGE_KEY));
 const OPTIMIZER_TEXT = globalThis.NotMeterOptimizerText || {};
-const LANGUAGE_LABELS = { ko: "한국어", en: "English", "zh-TW": "繁中" };
 
 const el = {
   gpuSelect: document.querySelector("#gpuSelect"),
@@ -561,7 +560,7 @@ function translated(value) {
 
 function translateStaticPage() {
   document.documentElement.lang = locale;
-  el.languageButton.textContent = LANGUAGE_LABELS[locale] || "EN";
+  el.languageButton.value = locale;
   document.title = translated("아이온2 그래픽 최적화 설정 생성기 | NOT METER");
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
@@ -1245,9 +1244,8 @@ el.resetButton.addEventListener("click", () => {
   persistSettings();
   render();
 });
-el.languageButton.addEventListener("click", () => {
-  const index = SUPPORTED_LOCALES.indexOf(locale);
-  locale = SUPPORTED_LOCALES[(index + 1) % SUPPORTED_LOCALES.length];
+el.languageButton.addEventListener("change", event => {
+  locale = normalizeLocale(event.currentTarget.value);
   localStorage.setItem(LOCALE_STORAGE_KEY, locale);
   render();
 });
