@@ -685,15 +685,46 @@
       if (!available) button.append(textNode("small", copy.unavailableLoadout));
       if (available) {
         button.addEventListener("click", () => {
-          state.activeLoadout = type;
-          renderProfile(state.profile);
-          document.querySelector(".character-loadout-selector")?.scrollIntoView({ block: "nearest" });
+          switchEquipmentLoadout(type, true);
         });
       }
       options.append(button);
     }
     section.append(options);
     return section;
+  }
+
+  function renderCompactLoadoutSelector(data, selectedType) {
+    const copy = currentCopy();
+    const currentType = normalizeLoadoutType(data?.currentLoadoutType);
+    const loadouts = data?.loadouts && typeof data.loadouts === "object" ? data.loadouts : {};
+    const selector = node("div", "equipment-loadout-tabs");
+    selector.setAttribute("aria-label", copy.loadoutTitle);
+    for (const type of ["PVE", "PVP"]) {
+      const available = type === currentType || Boolean(loadouts[type]);
+      const button = node("button", `equipment-loadout-tab loadout-${type.toLowerCase()}`);
+      button.type = "button";
+      button.disabled = !available;
+      button.textContent = type === "PVE" ? copy.pveLoadout : copy.pvpLoadout;
+      button.setAttribute("aria-pressed", String(type === selectedType));
+      if (type === selectedType) button.classList.add("selected");
+      if (type === currentType) button.dataset.current = "true";
+      if (!available) button.title = copy.unavailableLoadout;
+      if (available) button.addEventListener("click", () => switchEquipmentLoadout(type, false));
+      selector.append(button);
+    }
+    return selector;
+  }
+
+  function switchEquipmentLoadout(type, focusMainSelector) {
+    const scrollTop = window.scrollY;
+    state.activeLoadout = type;
+    renderProfile(state.profile);
+    if (focusMainSelector) {
+      document.querySelector(".character-loadout-selector")?.scrollIntoView({ block: "nearest" });
+      return;
+    }
+    window.requestAnimationFrame(() => window.scrollTo(0, scrollTop));
   }
 
   function renderHero(profile, itemLevel, petwing, titles, fetchedAt, profileComplete) {
@@ -956,6 +987,7 @@
         Number(a.slotPos) - Number(b.slotPos));
     const tabs = node("div", "equipment-tabs");
     tabs.setAttribute("role", "tablist");
+    const stickyControls = node("div", "equipment-sticky-controls");
     const panels = node("div", "equipment-tab-panels");
     const groups = [
       ["gear", copy.gearTab, gear],
@@ -988,7 +1020,8 @@
       tabs.append(button);
       panels.append(list);
     }
-    section.append(renderLoadoutSelector(loadoutData, selectedLoadoutType), tabs,
+    stickyControls.append(renderCompactLoadoutSelector(loadoutData, selectedLoadoutType), tabs);
+    section.append(renderLoadoutSelector(loadoutData, selectedLoadoutType), stickyControls,
       renderSoulSkillSummary(items, details), renderMagicStoneSummary(items, details), panels);
     return section;
   }

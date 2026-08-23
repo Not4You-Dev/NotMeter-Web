@@ -642,18 +642,43 @@ body.character-view .ranking-panel { display: none !important; }
 .stat-sigil-Destiny { background-position: 66.667% 100%; }
 .stat-sigil-Space { background-position: 100% 100%; }
 
-.equipment-tabs {
+.equipment-sticky-controls {
   position: sticky;
   top: 61px;
   z-index: 28;
-  display: flex;
-  gap: 7px;
+  display: grid;
+  gap: 6px;
   margin: -5px -5px 10px;
   padding: 6px 5px;
   border-radius: 11px;
-  background: rgba(5, 14, 22, .94);
+  background: rgba(5, 14, 22, .96);
   box-shadow: 0 9px 22px rgba(0, 0, 0, .24);
   backdrop-filter: blur(12px);
+}
+.equipment-loadout-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.equipment-loadout-tab {
+  min-height: 27px;
+  padding: 4px 10px;
+  border: 1px solid #294c5d;
+  border-radius: 8px;
+  color: #8caab7;
+  background: #091b25;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.equipment-loadout-tab.selected { color: #07191d; border-color: #49ddd6; background: #49ddd6; }
+.equipment-loadout-tab.loadout-pvp.selected { color: #f2efff; border-color: #9b87e5; background: #5d4c99; }
+.equipment-loadout-tab[data-current="true"]::after { margin-left: 5px; content: "•"; }
+.equipment-loadout-tab:disabled { cursor: default; opacity: .35; }
+.equipment-tabs {
+  display: flex;
+  gap: 7px;
 }
 .equipment-stone-summary,
 .equipment-soul-skill-summary {
