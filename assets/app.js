@@ -6215,6 +6215,9 @@
     url.searchParams.set("view", "character");
     url.searchParams.set("serverId", String(serverId));
     url.searchParams.set("name", name);
+    if (isTaiwanPlayer(player)) {
+      url.searchParams.set("region", "tw");
+    }
     return url.href;
   }
 
@@ -6242,6 +6245,11 @@
 
   function isTaiwanName(name) {
     return /^\[TW\]/i.test(String(name || "")) || /[\u3400-\u4dbf\u4e00-\u9fff]/u.test(String(name || ""));
+  }
+
+  function isTaiwanPlayer(player) {
+    const region = String(player?.serverRegion ?? player?.R ?? player?.region ?? "").trim();
+    return /^tw$/i.test(region) || /^taiwan$/i.test(region) || isTaiwanName(player?.name);
   }
 
   function formatDps(value) {

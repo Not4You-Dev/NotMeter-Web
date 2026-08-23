@@ -248,10 +248,12 @@
     renderLoadingRows();
     setPopover(true);
     try {
-      const data = await fetchJson(`${API_ROOT}/search?name=${encodeURIComponent(name)}&fast=1`);
+      const region = currentOfficialRegion();
+      const data = await fetchJson(
+        `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&fast=1`);
       if (requestId !== state.searchRequest) return;
       applySearchPayload(data);
-      if (!state.searchComplete) void pollSearchResults(name, requestId);
+      if (!state.searchComplete) void pollSearchResults(name, region, requestId);
     } catch {
       setRaceFiltersVisible(false);
       elements["character-search-status"].textContent = copy.searchError;
@@ -261,27 +263,27 @@
     }
   }
 
-  function applySearchPayload(data) {
+  function applySearchPayload(data, region = currentOfficialRegion()) {
     state.searchComplete = data?.complete !== false;
     state.searchResults = Array.isArray(data?.results)
-      ? data.results.slice().sort((a, b) =>
+      ? data.results.map(item => ({ ...item, region })).sort((a, b) =>
         Number(b.combatPower) - Number(a.combatPower) ||
         String(a.name || "").localeCompare(String(b.name || ""), "ko"))
       : [];
     renderSearchRows(state.searchResults, false);
   }
 
-  async function pollSearchResults(name, requestId) {
+  async function pollSearchResults(name, region, requestId) {
     for (let attempt = 0; attempt < 90 && requestId === state.searchRequest; attempt += 1) {
       await new Promise(resolve => window.setTimeout(resolve, attempt < 10 ? 350 : 1000));
       if (requestId !== state.searchRequest) return;
       try {
         const data = await fetchJson(
-          `${API_ROOT}/search?name=${encodeURIComponent(name)}&fast=1&_=${Date.now()}`,
+          `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&fast=1&_=${Date.now()}`,
           { cache: "no-store" },
         );
         if (requestId !== state.searchRequest) return;
-        applySearchPayload(data);
+        applySearchPayload(data, region);
         if (state.searchComplete) return;
       } catch {
         // The first result list remains usable while a background CP lookup is retried.
@@ -423,6 +425,8 @@
     url.searchParams.set("serverId", String(item.serverId));
     url.searchParams.set("characterId", item.characterId);
     url.searchParams.set("name", item.name || "");
+    if (normalizeOfficialRegion(item.region) === "tw") url.searchParams.set("region", "tw");
+    else url.searchParams.delete("region");
     window.location.assign(url.href);
   }
 
@@ -441,7 +445,9 @@
   async function resolveLinkedCharacter(name, serverId) {
     showProfileState("loading");
     try {
-      const data = await fetchJson(`${API_ROOT}/search?name=${encodeURIComponent(name)}&fast=1`);
+      const region = currentOfficialRegion();
+      const data = await fetchJson(
+        `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&fast=1`);
       const candidates = Array.isArray(data.results) ? data.results : [];
       const normalizedName = name.normalize("NFC").toLocaleLowerCase();
       const match = candidates.find(item =>
@@ -463,6 +469,7 @@
     const params = new URLSearchParams(window.location.search);
     const serverId = Number(params.get("serverId"));
     const characterId = params.get("characterId") || "";
+    const region = currentOfficialRegion(params);
     if (!serverId || !characterId) {
       showProfileState("error", currentCopy().invalidName);
       return;
@@ -473,11 +480,11 @@
     const fastSuffix = refreshOfficial ? "" : "&fast=1";
     const requestId = ++state.profileRequest;
     state.profileLoad = fetchJson(
-      `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}${refreshSuffix}${fastSuffix}`,
+      `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}${refreshSuffix}${fastSuffix}`,
       { cache: refreshOfficial ? "no-store" : "default" },
     ).then(data => {
       applyProfilePayload(data, params, serverId, characterId);
-      if (data?.complete === false) void pollProfile(params, serverId, characterId, requestId);
+      if (data?.complete === false) void pollProfile(params, region, serverId, characterId, requestId);
       return true;
     }).catch(error => {
       if (refreshOfficial && state.profile) showProfileState("content");
@@ -487,13 +494,13 @@
     return state.profileLoad;
   }
 
-  async function pollProfile(params, serverId, characterId, requestId) {
+  async function pollProfile(params, region, serverId, characterId, requestId) {
     for (let attempt = 0; attempt < 40 && requestId === state.profileRequest; attempt += 1) {
       await new Promise(resolve => window.setTimeout(resolve, attempt < 8 ? 350 : 750));
       if (requestId !== state.profileRequest) return;
       try {
         const data = await fetchJson(
-          `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&fast=1&_=${Date.now()}`,
+          `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&fast=1&_=${Date.now()}`,
           { cache: "no-store" },
         );
         if (requestId !== state.profileRequest) return;
@@ -518,6 +525,7 @@
       level: profile.characterLevel || 0,
       combatPower: profile.combatPower || 0,
       profileImage: profile.profileImage || "",
+      region: currentOfficialRegion(params),
     });
     renderProfile(data);
     showProfileState("content");
@@ -711,6 +719,7 @@
     const characterName = String(profile?.characterName || "").trim().toLocaleLowerCase();
     const queryServerId = Number(new URLSearchParams(window.location.search).get("serverId"));
     const serverId = Number(profile?.serverId) || queryServerId;
+    const region = currentOfficialRegion();
     const jobName = String(profile?.className || "").trim();
     if (!characterName || !jobName) return [];
 
@@ -728,8 +737,11 @@
         const group = (Array.isArray(view.rows) ? view.rows : [])
           .find(row => row.jobName === jobName);
         const player = (Array.isArray(group?.players) ? group.players : []).find(candidate => {
-          const name = String(candidate?.name || "").trim();
-          if (!name || name.includes("*") || name.toLocaleLowerCase() !== characterName) return false;
+          const rawName = String(candidate?.name || "").trim();
+          const candidateRegion = /^\[TW\]/i.test(rawName) ? "tw" : "kr";
+          const name = rawName.replace(/^\[TW\]\s*/i, "").trim();
+          if (!name || name.includes("*") || name.toLocaleLowerCase() !== characterName ||
+              candidateRegion !== region) return false;
           return !serverId || !Number(candidate.serverId) || Number(candidate.serverId) === serverId;
         });
         if (!player || Number(player.rank) < 1 || Number(player.rank) > 20) continue;
@@ -1205,7 +1217,7 @@
   }
 
   function characterKey(item) {
-    return `${Number(item?.serverId) || 0}:${String(item?.characterId || "")}`;
+    return `${normalizeOfficialRegion(item?.region)}:${Number(item?.serverId) || 0}:${String(item?.characterId || "")}`;
   }
 
   function savedCharacter(item) {
@@ -1215,6 +1227,7 @@
       className: String(item?.className || ""), raceName: String(item?.raceName || ""),
       level: number(item?.level), combatPower: number(item?.combatPower),
       profileImage: String(item?.profileImage || ""),
+      region: normalizeOfficialRegion(item?.region),
     };
   }
 
@@ -1264,6 +1277,12 @@
   }
 
   function currentCopy() { return COPY[state.locale] || COPY.ko; }
+  function normalizeOfficialRegion(value) {
+    return /^(tw|taiwan|zh-tw)$/i.test(String(value || "").trim()) ? "tw" : "kr";
+  }
+  function currentOfficialRegion(params = new URLSearchParams(window.location.search)) {
+    return normalizeOfficialRegion(params.get("region"));
+  }
   function readLocale() {
     try {
       const saved = localStorage.getItem("notmeter-stats-locale");
@@ -1303,7 +1322,7 @@
     try {
       const url = new URL(String(value || ""), window.location.href);
       if (url.origin === window.location.origin ||
-          (url.protocol === "https:" && ["plaync.com", "playnccdn.com"].some(domain =>
+          (url.protocol === "https:" && ["plaync.com", "playnccdn.com", "ncsoft.com"].some(domain =>
             url.hostname === domain || url.hostname.endsWith(`.${domain}`)))) return url.href;
     } catch { /* ignored */ }
     return "./assets/notmeter-icon.png";
