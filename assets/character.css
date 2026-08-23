@@ -821,6 +821,7 @@ body.character-view .ranking-panel { display: none !important; }
 .character-skill-card { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 9px; align-items: center; padding: 10px; }
 .character-arcana-card img,
 .character-skill-card img { width: 44px; height: 44px; }
+.character-arcana-card > div > strong { font-size: 13px; line-height: 1.35; }
 .character-arcana-card .arcana-skill-option img { width: 17px; height: 17px; border-radius: 4px; }
 .character-skill-card.equipped { border-color: rgba(70, 224, 213, 0.6); background: rgba(20, 57, 65, 0.55); }
 .arcana-option-list {
@@ -843,14 +844,21 @@ body.character-view .ranking-panel { display: none !important; }
   border-radius: 6px;
   color: #b8d0db;
   background: #0d2431;
-  font-size: 9px;
+  font-size: 10px;
+  line-height: 1.35;
 }
 .arcana-option-list .arcana-skill-option {
   display: grid;
   grid-template-columns: 17px auto minmax(0, 1fr);
+  align-items: center;
   justify-content: stretch;
 }
-.arcana-option-list b { flex: 0 0 auto; color: #55e4dd; font-size: 9px; }
+.arcana-option-list .arcana-skill-option span {
+  margin-top: 0;
+  font-size: 10px;
+  line-height: 17px;
+}
+.arcana-option-list b { flex: 0 0 auto; color: #55e4dd; font-size: 10px; line-height: 17px; }
 
 .character-title-card { padding: 12px; }
 .character-title-card strong { display: block; color: #f3d785; font-size: 12px; }
