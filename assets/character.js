@@ -658,42 +658,6 @@
     return normalized === "PVE" || normalized === "PVP" ? normalized : null;
   }
 
-  function renderLoadoutSelector(data, selectedType) {
-    const copy = currentCopy();
-    const currentType = normalizeLoadoutType(data?.currentLoadoutType);
-    const loadouts = data?.loadouts && typeof data.loadouts === "object" ? data.loadouts : {};
-    const section = node("section", "character-loadout-selector");
-    const heading = node("div", "character-loadout-heading");
-    const headingCopy = node("div");
-    headingCopy.append(textNode("strong", copy.loadoutTitle), textNode("span", copy.loadoutNote));
-    heading.append(headingCopy);
-    if (!currentType) heading.append(textNode("small", copy.unknownLoadout, "character-loadout-warning"));
-    section.append(heading);
-
-    const options = node("div", "character-loadout-options");
-    for (const type of ["PVE", "PVP"]) {
-      const snapshot = loadouts[type];
-      const available = type === currentType || Boolean(snapshot);
-      const button = node("button", `character-loadout-button loadout-${type.toLowerCase()}`);
-      button.type = "button";
-      button.disabled = !available;
-      if (type === selectedType) button.classList.add("selected");
-      const label = node("span");
-      label.append(textNode("b", type === "PVE" ? copy.pveLoadout : copy.pvpLoadout));
-      if (type === currentType) label.append(textNode("em", copy.currentLoadout));
-      button.append(label);
-      if (!available) button.append(textNode("small", copy.unavailableLoadout));
-      if (available) {
-        button.addEventListener("click", () => {
-          switchEquipmentLoadout(type, true);
-        });
-      }
-      options.append(button);
-    }
-    section.append(options);
-    return section;
-  }
-
   function renderCompactLoadoutSelector(data, selectedType) {
     const copy = currentCopy();
     const currentType = normalizeLoadoutType(data?.currentLoadoutType);
@@ -710,20 +674,16 @@
       if (type === selectedType) button.classList.add("selected");
       if (type === currentType) button.dataset.current = "true";
       if (!available) button.title = copy.unavailableLoadout;
-      if (available) button.addEventListener("click", () => switchEquipmentLoadout(type, false));
+      if (available) button.addEventListener("click", () => switchEquipmentLoadout(type));
       selector.append(button);
     }
     return selector;
   }
 
-  function switchEquipmentLoadout(type, focusMainSelector) {
+  function switchEquipmentLoadout(type) {
     const scrollTop = window.scrollY;
     state.activeLoadout = type;
     renderProfile(state.profile);
-    if (focusMainSelector) {
-      document.querySelector(".character-loadout-selector")?.scrollIntoView({ block: "nearest" });
-      return;
-    }
     window.requestAnimationFrame(() => window.scrollTo(0, scrollTop));
   }
 
@@ -1021,7 +981,7 @@
       panels.append(list);
     }
     stickyControls.append(renderCompactLoadoutSelector(loadoutData, selectedLoadoutType), tabs);
-    section.append(renderLoadoutSelector(loadoutData, selectedLoadoutType), stickyControls,
+    section.append(stickyControls,
       renderSoulSkillSummary(items, details), renderMagicStoneSummary(items, details), panels);
     return section;
   }
