@@ -1310,8 +1310,18 @@
       const saved = localStorage.getItem("notmeter-stats-locale");
       if (COPY[saved]) return saved;
     } catch { /* ignored */ }
-    const language = String(navigator.language || "").toLowerCase();
-    return language.startsWith("zh") ? "zh-TW" : language.startsWith("ko") ? "ko" : "en";
+    const languages = [
+      ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+      navigator.language,
+    ].map(value => String(value || "").trim().toLowerCase()).filter(Boolean);
+    for (const language of languages) {
+      if (language.startsWith("zh-tw") || language.startsWith("zh-hant") ||
+          language.startsWith("zh-hk") || language.startsWith("zh-mo") || language === "zh") return "zh-TW";
+      if (language.startsWith("ko")) return "ko";
+      if (language.startsWith("en")) return "en";
+      if (language.startsWith("zh")) return "zh-TW";
+    }
+    return "en";
   }
   function titleCategoryLabel(category) {
     const key = String(category || "Etc");

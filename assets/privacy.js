@@ -53,10 +53,29 @@
     },
   };
 
-  const browser = String(navigator.language || "").toLowerCase();
   let locale = localStorage.getItem("notmeter-stats-locale");
   if (!supported.includes(locale)) {
-    locale = browser.startsWith("zh") ? "zh-TW" : browser.startsWith("ko") ? "ko" : "en";
+    const browserLocales = [
+      ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+      navigator.language,
+    ].map(value => String(value || "").trim().toLowerCase()).filter(Boolean);
+    locale = "en";
+    for (const browserLocale of browserLocales) {
+      if (browserLocale.startsWith("zh-tw") || browserLocale.startsWith("zh-hant") ||
+          browserLocale.startsWith("zh-hk") || browserLocale.startsWith("zh-mo") || browserLocale === "zh") {
+        locale = "zh-TW";
+        break;
+      }
+      if (browserLocale.startsWith("ko")) {
+        locale = "ko";
+        break;
+      }
+      if (browserLocale.startsWith("en")) break;
+      if (browserLocale.startsWith("zh")) {
+        locale = "zh-TW";
+        break;
+      }
+    }
   }
   const select = document.getElementById("privacy-language");
 

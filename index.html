@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260824-3">
+  <link rel="stylesheet" href="./assets/app.css?v=20260824-4">
   <link rel="stylesheet" href="./assets/character.css?v=20260824-1">
   <script>
     (() => {
@@ -31,12 +31,23 @@
       } catch {
         // Storage can be unavailable in privacy mode; browser language remains safe.
       }
-      const browserLocale = String(navigator.language || "").toLowerCase();
+      const browserLocales = [
+        ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+        navigator.language,
+      ].map(value => String(value || "").trim().toLowerCase()).filter(Boolean);
+      const detectedLocale = (() => {
+        for (const browserLocale of browserLocales) {
+          if (browserLocale.startsWith("zh-tw") || browserLocale.startsWith("zh-hant") ||
+              browserLocale.startsWith("zh-hk") || browserLocale.startsWith("zh-mo") || browserLocale === "zh") return "zh-TW";
+          if (browserLocale.startsWith("ko")) return "ko";
+          if (browserLocale.startsWith("en")) return "en";
+          if (browserLocale.startsWith("zh")) return "zh-TW";
+        }
+        return "en";
+      })();
       const locale = ["ko", "en", "zh-TW"].includes(savedLocale)
         ? savedLocale
-        : browserLocale.startsWith("zh")
-          ? "zh-TW"
-          : browserLocale.startsWith("ko") ? "ko" : "en";
+        : detectedLocale;
       const routeMetadata = {
         ko: {
           ranking: {
@@ -181,10 +192,10 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7318383767094918" crossorigin="anonymous"></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260824-3" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260824-4" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260822-1" defer></script>
-  <script src="./assets/character.js?v=20260824-3" defer></script>
-  <script src="./assets/app.js?v=20260824-3" defer></script>
+  <script src="./assets/character.js?v=20260824-4" defer></script>
+  <script src="./assets/app.js?v=20260824-4" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>

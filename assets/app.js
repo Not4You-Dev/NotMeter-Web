@@ -910,11 +910,24 @@
     if (SUPPORTED_LOCALES.includes(candidate)) {
       return candidate;
     }
-    const browserLocale = String(navigator.language || "").toLowerCase();
-    if (browserLocale.startsWith("zh")) {
-      return "zh-TW";
+    return detectBrowserLocale();
+  }
+
+  function detectBrowserLocale() {
+    const browserLocales = [
+      ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+      navigator.language,
+    ].map(value => String(value || "").trim().toLowerCase()).filter(Boolean);
+    for (const locale of browserLocales) {
+      if (locale.startsWith("zh-tw") || locale.startsWith("zh-hant") ||
+          locale.startsWith("zh-hk") || locale.startsWith("zh-mo") || locale === "zh") {
+        return "zh-TW";
+      }
+      if (locale.startsWith("ko")) return "ko";
+      if (locale.startsWith("en")) return "en";
+      if (locale.startsWith("zh")) return "zh-TW";
     }
-    return browserLocale.startsWith("ko") ? "ko" : "en";
+    return "en";
   }
 
   const state = {
