@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07111a" />
+  <title>아이온2 그래픽 최적화 설정 생성기 | NOT METER</title>
+  <meta name="description" content="아이온2 engine.ini 그래픽 최적화 값을 그래픽카드, 목적, 선명도, 해상도 스케일, 캐릭터 표시 거리, 물/반사, 프레임 제한, VRAM 기준에 맞춰 쉽게 생성합니다." />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="google-adsense-account" content="ca-pub-7318383767094918" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="아이온2 그래픽 최적화 설정 생성기" />
+  <meta property="og:description" content="기존 NotMeter 최적화 프리셋을 기반으로 안전한 engine.ini 설정을 생성합니다." />
+  <meta property="og:url" content="https://notmeter.com/optimization.html" />
+  <meta property="og:image" content="https://notmeter.com/assets/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="canonical" href="https://notmeter.com/optimization.html" />
+  <link rel="icon" href="./assets/notmeter-icon.png" type="image/png" />
+  <script>
+    if (new URLSearchParams(location.search).get("embed") === "1") {
+      document.documentElement.classList.add("optimization-embed");
+    }
+  </script>
+  <link rel="stylesheet" href="./assets/app.css?v=20260807-2" />
+  <link rel="stylesheet" href="./assets/optimization.css?v=20260814-1" />
+</head>
+<body>
+  <div class="page-shell optimization-shell">
+    <header class="topbar optimization-topbar">
+      <a class="brand optimization-brand" href="./" aria-label="NotMeter 통계 홈">
+        <img class="brand-icon" src="./assets/notmeter-icon.png" width="44" height="44" alt="" />
+        <span>
+          <strong class="optimization-brand-title">NOT METER</strong>
+          <small>AION2 GRAPHIC OPTIMIZER</small>
+        </span>
+      </a>
+      <div class="topbar-actions">
+        <nav class="service-links optimization-links" aria-label="NotMeter 바로가기">
+          <a class="service-link optimization-home-link" href="./">
+            <span class="service-link-icon" aria-hidden="true">R</span>
+            <span class="service-link-label" data-opt-i18n="ranking">통계</span>
+          </a>
+          <a class="service-link optimization-link active" href="./optimization.html" aria-current="page">
+            <span class="service-link-icon optimization-link-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M4 7h9m4 0h3M4 17h3m4 0h9"></path>
+                <circle cx="15" cy="7" r="2"></circle>
+                <circle cx="9" cy="17" r="2"></circle>
+              </svg>
+            </span>
+            <span class="service-link-label" data-opt-i18n="optimization">최적화</span>
+          </a>
+          <a class="service-link discord-link" href="https://discord.com/invite/DuAuuhdrwy" target="_blank" rel="noopener noreferrer">
+            <span class="service-link-label">Discord</span>
+          </a>
+        </nav>
+        <button class="ghost-button" id="optimizationLanguage" type="button" aria-label="Switch language">EN</button>
+      </div>
+    </header>
+
+    <main class="optimizer-page">
+      <section class="optimizer-title">
+        <div>
+          <p class="eyebrow">AION2 ENGINE.INI OPTIMIZER</p>
+          <h1>그래픽 최적화 설정 생성기</h1>
+          <p class="lead">기존 NotMeter 생성값과 프리셋을 기준으로 그래픽카드와 목적에 맞는 <code>engine.ini</code> 값을 생성합니다. 검증되지 않은 렌더 경로·RHI·프레임 생성 강제값은 추가하지 않습니다.</p>
+        </div>
+        <div class="policy-note">
+          <strong>적용 전 확인</strong>
+          <span>적용 전 원본을 백업하고, 생성된 시작/종료 마커 블록만 파일 맨 아래에 추가하세요. 업스케일러와 게임 내 해상도 설정은 강제로 바꾸지 않습니다.</span>
+        </div>
+      </section>
+
+      <section class="quick-setup" aria-label="빠른 최적화 설정">
+        <div class="quick-setup-head">
+          <div>
+            <span>QUICK SETUP</span>
+            <h2>세 가지만 선택하면 추천 설정이 완성됩니다</h2>
+            <p>실제 게임 화면을 부정확하게 흉내 내지 않고, 그래픽카드·사용 목적·현재 증상을 기준으로 안전한 값만 생성합니다.</p>
+          </div>
+          <span class="quick-setup-badge">초보자 추천</span>
+        </div>
+
+        <div class="quick-setup-step">
+          <div class="quick-step-title">
+            <b>1</b>
+            <div>
+              <strong>내 그래픽카드</strong>
+              <span>정확한 모델이 없으면 같은 세대와 VRAM이 비슷한 항목을 선택하세요.</span>
+            </div>
+          </div>
+          <label class="profile-select-label quick-gpu-select">
+            <span>그래픽카드 빠른 선택</span>
+            <select id="gpuSelect"></select>
+          </label>
+        </div>
+
+        <div class="quick-setup-step">
+          <div class="quick-step-title">
+            <b>2</b>
+            <div>
+              <strong>가장 중요한 사용 목적</strong>
+              <span>잘 모르겠다면 균형을 선택하면 됩니다.</span>
+            </div>
+          </div>
+          <div class="goal-grid" id="goalGrid" aria-label="추천 목적 선택"></div>
+        </div>
+
+        <div class="quick-setup-step">
+          <div class="quick-step-title">
+            <b>3</b>
+            <div>
+              <strong>현재 겪는 문제 · 복수 선택 가능</strong>
+              <span>증상은 여러 개 선택할 수 있습니다. 문제가 없다면 `문제 없음`을 선택하세요.</span>
+            </div>
+          </div>
+          <div class="issue-grid" id="issueGrid" aria-label="현재 문제 선택"></div>
+        </div>
+
+        <div class="quick-setup-step quick-advanced-step">
+          <div class="quick-step-title">
+            <b>4</b>
+            <div>
+              <strong>정밀 조절</strong>
+              <span>선명도·거리·그림자·이펙트·VRAM 등을 직접 섬세하게 조절합니다.</span>
+            </div>
+          </div>
+          <button class="quick-advanced-button" id="openAdvancedButton" type="button" aria-expanded="false">
+            <span id="advancedButtonLabel">정밀 조절 열기</span>
+          </button>
+        </div>
+        <div class="advanced-settings-mount" id="advancedSettingsMount"></div>
+
+        <div class="quick-setup-footer">
+          <div>
+            <span>현재 추천</span>
+            <strong id="quickGuideStatus">RTX 5060/5070 · 균형 · 문제 없음</strong>
+          </div>
+          <button id="scrollToResultButton" type="button">생성 결과 바로 보기</button>
+        </div>
+      </section>
+
+      <section class="engine-location-card" aria-label="engine.ini 위치와 적용 방법">
+        <div class="engine-location-main">
+          <div class="engine-location-title">
+            <span>ENGINE.INI LOCATION</span>
+            <h2>engine.ini 위치와 적용 방법</h2>
+            <p>아래 경로를 그대로 복사하면 아이온2 설정 폴더를 바로 찾을 수 있습니다.</p>
+          </div>
+          <div class="engine-path-row">
+            <code>%LOCALAPPDATA%\AION2\Saved\Config\Windows\engine.ini</code>
+            <button id="copyPathButton" type="button">경로 복사</button>
+          </div>
+          <p class="engine-path-example">실제 경로 예시: C:\Users\Windows계정\AppData\Local\AION2\Saved\Config\Windows\engine.ini</p>
+        </div>
+        <ol class="engine-location-steps">
+          <li><b>1</b><span>윈도우키 + R을 누르고 위 경로를 붙여넣어 파일을 엽니다.</span></li>
+          <li><b>2</b><span>수정 전 engine.ini를 복사해 백업합니다.</span></li>
+          <li><b>3</b><span>생성값을 파일 맨 아래에 붙여넣고 저장한 뒤 게임을 재실행합니다.</span></li>
+        </ol>
+        <p class="engine-location-note">파일이 보이지 않으면 아이온2를 한 번 실행한 뒤 정상 종료하고 다시 확인하세요.</p>
+        <div class="engine-readonly-alert" role="note">
+          <b>필수</b>
+          <div>
+            <strong>중요 · 저장 후 반드시 파일을 읽기 전용으로 설정하세요.</strong>
+            <p>생성값을 저장한 뒤 engine.ini 우클릭 → 속성 → 읽기 전용 체크 → 적용 순서로 설정합니다. 읽기 전용을 설정하지 않으면 아이온2 실행 또는 그래픽 옵션 변경 시 적용값이 초기화될 수 있습니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="result-panel" aria-label="생성 결과와 적용 방법">
+        <div class="result-card">
+          <div class="result-head">
+            <span>RESULT</span>
+            <h2 id="resultTitle">RTX 5060 / 5070 균형</h2>
+            <p id="resultSummary">균형값으로 생성됩니다.</p>
+          </div>
+          <div class="result-actions">
+            <button class="copy-primary" id="copyButton" type="button">현재 설정 복사</button>
+            <button class="reset-button" id="resetButton" type="button">추천값으로 초기화</button>
+          </div>
+          <p class="config-safety-status" id="configSafetyStatus">검증된 설정 이름과 허용 범위만 생성합니다.</p>
+          <details class="result-help">
+            <summary>
+              <span>적용·정리·되돌리기 안내</span>
+              <small>처음 적용할 때만 펼쳐보세요.</small>
+            </summary>
+            <div class="result-help-content">
+              <div class="result-steps">
+                <h3>적용 방법</h3>
+                <ol>
+                  <li><b>윈도우키 + R</b>을 누르고 <code>%localappdata%</code> 입력</li>
+                  <li><code>AION2\Saved\Config\Windows\engine.ini</code> 열기</li>
+                  <li>기존 파일을 복사해 백업</li>
+                  <li>구버전의 무마커 NotMeter 설정은 아래 안내대로 먼저 정리</li>
+                  <li>기존 마커 블록이 있으면 시작/종료 마커 범위만 교체</li>
+                  <li>아래 생성값을 파일 맨 아래에 붙여넣고 게임 재실행</li>
+                </ol>
+              </div>
+              <div class="legacy-box">
+                <b>구버전 설정 정리</b>
+                <span>engine.ini에서 다음 구버전 제목을 먼저 찾으세요.</span>
+                <code>; ===== NOT METER AION2 그래픽 최적화 :</code>
+                <span>이 제목이 있으면 새 값을 바로 덧붙이지 마세요. 백업 후 바로 앞 [SystemSettings]부터 구버전의 마지막 r.CreateShadersOnLoad=... 줄까지만 제거하고, 그 범위 밖의 기존 설정은 유지한 뒤 새 마커 블록을 붙여넣으세요.</span>
+              </div>
+              <div class="rollback-box">
+                <b>되돌리기</b>
+                <span><code>; NOT METER OPTIMIZATION START</code>부터 <code>; NOT METER OPTIMIZATION END</code>까지만 삭제한 뒤 게임을 다시 실행하세요. engine.ini 전체를 삭제하지 마세요.</span>
+              </div>
+            </div>
+          </details>
+        </div>
+        <div class="code-card">
+          <div class="code-head">
+            <span>ENGINE.INI</span>
+            <button id="copyButtonSmall" type="button">복사</button>
+          </div>
+          <pre><code id="configOutput"></code></pre>
+        </div>
+      </section>
+
+      <section class="optimizer-workspace">
+        <details class="advanced-settings" id="advancedSettings">
+          <summary>
+            <div>
+              <span>ADVANCED SETTINGS</span>
+              <strong>정밀 조절</strong>
+              <small>선명도·거리·그림자·이펙트 등을 직접 바꿀 때만 여세요.</small>
+            </div>
+          </summary>
+          <div class="advanced-settings-layout">
+        <section class="builder-panel" aria-label="최적화 설정 조정">
+          <div class="panel-head">
+            <span>STEP 4</span>
+            <h2>현재 설정 영향</h2>
+            <p>1번에서 선택한 그래픽카드 설정을 기준으로 필요한 항목만 한 단계씩 조절하세요.</p>
+          </div>
+
+          <div class="tuning-summary" aria-label="현재 선택 요약">
+            <article>
+              <b id="metricClarity">보통</b>
+              <span>선명도</span>
+            </article>
+            <article>
+              <b id="metricQuality">보통</b>
+              <span>화질</span>
+            </article>
+            <article>
+              <b id="metricLoad">보통</b>
+              <span>PC 부하</span>
+            </article>
+          </div>
+
+          <div class="control-section">
+            <div class="section-title">
+              <span>STEP 3</span>
+              <h2>세부 조절</h2>
+              <p>모르면 그대로 두세요. 문제가 있을 때만 해당 항목을 한 단계씩 조절하면 됩니다.</p>
+            </div>
+
+            <div class="control-grid">
+              <label class="range-control visibility-control is-wide">
+                <span>화면 밝기</span>
+                <b data-value-label="brightness">게임 기본값</b>
+                <input type="range" min="0" max="3" step="1" value="0" data-tune="brightness" />
+                <small>캐릭터 선택 화면이나 어두운 던전이 잘 안 보이면 1부터 올리세요. 장면별 자동 노출은 유지하고 전체 화면 감마만 보정합니다.</small>
+              </label>
+              <label class="range-control">
+                <span>선명도</span>
+                <b data-value-label="sharpness">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="sharpness" />
+                <small>흐릿하면 올리고, 외곽선이 거칠면 내립니다.</small>
+              </label>
+              <label class="range-control">
+                <span>해상도 스케일</span>
+                <b data-value-label="resolution">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="resolution" />
+                <small>0은 게임 내 해상도 설정을 유지합니다. -1/+1 이상을 직접 선택할 때만 화면 비율 값을 생성합니다.</small>
+              </label>
+              <label class="range-control">
+                <span>원거리 시야</span>
+                <b data-value-label="distance">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="distance" />
+                <small>멀리 있는 몬스터와 배경을 더 선명하게 봅니다.</small>
+              </label>
+              <label class="range-control">
+                <span>캐릭터/NPC 거리</span>
+                <b data-value-label="characterDistance">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="characterDistance" />
+                <small>멀리 있는 캐릭터, 보스, NPC의 선명도와 표현 부담을 조절합니다.</small>
+              </label>
+              <label class="range-control">
+                <span>그림자/반사</span>
+                <b data-value-label="lighting">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="lighting" />
+                <small>화질을 올리면 예쁘고, 내리면 프레임이 좋아집니다.</small>
+              </label>
+              <label class="range-control">
+                <span>스킬 이펙트</span>
+                <b data-value-label="effects">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="effects" />
+                <small>파티/쟁에서 이펙트가 부담되면 낮춥니다.</small>
+              </label>
+              <label class="range-control">
+                <span>텍스처 안정성</span>
+                <b data-value-label="texture">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="texture" />
+                <small>텍스처 팝인을 줄이고 VRAM에 맞춰 임시 스트리밍 메모리도 함께 조절합니다.</small>
+              </label>
+              <label class="range-control">
+                <span>순간 끊김 방지</span>
+                <b data-value-label="stutter">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="stutter" />
+                <small>맵 이동 직후 멈춤이 있으면 +1 이상으로 올립니다. 메모리가 부족한 PC는 -1을 사용합니다.</small>
+              </label>
+              <label class="range-control">
+                <span>수풀/필드 오브젝트</span>
+                <b data-value-label="foliage">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="foliage" />
+                <small>필드 수풀과 원거리 오브젝트 표현량을 조절합니다.</small>
+              </label>
+              <label class="range-control">
+                <span>후처리 깊이</span>
+                <b data-value-label="postprocess">기본</b>
+                <input type="range" min="-2" max="2" step="1" value="0" data-tune="postprocess" />
+                <small>공간감, 빛 번짐, 투명 이펙트 품질을 조절합니다.</small>
+              </label>
+              <label class="range-control visibility-control is-wide">
+                <span>색감·기믹 장판 시인성</span>
+                <b data-value-label="telegraphContrast">게임 기본값</b>
+                <input type="range" min="0" max="3" step="1" value="0" data-tune="telegraphContrast" />
+                <small>화면이 너무 밝고 장판이 옅으면 1~2로 올리세요. 지원이 불확실한 채도 명령 대신 검증된 중간톤·명부·블룸 값만 함께 조절해 장판 대비를 높입니다.</small>
+              </label>
+              <label class="select-control">
+                <span>VRAM 기준</span>
+                <select data-tune="vram">
+                  <option value="auto">프리셋 자동</option>
+                  <option value="4">4GB</option>
+                  <option value="6">6GB</option>
+                  <option value="8">8GB</option>
+                  <option value="12">12GB</option>
+                  <option value="16">16GB 이상</option>
+                </select>
+                <small>그래픽카드 VRAM에 맞추면 텍스처 풀을 안전하게 제한합니다.</small>
+              </label>
+              <label class="select-control">
+                <span>안개</span>
+                <select data-tune="fog">
+                  <option value="off">끄기 - 가장 선명</option>
+                  <option value="soft">일부 유지 - 배경 깨짐 완화</option>
+                  <option value="on">기본 유지 - 자연스러움</option>
+                </select>
+                <small>안개를 끄면 선명하지만 멀리 있는 배경 깨짐이 더 보일 수 있습니다.</small>
+              </label>
+              <label class="select-control">
+                <span>입력 반응</span>
+                <select data-tune="latency">
+                  <option value="smooth">부드러움 우선</option>
+                  <option value="responsive">반응속도 우선</option>
+                </select>
+                <small>스킬 입력 체감이 둔하면 반응속도 우선을 선택합니다.</small>
+              </label>
+              <label class="select-control">
+                <span>물/반사</span>
+                <select data-tune="water">
+                  <option value="auto">프리셋 자동</option>
+                  <option value="off">끄기 - 프레임 우선</option>
+                  <option value="low">낮게 - 균형</option>
+                  <option value="quality">품질 - 화면 우선</option>
+                </select>
+                <small>물가, 성역, 반사 많은 지역에서 렉이 있으면 낮춥니다.</small>
+              </label>
+              <label class="select-control">
+                <span>프레임 제한</span>
+                <select data-tune="frameLimit">
+                  <option value="auto">게임 설정 유지</option>
+                  <option value="60">60 FPS</option>
+                  <option value="90">90 FPS</option>
+                  <option value="120">120 FPS</option>
+                  <option value="144">144 FPS</option>
+                  <option value="165">165 FPS</option>
+                  <option value="240">240 FPS</option>
+                </select>
+                <small>게임 설정 유지는 프레임 값을 생성하지 않습니다. 발열, 팬소음, 순간 끊김이 있으면 모니터 주사율보다 낮게 제한합니다.</small>
+              </label>
+              <label class="select-control is-wide">
+                <span>화면 분위기</span>
+                <select data-tune="mood">
+                  <option value="neutral">기본 균형</option>
+                  <option value="clean">선명하고 깨끗하게</option>
+                  <option value="vivid">화사한 색감</option>
+                  <option value="cinematic">고화질 질감</option>
+                  <option value="natural">자연스러운 원본 느낌</option>
+                </select>
+                <small>프레임보다 보기 좋은 화면이 중요하면 고화질 질감이나 화사한 색감을 선택합니다.</small>
+              </label>
+              <label class="select-control is-wide compatibility-control">
+                <span>비행 가속 화면 효과</span>
+                <select data-tune="flightEffects">
+                  <option value="compatible">게임 효과 우선 (추천)</option>
+                  <option value="aggressive">최대 최적화</option>
+                </select>
+                <small>비행 가속 중 화면 테두리 잘림·검은 그림자 잔상이 보이면 게임 효과 우선을 사용하세요. 이 모드는 내부 해상도와 반투명 후처리를 게임 기본값으로 유지합니다.</small>
+              </label>
+              <label class="select-control">
+                <span>모션 블러</span>
+                <select data-tune="motionBlur">
+                  <option value="off">끄기 - 선명한 전투 화면</option>
+                  <option value="low">낮게 - 움직임 표현 유지</option>
+                  <option value="game">게임 기본값 유지</option>
+                </select>
+                <small>프레임보다 화면 취향에 가까운 항목입니다. 기본 생성값은 끄기입니다.</small>
+              </label>
+              <label class="select-control">
+                <span>심도 효과</span>
+                <select data-tune="depthOfField">
+                  <option value="off">끄기 - 전투 시인성</option>
+                  <option value="on">켜기 - 연출 유지</option>
+                  <option value="game">게임 기본값 유지</option>
+                </select>
+                <small>배경 흐림 연출입니다. 게임 기본값을 선택하면 해당 줄을 생성하지 않습니다.</small>
+              </label>
+              <label class="select-control">
+                <span>렌즈 플레어</span>
+                <select data-tune="lensFlare">
+                  <option value="off">끄기 - 번짐 감소</option>
+                  <option value="on">켜기 - 광원 연출</option>
+                  <option value="game">게임 기본값 유지</option>
+                </select>
+                <small>광원 번짐 효과입니다. 성능 차이는 작고 화면 취향에 따라 선택합니다.</small>
+              </label>
+            </div>
+          </div>
+
+          <div class="problem-guide" aria-label="문제별 조절 방법">
+            <h2>문제별로 이렇게 바꾸세요</h2>
+            <div>
+              <article><b>화면이 흐릿함</b><span>선명도 +1, 원거리 시야 +1, 화면 분위기 `선명하고 깨끗하게`</span></article>
+              <article><b>프레임이 떨어짐</b><span>그림자/반사 -1, 스킬 이펙트 -1, 원거리 시야 -1</span></article>
+              <article><b>텍스처가 늦게 뜸</b><span>텍스처 안정성 +1, VRAM 기준을 실제 VRAM으로 선택</span></article>
+              <article><b>맵 이동 직후 화면이 멈춤</b><span>순간 끊김 방지 +1, VRAM 기준을 실제 VRAM으로 선택</span></article>
+              <article><b>배경 깨짐이 거슬림</b><span>안개를 `일부 유지` 또는 `기본 유지`로 변경</span></article>
+              <article><b>필드에서 렉이 심함</b><span>수풀/필드 오브젝트 -1, 후처리 깊이 -1, 스킬 이펙트 -1</span></article>
+              <article><b>물가/성역에서 렉</b><span>물/반사를 `끄기` 또는 `낮게`, 그림자/반사 -1</span></article>
+              <article><b>발열과 팬소음</b><span>프레임 제한 60~90 FPS, 해상도 스케일 -1</span></article>
+              <article><b>캐릭터가 늦게 선명해짐</b><span>캐릭터/NPC 거리 +1, 텍스처 안정성 +1</span></article>
+              <article><b>스킬 입력이 둔함</b><span>입력 반응을 `반응속도 우선`으로 변경</span></article>
+              <article><b>비행 가속 중 테두리 잘림·그림자 잔상</b><span>비행 가속 화면 효과를 `게임 효과 우선 (추천)`으로 변경하고, 계속 보이면 모션 블러를 `게임 기본값 유지`로 변경</span></article>
+              <article><b>화면이 밝고 기믹 장판이 옅음</b><span>색감·기믹 장판 시인성을 `권장`으로 변경하고, 너무 진하면 `약하게`로 낮춤</span></article>
+              <article><b>캐릭터 선택 화면·던전이 어두움</b><span>화면 밝기를 `조금 밝게`부터 적용하고, 부족할 때만 `밝게`로 올림</span></article>
+            </div>
+          </div>
+        </section>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <script src="./assets/optimization-copy.js?v=20260815-1"></script>
+  <script src="./assets/optimization.js?v=20260815-1"></script>
+</body>
+</html>
