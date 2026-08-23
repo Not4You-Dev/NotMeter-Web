@@ -609,11 +609,12 @@ body.character-view .ranking-panel { display: none !important; }
   backdrop-filter: blur(12px);
 }
 .equipment-loadout-tabs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: inline-flex;
+  width: max-content;
   gap: 6px;
 }
 .equipment-loadout-tab {
+  min-width: 78px;
   min-height: 27px;
   padding: 4px 10px;
   border: 1px solid #294c5d;
