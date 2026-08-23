@@ -63,6 +63,12 @@
       emptyOption: "표시할 옵션 없음", acquired: "습득", notAcquired: "미습득",
       equipped: "장착", ownedTitles: "보유 타이틀", mount: "탈것", wing: "날개",
       wingSkin: "날개 외형", boards: "개 주신", unlocked: "개 노드 개방",
+      itemCount: "{value}개", itemCountPair: "{visible} / {total}개",
+      statsDescription: "게임에서 익숙한 배치로 주요 스탯과 주신 스탯을 한눈에 확인합니다.",
+      arcanaDescription: "장착 중인 아르카나와 강화 수치를 슬롯 순서대로 표시합니다.",
+      skillsDescription: "현재 스킬 레벨만 빠르게 비교할 수 있습니다.",
+      exceedStage: "돌파 {value}단계", stoneOriginal: "{count}개 · 원본 +{value}",
+      stoneCount: "{count}개 마석",
       officialNote: "캐릭터 정보는 아이온2 공식 공개 정보 기준이며, 게임 내 정보 공개 상태와 갱신 시점에 따라 일부 항목이 비어 있을 수 있습니다.",
     },
     en: {
@@ -106,6 +112,12 @@
       emptyOption: "No visible option", acquired: "Acquired", notAcquired: "Not acquired",
       equipped: "Equipped", ownedTitles: "Owned titles", mount: "Mount", wing: "Wings",
       wingSkin: "Wing skin", boards: " boards", unlocked: " nodes open",
+      itemCount: "{value}", itemCountPair: "{visible} / {total}",
+      statsDescription: "See core and divine stats in the same familiar layout as the game.",
+      arcanaDescription: "Equipped Arcana and enhancement levels in slot order.",
+      skillsDescription: "Quickly compare current skill levels.",
+      exceedStage: "Breakthrough stage {value}", stoneOriginal: "{count} · raw +{value}",
+      stoneCount: "{count} manastones",
       officialNote: "Character data comes from AION2's official public profile. Some fields can be empty depending on visibility and refresh time.",
     },
     "zh-TW": {
@@ -144,7 +156,13 @@
       gearTab: "裝備", accessoryTab: "飾品",
       acquired: "已學習", notAcquired: "未學習", equipped: "裝備中", ownedTitles: "持有稱號",
       mount: "坐騎", wing: "翅膀", wingSkin: "翅膀外觀", boards: " 個主神",
-      unlocked: " 個節點開放", officialNote: "角色資料以 AION2 官方公開資料為準；依公開設定與更新時間，部分項目可能為空白。",
+      unlocked: " 個節點開放", itemCount: "{value}個", itemCountPair: "{visible} / {total}個",
+      statsDescription: "以遊戲中熟悉的配置，一覽主要屬性與主神屬性。",
+      arcanaDescription: "依欄位順序顯示已裝備的阿爾卡納與強化數值。",
+      skillsDescription: "快速比較目前技能等級。",
+      exceedStage: "突破 {value}階段", stoneOriginal: "{count}個 · 原始 +{value}",
+      stoneCount: "{count}個魔石",
+      officialNote: "角色資料以 AION2 官方公開資料為準；依公開設定與更新時間，部分項目可能為空白。",
     },
   };
 
@@ -248,7 +266,7 @@
     renderLoadingRows();
     setPopover(true);
     try {
-      const region = currentOfficialRegion();
+      const region = searchOfficialRegion();
       const data = await fetchJson(
         `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&fast=1`);
       if (requestId !== state.searchRequest) return;
@@ -263,7 +281,7 @@
     }
   }
 
-  function applySearchPayload(data, region = currentOfficialRegion()) {
+  function applySearchPayload(data, region = searchOfficialRegion()) {
     state.searchComplete = data?.complete !== false;
     state.searchResults = Array.isArray(data?.results)
       ? data.results.map(item => ({ ...item, region })).sort((a, b) =>
@@ -327,12 +345,14 @@
     const filteredRows = recent || state.searchRace === "all"
       ? rows
       : rows.filter(item => state.searchRace === "elyos"
-        ? String(item.raceName || "").includes("천")
-        : String(item.raceName || "").includes("마"));
+        ? /(?:천족|天族|Elyos)/i.test(String(item.raceName || ""))
+        : /(?:마족|魔族|Asmodian)/i.test(String(item.raceName || "")));
     if (!recent) {
       const count = state.searchRace === "all"
-        ? `${formatNumber(filteredRows.length)}개`
-        : `${formatNumber(filteredRows.length)} / ${formatNumber(rows.length)}개`;
+        ? formatCopy("itemCount", { value: formatNumber(filteredRows.length) })
+        : formatCopy("itemCountPair", {
+          visible: formatNumber(filteredRows.length), total: formatNumber(rows.length),
+        });
       elements["character-search-status"].textContent = state.searchComplete
         ? count
         : `${count} · ${currentCopy().sortingCp}`;
@@ -720,7 +740,7 @@
     const queryServerId = Number(new URLSearchParams(window.location.search).get("serverId"));
     const serverId = Number(profile?.serverId) || queryServerId;
     const region = currentOfficialRegion();
-    const jobName = String(profile?.className || "").trim();
+    const jobName = canonicalJobName(profile?.className);
     if (!characterName || !jobName) return [];
 
     const dungeonIndex = new Map((Array.isArray(cache.dungeons) ? cache.dungeons : [])
@@ -756,8 +776,8 @@
           rank: Number(player.rank),
           dps: number(player.dps),
           dungeonKey,
-          dungeonName: String(meta.dungeonName || dungeon.displayName || dungeonKey),
-          bossName: cleanBossName(recordedBossName || meta.bossName || "—"),
+          dungeonName: localizeGameName(meta.dungeonName || dungeon.displayName || dungeonKey),
+          bossName: cleanBossName(localizeGameName(recordedBossName || meta.bossName || "—", "mob")),
           cpTierLabel: String(meta.cpTierLabel || cache.cpTiers?.find(tier =>
             Number(tier.index) === Number(view.cpTierIndex))?.label || ""),
           dungeonOrder: Number(dungeon.index) || 0,
@@ -779,14 +799,13 @@
 
   function cleanBossName(value) {
     return String(value || "—")
-      .replace(/^\s*\d+\s*(?:네임드|보스)\s*(?:[·:：-]\s*)?/i, "")
+      .replace(/^\s*\d+\s*(?:네임드|보스|首領|Boss)\s*(?:[·:：-]\s*)?/i, "")
       .trim() || "—";
   }
 
   function renderStats(statList) {
     const copy = currentCopy();
-    const section = createSection("character-stats", "ALL STATS", copy.stats,
-      "게임에서 익숙한 배치로 주요 스탯과 주신 스탯을 한눈에 확인합니다.");
+    const section = createSection("character-stats", "ALL STATS", copy.stats, copy.statsDescription);
     const wheel = node("div", "character-stat-wheel");
     wheel.append(node("div", "character-stat-orbit-lines"));
     const coreRing = node("div", "character-core-ring");
@@ -817,7 +836,7 @@
   function renderEquipment(items, details) {
     const copy = currentCopy();
     const section = createSection("character-equipment", "EQUIPMENT LOADOUT", copy.equipment, copy.equipmentNote,
-      `${items.length}개`);
+      formatCopy("itemCount", { value: items.length }));
     const sorted = items.slice().sort((a, b) => Number(a.slotPos) - Number(b.slotPos));
     const gear = sorted.filter(item => !ACCESSORY_SLOT_TYPES.has(String(item.slotPosName)));
     const accessories = sorted.filter(item => ACCESSORY_SLOT_TYPES.has(String(item.slotPosName)))
@@ -928,8 +947,8 @@
         textNode("span", row.name),
         textNode("strong", `+${value}${shouldConvert ? "%" : row.unit}`),
         textNode("small", shouldConvert
-          ? `${row.count}개 · 원본 +${row.value}`
-          : `${row.count}개 마석`),
+          ? formatCopy("stoneOriginal", { count: row.count, value: row.value })
+          : formatCopy("stoneCount", { count: row.count })),
       );
       grid.append(item);
     }
@@ -958,7 +977,8 @@
     const progress = node("div", "equipment-progress");
     progress.append(textNode("span", `+${number(item.enchantLevel)}`, "equipment-enhance-badge"));
     if (number(item.exceedLevel)) {
-      progress.append(textNode("span", `돌파 ${number(item.exceedLevel)}단계`, "equipment-exceed-badge"));
+      progress.append(textNode("span", formatCopy("exceedStage", { value: number(item.exceedLevel) }),
+        "equipment-exceed-badge"));
     }
     const basicOptions = node("div", "equipment-identity-options");
     basicOptions.append(textNode("h6", copy.basicOptions));
@@ -1060,7 +1080,7 @@
   function renderArcana(items, details) {
     const copy = currentCopy();
     const section = createSection("character-arcana", "ARCANA SET", copy.arcana,
-      "장착 중인 아르카나와 강화 수치를 슬롯 순서대로 표시합니다.", `${items.length}개`);
+      copy.arcanaDescription, formatCopy("itemCount", { value: items.length }));
     const grid = node("div", "character-arcana-grid");
     for (const item of items.slice().sort((a, b) => Number(a.slotPos) - Number(b.slotPos))) {
       const card = node("article", "character-arcana-card");
@@ -1127,7 +1147,7 @@
     const skills = Array.isArray(rawSkills) ? rawSkills.slice() : [];
     skills.sort((a, b) => Number(b.skillLevel) - Number(a.skillLevel) || String(a.name).localeCompare(String(b.name)));
     const section = createSection("character-skills", "SKILL LIBRARY", copy.skills,
-      "현재 스킬 레벨만 빠르게 비교할 수 있습니다.", `${skills.length}개`);
+      copy.skillsDescription, formatCopy("itemCount", { value: skills.length }));
     const groups = [
       ["active", copy.activeSkills, skills.filter(skill => !["dp", "passive"].includes(String(skill.category).toLowerCase()))],
       ["stigma", copy.stigmaSkills, skills.filter(skill => String(skill.category).toLowerCase() === "dp")],
@@ -1137,7 +1157,8 @@
     groups.forEach(([, label, groupSkills]) => {
       const group = node("section", "skill-group");
       const heading = node("div", "skill-group-heading");
-      heading.append(textNode("h5", label), textNode("span", `${groupSkills.length}개`));
+      heading.append(textNode("h5", label), textNode("span",
+        formatCopy("itemCount", { value: groupSkills.length })));
       const grid = node("div", "character-skill-grid");
       for (const skill of groupSkills) {
         const card = node("article", "character-skill-card");
@@ -1283,6 +1304,7 @@
   function currentOfficialRegion(params = new URLSearchParams(window.location.search)) {
     return normalizeOfficialRegion(params.get("region"));
   }
+  function searchOfficialRegion() { return state.locale === "zh-TW" ? "tw" : "kr"; }
   function readLocale() {
     try {
       const saved = localStorage.getItem("notmeter-stats-locale");
@@ -1316,7 +1338,29 @@
     if (combatPower >= 1_000) return `${(combatPower / 1_000).toFixed(1).replace(/\.?0+$/, "")}K`;
     return formatNumber(Math.round(combatPower));
   }
-  function jobIcon(job) { return job ? `./assets/jobs/${encodeURIComponent(job)}.png` : "./assets/notmeter-icon.png"; }
+  function canonicalJobName(job) {
+    const value = String(job || "").trim();
+    const aliases = {
+      "劍星": "검성", "殺星": "살성", "弓星": "궁성", "魔道星": "마도성",
+      "精靈星": "정령성", "守護星": "수호성", "治癒星": "치유성",
+      "護法星": "호법성", "拳星": "권성",
+    };
+    return aliases[value] || value;
+  }
+  function jobIcon(job) {
+    const canonical = canonicalJobName(job);
+    return canonical ? `./assets/jobs/${encodeURIComponent(canonical)}.png` : "./assets/notmeter-icon.png";
+  }
+  function formatCopy(key, values = {}) {
+    let value = currentCopy()[key] || COPY.ko[key] || key;
+    for (const [name, replacement] of Object.entries(values)) {
+      value = value.replaceAll(`{${name}}`, String(replacement));
+    }
+    return value;
+  }
+  function localizeGameName(value, type = "") {
+    return globalThis.NotMeterStatsLocalization?.gameName?.(value, type) || String(value || "");
+  }
 
   function safeImageUrl(value) {
     try {
