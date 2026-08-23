@@ -8,7 +8,7 @@
   const FAVORITE_KEY = "notmeter-character-favorites-v1";
   const RECENT_LIMIT = 10;
   const FAVORITE_LIMIT = 30;
-  const REQUEST_TIMEOUT_MS = 30_000;
+  const REQUEST_TIMEOUT_MS = 45_000;
   const CORE_STAT_TYPES = new Set(["STR", "DEX", "INT", "CON", "AGI", "WIS"]);
   const DIVINE_STAT_TYPES = new Set([
     "Justice", "Freedom", "Illusion", "Life", "Time", "Destruction",

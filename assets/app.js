@@ -33,7 +33,7 @@
   const DETAIL_MEMORY_LIMIT = 48;
   const DETAIL_REQUEST_TIMEOUT_MS = 12_000;
   const DETAIL_RETRY_DELAY_MS = 350;
-  const CACHE_REQUEST_TIMEOUT_MS = 8_000;
+  const CACHE_REQUEST_TIMEOUT_MS = 60_000;
   const CACHE_SYNC_INTERVAL_MS = 5 * 60 * 1000;
   const CACHE_SYNC_THROTTLE_MS = 60 * 1000;
   const FIELD_BOSS_CACHE_SYNC_INTERVAL_MS = 90 * 1000;
@@ -2707,7 +2707,7 @@
         : 0;
       try {
         const response = await fetch(url, {
-          cache: force ? "reload" : "no-cache",
+          cache: force ? "reload" : "default",
           headers: { Accept: "application/gzip, application/json" },
           signal: controller?.signal,
         });
