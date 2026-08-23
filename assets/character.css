@@ -614,15 +614,15 @@ body.character-view .ranking-panel { display: none !important; }
   gap: 6px;
 }
 .equipment-loadout-tab {
-  min-width: 78px;
-  min-height: 27px;
-  padding: 4px 10px;
+  min-width: 126px;
+  min-height: 39px;
+  padding: 9px 13px;
   border: 1px solid #294c5d;
-  border-radius: 8px;
+  border-radius: 9px;
   color: #8caab7;
   background: #091b25;
   font: inherit;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 900;
   cursor: pointer;
 }
