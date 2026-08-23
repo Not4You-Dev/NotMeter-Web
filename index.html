@@ -19,7 +19,7 @@
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
   <link rel="stylesheet" href="./assets/app.css?v=20260823-2">
-  <link rel="stylesheet" href="./assets/character.css?v=20260821-23">
+  <link rel="stylesheet" href="./assets/character.css?v=20260823-1">
   <script>
     (() => {
       const requestedView = new URLSearchParams(window.location.search).get("view") || "ranking";
@@ -183,7 +183,7 @@
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/combat-detail-buffs.js?v=20260823-2" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260822-1" defer></script>
-  <script src="./assets/character.js?v=20260821-24" defer></script>
+  <script src="./assets/character.js?v=20260823-1" defer></script>
   <script src="./assets/app.js?v=20260823-2" defer></script>
 </head>
 <body>
@@ -288,7 +288,10 @@
     <section class="global-character-search" id="global-character-search" aria-label="캐릭터 검색">
       <form class="character-search-form" id="character-search-form" role="search" autocomplete="off">
         <span class="character-search-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" focusable="false"
+            fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path>
+          </svg>
         </span>
         <label class="sr-only" for="character-search-input">캐릭터 이름</label>
         <input id="character-search-input" name="character" type="search" maxlength="20"
