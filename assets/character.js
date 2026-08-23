@@ -83,6 +83,9 @@
       skillsDescription: "현재 스킬 레벨만 빠르게 비교할 수 있습니다.",
       exceedStage: "돌파 {value}단계", stoneOriginal: "{count}개 · 원본 +{value}",
       stoneCount: "{count}개 마석",
+      loadoutTitle: "장비 세팅", loadoutNote: "마지막으로 확인된 PVE·PVP 장비를 비교합니다.",
+      pveLoadout: "PVE", pvpLoadout: "PVP", currentLoadout: "현재", unavailableLoadout: "미수집",
+      loadoutCapturedAt: "마지막 확인 {value}", unknownLoadout: "현재 장비의 PVE/PVP 구분을 확인할 수 없습니다.",
       officialNote: "캐릭터 정보는 아이온2 공식 공개 정보 기준이며, 게임 내 정보 공개 상태와 갱신 시점에 따라 일부 항목이 비어 있을 수 있습니다.",
     },
     en: {
@@ -132,6 +135,9 @@
       skillsDescription: "Quickly compare current skill levels.",
       exceedStage: "Breakthrough stage {value}", stoneOriginal: "{count} · raw +{value}",
       stoneCount: "{count} manastones",
+      loadoutTitle: "Gear loadouts", loadoutNote: "Compare the latest detected PVE and PVP equipment.",
+      pveLoadout: "PVE", pvpLoadout: "PVP", currentLoadout: "Current", unavailableLoadout: "Not captured",
+      loadoutCapturedAt: "Last detected {value}", unknownLoadout: "The current equipment could not be classified as PVE or PVP.",
       officialNote: "Character data comes from AION2's official public profile. Some fields can be empty depending on visibility and refresh time.",
     },
     "zh-TW": {
@@ -176,6 +182,9 @@
       skillsDescription: "快速比較目前技能等級。",
       exceedStage: "突破 {value}階段", stoneOriginal: "{count}個 · 原始 +{value}",
       stoneCount: "{count}個魔石",
+      loadoutTitle: "裝備配置", loadoutNote: "比較最後確認的 PVE 與 PVP 裝備。",
+      pveLoadout: "PVE", pvpLoadout: "PVP", currentLoadout: "目前", unavailableLoadout: "尚未收集",
+      loadoutCapturedAt: "最後確認 {value}", unknownLoadout: "目前裝備無法判定為 PVE 或 PVP。",
       officialNote: "角色資料以 AION2 官方公開資料為準；依公開設定與更新時間，部分項目可能為空白。",
     },
   };
@@ -183,6 +192,7 @@
   const state = {
     locale: readLocale(), searchResults: [], searchRace: "all", searchComplete: true,
     searchRequest: 0, profile: null, profileLoad: null, profileRequest: 0,
+    activeLoadout: null,
     officialNameCatalog: null, officialNameCatalogLoad: null, koreanNamesByTraditionalChinese: null,
   };
   const elements = {};
@@ -552,6 +562,9 @@
   }
 
   function applyProfilePayload(data, params, serverId, characterId) {
+    const previousCharacterId = state.profile?.info?.profile?.characterId || "";
+    const nextCharacterId = data?.info?.profile?.characterId || characterId;
+    if (previousCharacterId && previousCharacterId !== nextCharacterId) state.activeLoadout = null;
     state.profile = data;
     const profile = data?.info?.profile || {};
     saveRecent({
@@ -580,12 +593,14 @@
   function renderProfile(data) {
     const copy = currentCopy();
     const content = elements["character-profile-content"];
-    const info = data?.info || {};
+    const loadoutView = resolveLoadoutView(data);
+    const visibleData = loadoutView.data;
+    const info = visibleData?.info || {};
     const profile = info.profile || {};
     const statList = Array.isArray(info.stat?.statList) ? info.stat.statList : [];
-    const allEquipment = Array.isArray(data?.equipment?.equipment?.equipmentList)
-      ? data.equipment.equipment.equipmentList : [];
-    const itemDetails = data?.itemDetails || {};
+    const allEquipment = Array.isArray(visibleData?.equipment?.equipment?.equipmentList)
+      ? visibleData.equipment.equipment.equipmentList : [];
+    const itemDetails = visibleData?.itemDetails || {};
     const regularEquipment = allEquipment.filter(item => !String(item.slotPosName).startsWith("Arcana"));
     const arcana = allEquipment.filter(item => String(item.slotPosName).startsWith("Arcana"));
     const itemLevel = statList.find(item => item.type === "ItemLevel")?.value || 0;
@@ -593,16 +608,95 @@
     document.title = `${profile.characterName || copy.heading} · NotMeter`;
     content.replaceChildren();
     content.append(
-      renderHero(profile, itemLevel, data?.equipment?.petwing || {}, info.title || {},
-        data?.fetchedAt, data?.complete !== false),
+      renderHero(profile, itemLevel, visibleData?.equipment?.petwing || {}, info.title || {},
+        visibleData?.fetchedAt, visibleData?.complete !== false),
+      renderLoadoutSelector(data, loadoutView.type),
       renderSectionNav(),
       renderCharacterRankings(profile),
       renderEquipment(regularEquipment, itemDetails),
-      renderSkills(data?.equipment?.skill?.skillList || []),
+      renderSkills(visibleData?.equipment?.skill?.skillList || []),
       renderStats(statList),
       renderArcana(arcana, itemDetails),
       textNode("p", copy.officialNote, "character-data-note"),
     );
+  }
+
+  function resolveLoadoutView(data) {
+    const currentType = normalizeLoadoutType(data?.currentLoadoutType);
+    const loadouts = data?.loadouts && typeof data.loadouts === "object" ? data.loadouts : {};
+    let selectedType = normalizeLoadoutType(state.activeLoadout);
+    if (!selectedType || (selectedType !== currentType && !loadouts[selectedType])) {
+      selectedType = currentType;
+    }
+    state.activeLoadout = selectedType;
+
+    const snapshot = selectedType && selectedType !== currentType ? loadouts[selectedType] : null;
+    if (!snapshot) return { type: selectedType, data };
+
+    const rootInfo = data?.info || {};
+    return {
+      type: selectedType,
+      data: {
+        ...data,
+        fetchedAt: snapshot.capturedAt || data?.fetchedAt,
+        info: {
+          ...rootInfo,
+          profile: snapshot.profile || rootInfo.profile || {},
+          stat: snapshot.stat || rootInfo.stat || {},
+        },
+        equipment: snapshot.equipment || {},
+        itemDetails: snapshot.itemDetails || {},
+        complete: true,
+      },
+    };
+  }
+
+  function normalizeLoadoutType(value) {
+    const normalized = String(value || "").trim().toUpperCase();
+    return normalized === "PVE" || normalized === "PVP" ? normalized : null;
+  }
+
+  function renderLoadoutSelector(data, selectedType) {
+    const copy = currentCopy();
+    const currentType = normalizeLoadoutType(data?.currentLoadoutType);
+    const loadouts = data?.loadouts && typeof data.loadouts === "object" ? data.loadouts : {};
+    const section = node("section", "character-loadout-selector");
+    const heading = node("div", "character-loadout-heading");
+    const headingCopy = node("div");
+    headingCopy.append(textNode("strong", copy.loadoutTitle), textNode("span", copy.loadoutNote));
+    heading.append(headingCopy);
+    if (!currentType) heading.append(textNode("small", copy.unknownLoadout, "character-loadout-warning"));
+    section.append(heading);
+
+    const options = node("div", "character-loadout-options");
+    for (const type of ["PVE", "PVP"]) {
+      const snapshot = loadouts[type];
+      const available = type === currentType || Boolean(snapshot);
+      const button = node("button", `character-loadout-button loadout-${type.toLowerCase()}`);
+      button.type = "button";
+      button.disabled = !available;
+      if (type === selectedType) button.classList.add("selected");
+      const label = node("span");
+      label.append(textNode("b", type === "PVE" ? copy.pveLoadout : copy.pvpLoadout));
+      if (type === currentType) label.append(textNode("em", copy.currentLoadout));
+      const capturedAt = type === currentType ? data?.fetchedAt : snapshot?.capturedAt;
+      button.append(
+        label,
+        textNode("small", available
+          ? formatCopy("loadoutCapturedAt", { value: formatDateTime(capturedAt) })
+          : copy.unavailableLoadout),
+      );
+      if (available) {
+        button.addEventListener("click", () => {
+          state.activeLoadout = type;
+          renderProfile(state.profile);
+          document.querySelector(".character-loadout-selector")?.scrollIntoView({ block: "nearest" });
+        });
+      }
+      options.append(button);
+    }
+    section.append(options);
+    return section;
   }
 
   function renderHero(profile, itemLevel, petwing, titles, fetchedAt, profileComplete) {
