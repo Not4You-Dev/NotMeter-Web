@@ -36,7 +36,8 @@
   ];
   const DETAIL_CACHE_NAME = "notmeter-ranking-details-v1";
   const DETAIL_MEMORY_LIMIT = 48;
-  const DETAIL_REQUEST_TIMEOUT_MS = 5_000;
+  const DETAIL_REQUEST_TIMEOUT_MS = 12_000;
+  const DETAIL_RETRY_DELAY_MS = 350;
   const CACHE_REQUEST_TIMEOUT_MS = 8_000;
   const CACHE_SYNC_INTERVAL_MS = 5 * 60 * 1000;
   const CACHE_SYNC_THROTTLE_MS = 60 * 1000;
@@ -4233,6 +4234,10 @@
 
   function buildClassRow(player) {
     const tr = document.createElement("tr");
+    const detailContext = {
+      dungeonKey: String(state.dungeonKey || "").trim(),
+      generation: String(state.data?.generatedAt || "").trim(),
+    };
     const detail = resolveCombatDetail(player);
     const publishedLookupKey = String(player.Q ?? player.detailLookupKey ?? "")
       .trim()
@@ -4260,7 +4265,11 @@
       if (detail) {
         openLegacyCombatDetail(player, detail);
       } else if (canBuildLookupKey) {
-        await openRemoteCombatDetail(player, await getDetailLookupKey(), tr);
+        await openRemoteCombatDetail(
+          player,
+          await getDetailLookupKey(),
+          tr,
+          detailContext);
       } else {
         openUnavailableCombatDetail(
           player,
@@ -4286,7 +4295,7 @@
         window.clearTimeout(hoverTimer);
         hoverTimer = window.setTimeout(() => {
           void getDetailLookupKey()
-            .then(loadRankingCombatDetail)
+            .then(lookupKey => loadRankingCombatDetail(lookupKey, detailContext))
             .catch(() => {});
         }, 220);
       });
@@ -4486,7 +4495,7 @@
     elements["detail-close"].focus({ preventScroll: true });
   }
 
-  async function openRemoteCombatDetail(player, lookupKey, row) {
+  async function openRemoteCombatDetail(player, lookupKey, row, detailContext) {
     if (!lookupKey || row.classList.contains("detail-loading")) {
       return;
     }
@@ -4498,7 +4507,7 @@
       detailLink.textContent = t("detailLoading");
     }
     try {
-      const detailDocument = await loadRankingCombatDetail(lookupKey);
+      const detailDocument = await loadRankingCombatDetail(lookupKey, detailContext);
       const actorId = Number(detailDocument.selectors?.[lookupKey]) || 0;
       state.selectedDetail = {
         player,
@@ -4526,29 +4535,39 @@
     }
   }
 
-  async function loadRankingCombatDetail(lookupKey) {
-    if (state.detailMemory.has(lookupKey)) {
-      const cached = state.detailMemory.get(lookupKey);
-      state.detailMemory.delete(lookupKey);
-      state.detailMemory.set(lookupKey, cached);
+  async function loadRankingCombatDetail(lookupKey, detailContext = {}) {
+    const expectedDungeonKey = String(
+      detailContext.dungeonKey || state.dungeonKey || "").trim();
+    const generation = String(
+      detailContext.generation || state.data?.generatedAt || "").trim();
+    const memoryKey = `${expectedDungeonKey}\n${lookupKey}`;
+    if (state.detailMemory.has(memoryKey)) {
+      const cached = state.detailMemory.get(memoryKey);
+      state.detailMemory.delete(memoryKey);
+      state.detailMemory.set(memoryKey, cached);
       return cached;
     }
-    if (state.detailLoads.has(lookupKey)) {
-      return state.detailLoads.get(lookupKey);
+    if (state.detailLoads.has(memoryKey)) {
+      return state.detailLoads.get(memoryKey);
     }
 
-    const load = loadRankingCombatDetailCore(lookupKey)
+    const load = loadRankingCombatDetailCore(
+      lookupKey,
+      expectedDungeonKey,
+      generation)
       .then(document => {
-        rememberDetail(lookupKey, document);
+        rememberDetail(memoryKey, document);
         return document;
       })
-      .finally(() => state.detailLoads.delete(lookupKey));
-    state.detailLoads.set(lookupKey, load);
+      .finally(() => state.detailLoads.delete(memoryKey));
+    state.detailLoads.set(memoryKey, load);
     return load;
   }
 
-  async function loadRankingCombatDetailCore(lookupKey) {
-    const generation = String(state.data?.generatedAt || "");
+  async function loadRankingCombatDetailCore(
+    lookupKey,
+    expectedDungeonKey,
+    generation) {
     const requestPath = `${lookupKey}?g=${encodeURIComponent(generation)}`;
     const request = new Request(
       `${DETAIL_ENDPOINTS[0]}${requestPath}`,
@@ -4560,7 +4579,10 @@
         const cachedResponse = await cache.match(request);
         if (cachedResponse) {
           try {
-            return await parseRankingCombatDetail(cachedResponse, lookupKey);
+            return await parseRankingCombatDetail(
+              cachedResponse,
+              lookupKey,
+              expectedDungeonKey);
           } catch {
             await cache.delete(request);
           }
@@ -4572,7 +4594,8 @@
 
     const { detailDocument, cacheCopy } = await downloadRankingCombatDetail(
       requestPath,
-      lookupKey);
+      lookupKey,
+      expectedDungeonKey);
     if (cache) {
       try {
         await cache.put(request, cacheCopy);
@@ -4582,33 +4605,44 @@
     return detailDocument;
   }
 
-  async function downloadRankingCombatDetail(requestPath, lookupKey) {
+  async function downloadRankingCombatDetail(
+    requestPath,
+    lookupKey,
+    expectedDungeonKey) {
     const failures = [];
     const statuses = [];
     for (const endpoint of DETAIL_ENDPOINTS) {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(
-        () => controller.abort(),
-        DETAIL_REQUEST_TIMEOUT_MS);
-      try {
-        const response = await fetch(`${endpoint}${requestPath}`, {
-          mode: "cors",
-          credentials: "omit",
-          cache: "default",
-          headers: { Accept: "application/json" },
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          statuses.push(response.status);
-          throw new Error(`${t("detailUnavailable")} (${response.status})`);
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        if (attempt > 0) {
+          await new Promise(resolve => window.setTimeout(resolve, DETAIL_RETRY_DELAY_MS));
         }
-        const cacheCopy = response.clone();
-        const detailDocument = await parseRankingCombatDetail(response, lookupKey);
-        return { detailDocument, cacheCopy };
-      } catch (error) {
-        failures.push(error instanceof Error ? error.message : String(error));
-      } finally {
-        window.clearTimeout(timeout);
+        const controller = new AbortController();
+        const timeout = window.setTimeout(
+          () => controller.abort(),
+          DETAIL_REQUEST_TIMEOUT_MS);
+        try {
+          const response = await fetch(`${endpoint}${requestPath}`, {
+            mode: "cors",
+            credentials: "omit",
+            cache: attempt === 0 ? "default" : "reload",
+            headers: { Accept: "application/json" },
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            statuses.push(response.status);
+            throw new Error(`${t("detailUnavailable")} (${response.status})`);
+          }
+          const cacheCopy = response.clone();
+          const detailDocument = await parseRankingCombatDetail(
+            response,
+            lookupKey,
+            expectedDungeonKey);
+          return { detailDocument, cacheCopy };
+        } catch (error) {
+          failures.push(error instanceof Error ? error.message : String(error));
+        } finally {
+          window.clearTimeout(timeout);
+        }
       }
     }
 
@@ -4619,7 +4653,10 @@
     throw error;
   }
 
-  async function parseRankingCombatDetail(response, lookupKey) {
+  async function parseRankingCombatDetail(
+    response,
+    lookupKey,
+    expectedDungeonKey) {
     const payload = await response.arrayBuffer();
     if (payload.byteLength <= 0 || payload.byteLength > 8 * 1024 * 1024) {
       throw new Error(t("detailUnavailable"));
@@ -4644,7 +4681,7 @@
     const actorId = Number(document.selectors?.[lookupKey]) || 0;
     if (document.schema !== DETAIL_SCHEMA ||
         Number(document.version) !== 1 ||
-        document.dungeonKey !== state.dungeonKey ||
+        document.dungeonKey !== expectedDungeonKey ||
         !Array.isArray(players) ||
         players.length < 1 ||
         players.length > 10 ||
