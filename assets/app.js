@@ -103,6 +103,8 @@
   };
   const GAME_NAME_OVERRIDES_ZH_TW = {
     "각성한 아테론 10단계": "覺醒阿特隆 第10階段",
+    "훈련용 허수아비 (1분)": "訓練用稻草人（1分鐘）",
+    "훈련용 허수아비(1분)": "訓練用稻草人（1分鐘）",
   };
   const FEATURED_DUNGEON_KEYS = ["deus-research-hard", "noiran-legacy-4"];
   // Resolve display order by name so both old and current cache arrays remain compatible.
