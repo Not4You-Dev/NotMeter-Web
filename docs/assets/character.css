@@ -726,15 +726,63 @@ body.character-view .ranking-panel { display: none !important; }
   background: #081923;
 }
 
-.equipment-identity { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: start; gap: 10px; }
-.equipment-icon { width: 52px; height: 52px; overflow: hidden; border: 0; background: transparent; }
+.equipment-identity { display: grid; grid-template-columns: 46px minmax(0, 1fr); align-items: start; gap: 10px; }
+.equipment-icon {
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .04);
+}
 .equipment-icon img { width: 100%; height: 100%; object-fit: cover; }
 .equipment-copy { min-width: 0; }
-.equipment-copy strong { display: block; overflow: hidden; color: #f3f9fb; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.equipment-progress { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
-.equipment-progress span { display: inline-flex; align-items: center; min-height: 20px; padding: 2px 7px; border-radius: 6px; font-size: 10px; font-weight: 800; }
-.equipment-enhance-badge { color: #fff; background: #24495c; }
-.equipment-exceed-badge { color: #a9efff; border: 1px solid #2b829c; background: #0c2937; }
+.equipment-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 46px;
+  color: #edf4f7;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.equipment-title strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  font: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.equipment-enhance-value { flex: 0 0 auto; margin-right: 5px; color: inherit; font-variant-numeric: tabular-nums; }
+.equipment-exceed-mark {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  color: #fff;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
+  vertical-align: middle;
+}
+.equipment-exceed-mark span { position: relative; z-index: 1; }
+.equipment-exceed-mark::after {
+  position: absolute;
+  inset: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  background: #1ab6d6;
+  content: "";
+  transform: rotate(45deg);
+  transform-origin: center;
+}
 .equipment-identity-options { margin-top: 9px; padding-top: 7px; border-top: 1px solid #173444; }
 .equipment-identity-options h6 { margin: 0 0 5px; color: #82a9ba; font-size: 9px; letter-spacing: .08em; }
 .equipment-identity-options ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 8px; margin: 0; padding: 0; list-style: none; }
@@ -742,12 +790,12 @@ body.character-view .ranking-panel { display: none !important; }
 .equipment-identity-options .empty-detail { color: #58798b; }
 
 /* AION2 official grade order: 일반 → 희귀 → 전승 → 유일 → 영웅. */
-.equipment-grade-Common .equipment-copy strong { color: #e6edf1; }
-.equipment-grade-Rare .equipment-copy strong { color: #59d58a; }
-.equipment-grade-Legend .equipment-copy strong { color: #68a8ff; }
-.equipment-grade-Unique .equipment-copy strong { color: #f6cf4a; }
-.equipment-grade-Epic .equipment-copy strong { color: #ff6847; }
-.equipment-grade-Mythic .equipment-copy strong { color: #c879ff; }
+.equipment-grade-Common .equipment-title { color: rgba(255, 255, 255, .93); }
+.equipment-grade-Rare .equipment-title { color: #52b35c; }
+.equipment-grade-Legend .equipment-title { color: #3d94d8; }
+.equipment-grade-Unique .equipment-title { color: #e9a43a; }
+.equipment-grade-Epic .equipment-title { color: #ee6c2a; }
+.equipment-grade-Mythic .equipment-title { color: #d33939; }
 
 .equipment-detail-column { min-width: 0; padding-left: 9px; border-left: 1px solid #173444; }
 .equipment-detail-column h6 { margin: 0 0 6px; color: #82a9ba; font-size: 9px; letter-spacing: 0.08em; }

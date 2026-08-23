@@ -995,13 +995,17 @@
     const itemName = localizeOfficialText(item.name);
     icon.append(createImage(item.icon, itemName));
     const itemCopy = node("div", "equipment-copy");
-    itemCopy.append(textNode("strong", itemName || "—"));
-    const progress = node("div", "equipment-progress");
-    progress.append(textNode("span", `+${number(item.enchantLevel)}`, "equipment-enhance-badge"));
+    const title = node("div", "equipment-title");
     if (number(item.exceedLevel)) {
-      progress.append(textNode("span", formatCopy("exceedStage", { value: number(item.exceedLevel) }),
-        "equipment-exceed-badge"));
+      const exceed = node("span", "equipment-exceed-mark");
+      exceed.setAttribute("aria-label", formatCopy("exceedStage", { value: number(item.exceedLevel) }));
+      exceed.append(textNode("span", String(number(item.exceedLevel))));
+      title.append(exceed);
     }
+    title.append(
+      textNode("span", `+${number(item.enchantLevel)}`, "equipment-enhance-value"),
+      textNode("strong", itemName || "—"),
+    );
     const basicOptions = node("div", "equipment-identity-options");
     basicOptions.append(textNode("h6", copy.basicOptions));
     const basicList = node("ul");
@@ -1009,7 +1013,7 @@
     if (!optionLines.length) basicList.append(textNode("li", copy.emptyOption, "empty-detail"));
     for (const line of optionLines.slice(0, 12)) basicList.append(textNode("li", line));
     basicOptions.append(basicList);
-    itemCopy.append(progress, basicOptions);
+    itemCopy.append(title, basicOptions);
     identity.append(icon, itemCopy);
     card.append(identity,
       renderSoulEngravingColumn(copy.soulEngraving, detail),
