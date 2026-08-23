@@ -24,7 +24,7 @@
   const EXPECTED_CUSTOM_CP_RANK_CHUNK_SCHEMA = "notmeter-web-custom-cp-rank-chunk-v2";
   const DETAIL_SCHEMA = "notmeter-ranking-combat-detail-v1";
   const FIELD_BOSS_CACHE_SCHEMA = "notmeter-field-boss-public-cache-v1";
-  const ZH_TW_GAME_DATA_URL = "./assets/game-data.zh-TW.json?v=20260812-2";
+  const ZH_TW_GAME_DATA_URL = "./assets/game-data.zh-TW.json?v=20260824-1";
   const SUPPORTED_LOCALES = ["ko", "en", "zh-TW"];
   const DETAIL_ENDPOINTS = [
     `${VPS_RANKING_CACHE_ROOT}/details/`,
@@ -33,7 +33,7 @@
   const DETAIL_MEMORY_LIMIT = 48;
   const DETAIL_REQUEST_TIMEOUT_MS = 12_000;
   const DETAIL_RETRY_DELAY_MS = 350;
-  const CACHE_REQUEST_TIMEOUT_MS = 8_000;
+  const CACHE_REQUEST_TIMEOUT_MS = 60_000;
   const CACHE_SYNC_INTERVAL_MS = 5 * 60 * 1000;
   const CACHE_SYNC_THROTTLE_MS = 60 * 1000;
   const FIELD_BOSS_CACHE_SYNC_INTERVAL_MS = 90 * 1000;
@@ -103,6 +103,8 @@
   };
   const GAME_NAME_OVERRIDES_ZH_TW = {
     "각성한 아테론 10단계": "覺醒阿特隆 第10階段",
+    "훈련용 허수아비 (1분)": "訓練用稻草人（1分鐘）",
+    "훈련용 허수아비(1분)": "訓練用稻草人（1分鐘）",
   };
   const FEATURED_DUNGEON_KEYS = ["deus-research-hard", "noiran-legacy-4"];
   // Resolve display order by name so both old and current cache arrays remain compatible.
@@ -908,11 +910,24 @@
     if (SUPPORTED_LOCALES.includes(candidate)) {
       return candidate;
     }
-    const browserLocale = String(navigator.language || "").toLowerCase();
-    if (browserLocale.startsWith("zh")) {
-      return "zh-TW";
+    return detectBrowserLocale();
+  }
+
+  function detectBrowserLocale() {
+    const browserLocales = [
+      ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+      navigator.language,
+    ].map(value => String(value || "").trim().toLowerCase()).filter(Boolean);
+    for (const locale of browserLocales) {
+      if (locale.startsWith("zh-tw") || locale.startsWith("zh-hant") ||
+          locale.startsWith("zh-hk") || locale.startsWith("zh-mo") || locale === "zh") {
+        return "zh-TW";
+      }
+      if (locale.startsWith("ko")) return "ko";
+      if (locale.startsWith("en")) return "en";
+      if (locale.startsWith("zh")) return "zh-TW";
     }
-    return browserLocale.startsWith("ko") ? "ko" : "en";
+    return "en";
   }
 
   const state = {
@@ -952,6 +967,7 @@
     },
     zhTwGameData: null,
     zhTwGameDataLoad: null,
+    koreanGameNamesByTraditionalChinese: null,
     visibleMetrics: loadVisibleMetrics(),
     fieldBossData: null,
     fieldBossLoad: null,
@@ -979,7 +995,7 @@
     applyLocale();
     renderDetailSettings();
     void ensureLocaleGameData().then(() => {
-      if (state.locale === "zh-TW") {
+      if (state.locale === "ko" || state.locale === "zh-TW") {
         applyLocale();
         populateFilters();
         render();
@@ -1116,7 +1132,7 @@
         state.selectedDetail = openDetail;
         renderCombatDetail();
       }
-      if (state.locale === "zh-TW" && !state.zhTwGameData) {
+      if ((state.locale === "ko" || state.locale === "zh-TW") && !state.zhTwGameData) {
         const requestedLocale = state.locale;
         void ensureLocaleGameData().then(payload => {
           if (!payload || state.locale !== requestedLocale) return;
@@ -1360,7 +1376,7 @@
   }
 
   async function ensureLocaleGameData() {
-    if (state.locale !== "zh-TW" || state.zhTwGameData) {
+    if ((state.locale !== "ko" && state.locale !== "zh-TW") || state.zhTwGameData) {
       return state.zhTwGameData;
     }
     if (state.zhTwGameDataLoad) {
@@ -1381,10 +1397,12 @@
       })
       .then(payload => {
         if (payload?.locale !== "zh-TW" || !payload.names || !payload.skills ||
-            !payload.mobs || !payload.buffs) {
+            !payload.mobs || !payload.buffs || !payload.koSkills ||
+            !payload.koMobs || !payload.koBuffs) {
           throw new Error("Traditional Chinese game data format is invalid");
         }
         state.zhTwGameData = payload;
+        state.koreanGameNamesByTraditionalChinese = buildKoreanGameNameIndex(payload);
         return payload;
       })
       .catch(() => null)
@@ -1399,20 +1417,47 @@
     return state.locale === "ko" ? "ko-KR" : state.locale === "zh-TW" ? "zh-TW" : "en-US";
   }
 
+  function buildKoreanGameNameIndex(payload) {
+    const candidates = new Map();
+    const add = (korean, traditionalChinese) => {
+      const ko = String(korean || "").trim();
+      const zh = String(traditionalChinese || "").trim();
+      if (!ko || !zh) return;
+      if (!candidates.has(zh)) candidates.set(zh, new Set());
+      candidates.get(zh).add(ko);
+    };
+    for (const [korean, traditionalChinese] of Object.entries(payload?.names || {})) {
+      add(korean, traditionalChinese);
+    }
+    const index = new Map([...candidates]
+      .filter(([, koreanNames]) => koreanNames.size === 1)
+      .map(([traditionalChinese, koreanNames]) => [traditionalChinese, [...koreanNames][0]]));
+    for (const [korean, traditionalChinese] of Object.entries(payload?.aliases || {})) {
+      index.set(String(traditionalChinese).trim(), String(korean).trim());
+    }
+    for (const [korean, traditionalChinese] of Object.entries(GAME_NAME_OVERRIDES_ZH_TW)) {
+      index.set(String(traditionalChinese).trim(), String(korean).trim());
+    }
+    return index;
+  }
+
   function localizeGameName(value, type = "", ...codes) {
     const original = String(value || "").trim();
-    if (state.locale !== "zh-TW" || !state.zhTwGameData) {
-      return state.locale === "zh-TW"
-        ? GAME_NAME_OVERRIDES_ZH_TW[original] || original
-        : original;
+    if (state.locale !== "ko" && state.locale !== "zh-TW") {
+      return original;
+    }
+    if (!state.zhTwGameData) {
+      if (state.locale === "zh-TW") return GAME_NAME_OVERRIDES_ZH_TW[original] || original;
+      return original;
     }
 
+    const korean = state.locale === "ko";
     const collection = type === "skill"
-      ? state.zhTwGameData.skills
+      ? korean ? state.zhTwGameData.koSkills : state.zhTwGameData.skills
       : type === "mob"
-        ? state.zhTwGameData.mobs
+        ? korean ? state.zhTwGameData.koMobs : state.zhTwGameData.mobs
         : type === "buff"
-          ? state.zhTwGameData.buffs
+          ? korean ? state.zhTwGameData.koBuffs : state.zhTwGameData.buffs
           : null;
     for (const code of codes) {
       let normalizedCode = Math.abs(Math.trunc(Number(code) || 0));
@@ -1427,11 +1472,11 @@
         normalizedCode = Math.trunc(normalizedCode / 10);
       }
     }
-    return String(
-      state.zhTwGameData.aliases?.[original] ||
-      GAME_NAME_OVERRIDES_ZH_TW[original] ||
-      state.zhTwGameData.names?.[original] ||
-      original);
+    if (korean) {
+      return String(state.koreanGameNamesByTraditionalChinese?.get(original) || original);
+    }
+    return String(state.zhTwGameData.aliases?.[original] ||
+      GAME_NAME_OVERRIDES_ZH_TW[original] || state.zhTwGameData.names?.[original] || original);
   }
 
   globalThis.NotMeterStatsLocalization = Object.freeze({
@@ -2707,7 +2752,7 @@
         : 0;
       try {
         const response = await fetch(url, {
-          cache: force ? "reload" : "no-cache",
+          cache: force ? "reload" : "default",
           headers: { Accept: "application/gzip, application/json" },
           signal: controller?.signal,
         });

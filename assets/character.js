@@ -6,6 +6,20 @@
     : "https://notmeter.112-168-140-142.sslip.io/character/v1";
   const RECENT_KEY = "notmeter-character-recent-v1";
   const FAVORITE_KEY = "notmeter-character-favorites-v1";
+  const OFFICIAL_NAME_CATALOG_URL = "./assets/game-data.zh-TW.json?v=20260824-1";
+  const OFFICIAL_TERMS_KO_TO_ZH_TW = Object.freeze({
+    "천족": "天族", "마족": "魔族",
+    "공격력": "攻擊力", "추가 공격력": "追加攻擊力", "최대 공격력": "最大攻擊力",
+    "명중": "命中", "추가 명중": "追加命中", "치명타": "暴擊", "치명타 저항": "暴擊抵抗",
+    "방어력": "防禦力", "추가 방어력": "追加防禦力", "회피": "迴避", "추가 회피": "追加迴避",
+    "생명력": "生命力", "정신력": "精神力", "전투 속도": "戰鬥速度", "이동 속도": "移動速度",
+    "피해 증폭": "傷害增幅", "무기 피해 증폭": "武器傷害增幅", "치명타 피해 증폭": "暴擊傷害增幅",
+    "전방 피해 증폭": "前方傷害增幅", "후방 피해 증폭": "後方傷害增幅",
+    "PVE 공격력": "PVE攻擊力", "PVE 명중": "PVE命中", "PVE 피해 증폭": "PVE傷害增幅",
+    "보스 공격력": "首領攻擊力", "보스 피해 증폭": "首領傷害增幅",
+    "봉혼석 추가 피해": "封魂石追加傷害", "막기": "格擋", "관통": "貫穿",
+    "다단 히트 적중": "多段打擊命中", "재시전 시간": "再次施展時間",
+  });
   const RECENT_LIMIT = 10;
   const FAVORITE_LIMIT = 30;
   const REQUEST_TIMEOUT_MS = 45_000;
@@ -169,6 +183,7 @@
   const state = {
     locale: readLocale(), searchResults: [], searchRace: "all", searchComplete: true,
     searchRequest: 0, profile: null, profileLoad: null, profileRequest: 0,
+    officialNameCatalog: null, officialNameCatalogLoad: null, koreanNamesByTraditionalChinese: null,
   };
   const elements = {};
 
@@ -176,6 +191,7 @@
     bindElements();
     bindEvents();
     applyCopy();
+    void ensureOfficialNameCatalog().then(refreshLocalizedContent);
     if (isCharacterView()) activate();
   });
 
@@ -200,6 +216,7 @@
       if (query && state.searchResults.length) renderSearchRows(state.searchResults, false);
       else renderRecent();
       setPopover(true);
+      void ensureOfficialNameCatalog().then(refreshLocalizedContent);
     });
     elements["character-search-input"]?.addEventListener("input", () => {
       if (!elements["character-search-input"].value.trim()) renderRecent();
@@ -268,7 +285,7 @@
     try {
       const region = searchOfficialRegion();
       const data = await fetchJson(
-        `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&fast=1`);
+        `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1`);
       if (requestId !== state.searchRequest) return;
       applySearchPayload(data);
       if (!state.searchComplete) void pollSearchResults(name, region, requestId);
@@ -297,7 +314,7 @@
       if (requestId !== state.searchRequest) return;
       try {
         const data = await fetchJson(
-          `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&fast=1&_=${Date.now()}`,
+          `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1&_=${Date.now()}`,
           { cache: "no-store" },
         );
         if (requestId !== state.searchRequest) return;
@@ -380,7 +397,7 @@
     const avatar = node("span", "character-search-avatar");
     avatar.append(createImage(item.profileImage, item.name));
     const identity = node("span", "character-search-name");
-    const serverName = item.serverName || String(item.serverId || "—");
+    const serverName = localizeOfficialText(item.serverName) || String(item.serverId || "—");
     const nameLine = node("span", "character-search-name-line");
     nameLine.append(textNode("strong", item.name || "—"));
     const cp = node("strong", "character-search-cp cp-badge");
@@ -389,9 +406,11 @@
     cp.append(createImage("./assets/combat-power.png", ""),
       textNode("span", hasCp ? formatCompactCombatPower(item.combatPower) : currentCopy().cpPending));
     nameLine.append(cp);
-    identity.append(nameLine, textNode("span", `${serverName} - ${item.raceName || "—"}`, "character-search-meta"));
+    identity.append(nameLine, textNode("span",
+      `${serverName} - ${localizeOfficialText(item.raceName) || "—"}`, "character-search-meta"));
     const job = node("span", "character-search-job");
-    job.append(createImage(jobIcon(item.className), ""), document.createTextNode(item.className || "—"));
+    job.append(createImage(jobIcon(item.className), ""),
+      document.createTextNode(localizeOfficialText(item.className) || "—"));
     button.append(avatar, identity, job);
     button.addEventListener("click", () => openCharacter(item));
     const actions = node("span", "character-search-actions");
@@ -467,7 +486,7 @@
     try {
       const region = currentOfficialRegion();
       const data = await fetchJson(
-        `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&fast=1`);
+        `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1`);
       const candidates = Array.isArray(data.results) ? data.results : [];
       const normalizedName = name.normalize("NFC").toLocaleLowerCase();
       const match = candidates.find(item =>
@@ -500,7 +519,7 @@
     const fastSuffix = refreshOfficial ? "" : "&fast=1";
     const requestId = ++state.profileRequest;
     state.profileLoad = fetchJson(
-      `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}${refreshSuffix}${fastSuffix}`,
+      `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&lang=${officialLanguage()}${refreshSuffix}${fastSuffix}`,
       { cache: refreshOfficial ? "no-store" : "default" },
     ).then(data => {
       applyProfilePayload(data, params, serverId, characterId);
@@ -520,7 +539,7 @@
       if (requestId !== state.profileRequest) return;
       try {
         const data = await fetchJson(
-          `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&fast=1&_=${Date.now()}`,
+          `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&lang=${officialLanguage()}&fast=1&_=${Date.now()}`,
           { cache: "no-store" },
         );
         if (requestId !== state.profileRequest) return;
@@ -598,7 +617,7 @@
     nameRow.append(heroJobIcon, textNode("h3", profile.characterName || "—"));
     const meta = node("div", "character-hero-meta");
     for (const [label, value] of [
-      [copy.server, profile.serverName],
+      [copy.server, localizeOfficialText(profile.serverName)],
       [copy.legion, profile.regionName || copy.none], [copy.level, profile.characterLevel],
     ]) {
       const item = node("span");
@@ -607,18 +626,20 @@
     }
     copyBox.append(nameRow, meta);
     const equippedItems = [
-      [copy.mount, petwing?.pet?.name || copy.none, petwing?.pet?.level ? `Lv.${petwing.pet.level}` : "", ""],
-      [copy.wing, petwing?.wing?.name || copy.none, petwing?.wing?.enchantLevel ? `+${petwing.wing.enchantLevel}` : "", ""],
+      [copy.mount, localizeOfficialText(petwing?.pet?.name) || copy.none,
+        petwing?.pet?.level ? `Lv.${petwing.pet.level}` : "", ""],
+      [copy.wing, localizeOfficialText(petwing?.wing?.name) || copy.none,
+        petwing?.wing?.enchantLevel ? `+${petwing.wing.enchantLevel}` : "", ""],
     ];
     const titleOrder = { Attack: 0, Defense: 1, Etc: 2 };
     const equippedTitles = (Array.isArray(titles?.titleList) ? titles.titleList.slice() : [])
       .sort((left, right) => (titleOrder[left.equipCategory] ?? 9) - (titleOrder[right.equipCategory] ?? 9));
     for (const title of equippedTitles) {
       const options = (Array.isArray(title.equipStatList) ? title.equipStatList : [])
-        .map(item => item.desc).filter(Boolean).join(" · ");
+        .map(item => localizeOfficialText(item.desc)).filter(Boolean).join(" · ");
       equippedItems.push([
         `${copy.equipped} ${copy.title} · ${titleCategoryLabel(title.equipCategory)}`,
-        title.name || copy.none,
+        localizeOfficialText(title.name) || copy.none,
         "",
         options,
       ]);
@@ -822,12 +843,12 @@
   function renderOrbitStat(stat, kind, index) {
     const item = node("div", `character-orbit-stat ${kind} stat-position-${index}`);
     const descriptions = Array.isArray(stat.statSecondList) ? stat.statSecondList : [];
-    if (descriptions.length) item.title = descriptions.join(" · ");
+    if (descriptions.length) item.title = descriptions.map(localizeOfficialText).join(" · ");
     const sigil = node("span", `character-stat-sigil stat-sigil-${stat.type}`);
     sigil.setAttribute("aria-hidden", "true");
     item.append(sigil);
     const copy = node("span", "character-orbit-copy");
-    copy.append(textNode("b", String(stat.name || "—").replace(/\[[^\]]+\]$/, "")),
+    copy.append(textNode("b", localizeOfficialText(String(stat.name || "—").replace(/\[[^\]]+\]$/, ""))),
       textNode("strong", formatNumber(stat.value)));
     item.append(copy);
     return item;
@@ -882,7 +903,7 @@
     for (const item of items) {
       const detail = details[String(item.slotPos)] || {};
       for (const skill of Array.isArray(detail.subSkills) ? detail.subSkills : []) {
-        const name = String(skill?.name || "").trim();
+        const name = localizeOfficialText(skill?.name);
         if (!name) continue;
         const key = String(skill.id || name);
         const current = totals.get(key) || { name, icon: skill.icon || "", level: 0, count: 0 };
@@ -920,7 +941,7 @@
     for (const item of items) {
       const detail = details[String(item.slotPos)] || {};
       for (const stone of Array.isArray(detail.magicStoneStat) ? detail.magicStoneStat : []) {
-        const name = String(stone?.name || "").trim();
+        const name = localizeOfficialText(stone?.name);
         const rawValue = String(stone?.value ?? "").replace(/,/g, "");
         const match = rawValue.match(/[+-]?\d+(?:\.\d+)?/);
         if (!name || !match) continue;
@@ -971,9 +992,10 @@
     const card = node("article", `equipment-card equipment-grade-${item.grade || "Common"}`);
     const identity = node("div", "equipment-identity");
     const icon = node("div", "equipment-icon");
-    icon.append(createImage(item.icon, item.name || ""));
+    const itemName = localizeOfficialText(item.name);
+    icon.append(createImage(item.icon, itemName));
     const itemCopy = node("div", "equipment-copy");
-    itemCopy.append(textNode("strong", item.name || "—"));
+    itemCopy.append(textNode("strong", itemName || "—"));
     const progress = node("div", "equipment-progress");
     progress.append(textNode("span", `+${number(item.enchantLevel)}`, "equipment-enhance-badge"));
     if (number(item.exceedLevel)) {
@@ -1016,14 +1038,16 @@
       .slice(0, 12);
     for (const stat of stats) {
       const option = node("li", "equipment-soul-stat");
-      option.append(textNode("span", stat.name || "—"), textNode("b", stat.value || "—"));
+      option.append(textNode("span", localizeOfficialText(stat.name) || "—"),
+        textNode("b", stat.value || "—"));
       list.append(option);
     }
     const skills = (Array.isArray(detail?.subSkills) ? detail.subSkills : [])
       .slice(0, Math.max(0, 12 - stats.length));
     for (const skill of skills) {
       const option = node("li", "equipment-skill-option");
-      option.append(createImage(skill.icon, ""), textNode("span", skill.name || "—"),
+      option.append(createImage(skill.icon, ""),
+        textNode("span", localizeOfficialText(skill.name) || "—"),
         textNode("b", `Lv.${number(skill.level)}`));
       list.append(option);
     }
@@ -1043,9 +1067,10 @@
     if (!entries.length) stones.append(textNode("span", currentCopy().emptyOption, "empty-detail"));
     for (const stone of entries.slice(0, 8)) {
       const tile = node("div", `equipment-stone equipment-stone-grade-${stone.grade || "Common"}${stone.kind === "god" ? " godstone" : ""}`);
-      if (stone.icon) tile.append(createImage(stone.icon, stone.name || ""));
+      const stoneName = localizeOfficialText(stone.name);
+      if (stone.icon) tile.append(createImage(stone.icon, stoneName));
       const stoneCopy = node("span");
-      stoneCopy.append(textNode("b", stone.name || "—"));
+      stoneCopy.append(textNode("b", stoneName || "—"));
       if (stone.value) stoneCopy.append(textNode("em", String(stone.value)));
       tile.append(stoneCopy);
       stones.append(tile);
@@ -1084,16 +1109,17 @@
     const grid = node("div", "character-arcana-grid");
     for (const item of items.slice().sort((a, b) => Number(a.slotPos) - Number(b.slotPos))) {
       const card = node("article", "character-arcana-card");
-      card.append(createImage(item.icon, item.name || ""));
+      const itemName = localizeOfficialText(item.name);
+      card.append(createImage(item.icon, itemName));
       const body = node("div");
       const detail = details[String(item.slotPos)] || {};
-      body.append(textNode("strong", `+${number(item.enchantLevel)} ${item.name || "—"}`));
+      body.append(textNode("strong", `+${number(item.enchantLevel)} ${itemName || "—"}`));
       const options = node("ul", "arcana-option-list");
       for (const line of basicItemOptions(detail)) options.append(textNode("li", line));
       for (const skill of Array.isArray(detail.subSkills) ? detail.subSkills : []) {
         const option = node("li", "arcana-skill-option");
         option.append(createImage(skill.icon, ""), textNode("b", `+${number(skill.level)}`),
-          textNode("span", skill.name || "—"));
+          textNode("span", localizeOfficialText(skill.name) || "—"));
         options.append(option);
       }
       if (!options.childElementCount) options.append(textNode("li", copy.emptyOption, "empty-detail"));
@@ -1111,7 +1137,7 @@
     for (const item of items) {
       const detail = details[String(item.slotPos)] || {};
       for (const skill of Array.isArray(detail.subSkills) ? detail.subSkills : []) {
-        const name = String(skill?.name || "").trim();
+        const name = localizeOfficialText(skill?.name);
         if (!name) continue;
         const key = String(skill.id || name);
         const current = totals.get(key) || { name, icon: skill.icon || "", level: 0, count: 0 };
@@ -1162,9 +1188,10 @@
       const grid = node("div", "character-skill-grid");
       for (const skill of groupSkills) {
         const card = node("article", "character-skill-card");
-        card.append(createImage(skill.icon, skill.name || ""));
+        const skillName = localizeOfficialText(skill.name);
+        card.append(createImage(skill.icon, skillName));
         const body = node("div");
-        body.append(textNode("strong", skill.name || "—"),
+        body.append(textNode("strong", skillName || "—"),
           textNode("span", `Lv.${number(skill.skillLevel)}`));
         card.append(body);
         grid.append(card);
@@ -1201,7 +1228,7 @@
   }
 
   function statParts(stat) {
-    const name = stat?.name || "";
+    const name = localizeOfficialText(stat?.name);
     let value = stat?.value ?? "";
     if (stat?.minValue && String(stat.minValue) !== String(stat.value)) value = `${stat.minValue}~${stat.value}`;
     const extra = String(stat?.extra ?? "");
@@ -1298,6 +1325,93 @@
   }
 
   function currentCopy() { return COPY[state.locale] || COPY.ko; }
+  function officialLanguage() {
+    if (state.locale === "zh-TW") return "zh";
+    if (state.locale === "ko") return "ko";
+    return currentOfficialRegion() === "tw" ? "zh" : "ko";
+  }
+  async function ensureOfficialNameCatalog() {
+    if ((state.locale !== "ko" && state.locale !== "zh-TW") || state.officialNameCatalog) {
+      return state.officialNameCatalog;
+    }
+    if (state.officialNameCatalogLoad) return state.officialNameCatalogLoad;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 6000);
+    state.officialNameCatalogLoad = fetch(OFFICIAL_NAME_CATALOG_URL, {
+      cache: "force-cache",
+      signal: controller.signal,
+    }).then(response => {
+      if (!response.ok) throw new Error(`Official name catalog HTTP ${response.status}`);
+      return response.json();
+    }).then(payload => {
+      if (payload?.locale !== "zh-TW" || !payload.names || !payload.aliases) {
+        throw new Error("Official name catalog format is invalid");
+      }
+      state.officialNameCatalog = payload;
+      state.koreanNamesByTraditionalChinese = buildKoreanOfficialNameIndex(payload);
+      return payload;
+    }).catch(() => null).finally(() => {
+      window.clearTimeout(timeoutId);
+      state.officialNameCatalogLoad = null;
+    });
+    return state.officialNameCatalogLoad;
+  }
+  function buildKoreanOfficialNameIndex(payload) {
+    const candidates = new Map();
+    const add = (korean, traditionalChinese) => {
+      const ko = normalizeOfficialName(korean);
+      const zh = normalizeOfficialName(traditionalChinese);
+      if (!ko || !zh) return;
+      if (!candidates.has(zh)) candidates.set(zh, new Set());
+      candidates.get(zh).add(ko);
+    };
+    for (const [korean, traditionalChinese] of Object.entries(payload?.names || {})) {
+      add(korean, traditionalChinese);
+    }
+    const index = new Map([...candidates]
+      .filter(([, koreanNames]) => koreanNames.size === 1)
+      .map(([traditionalChinese, koreanNames]) => [traditionalChinese, [...koreanNames][0]]));
+    for (const [korean, traditionalChinese] of Object.entries(payload?.aliases || {})) {
+      index.set(normalizeOfficialName(traditionalChinese), normalizeOfficialName(korean));
+    }
+    for (const [korean, traditionalChinese] of Object.entries(OFFICIAL_TERMS_KO_TO_ZH_TW)) {
+      index.set(normalizeOfficialName(traditionalChinese), normalizeOfficialName(korean));
+    }
+    return index;
+  }
+  function normalizeOfficialName(value) {
+    return String(value || "").normalize("NFC").replace(/\s+/g, " ").trim();
+  }
+  function translateOfficialName(value) {
+    const original = normalizeOfficialName(value);
+    if (!original || state.locale === "en") return original;
+    if (state.locale === "ko") {
+      return state.koreanNamesByTraditionalChinese?.get(original) || original;
+    }
+    return String(OFFICIAL_TERMS_KO_TO_ZH_TW[original] ||
+      state.officialNameCatalog?.aliases?.[original] ||
+      state.officialNameCatalog?.names?.[original] ||
+      original);
+  }
+  function localizeOfficialText(value) {
+    const original = normalizeOfficialName(value);
+    if (!original) return "";
+    const direct = translateOfficialName(original);
+    if (direct !== original) return direct;
+    const match = original.match(/^(.+?)(\s+[+\-]?\d[\d,.]*(?:\.\d+)?%?(?:\s*\([^)]*\))?)$/u);
+    if (!match) return original;
+    const translatedPrefix = translateOfficialName(match[1]);
+    return translatedPrefix === match[1] ? original : `${translatedPrefix}${match[2]}`;
+  }
+  function refreshLocalizedContent() {
+    if (state.profile) renderProfile(state.profile);
+    if (elements["character-search-popover"]?.hidden) return;
+    if (elements["character-search-input"]?.value.trim() && state.searchResults.length) {
+      renderSearchRows(state.searchResults, false);
+    } else {
+      renderRecent();
+    }
+  }
   function normalizeOfficialRegion(value) {
     return /^(tw|taiwan|zh-tw)$/i.test(String(value || "").trim()) ? "tw" : "kr";
   }
@@ -1405,8 +1519,11 @@
     activate,
     setLocale(locale) {
       if (!COPY[locale]) return;
+      const changed = state.locale !== locale;
       state.locale = locale;
       applyCopy();
+      void ensureOfficialNameCatalog().then(refreshLocalizedContent);
+      if (changed && isCharacterView() && state.profile) void loadProfile(true, false);
     },
   };
 })();
