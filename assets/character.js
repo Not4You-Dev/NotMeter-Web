@@ -57,6 +57,8 @@
       stoneTotal: "장착 마석 총합", stoneTotalNote: "모든 착용 장비 기준 · 피해 증폭 계열은 100당 1%로 환산",
       soulSkillTotal: "영혼 각인 스킬 총합", soulSkillTotalNote: "동일 스킬의 증가 레벨을 장비 전체에서 합산",
       soulSkillLevel: "+{value}", equippedItems: "{value}개 장비",
+      arcanaSkillTotal: "아르카나 스킬 증가 총합", arcanaSkillTotalNote: "장착 중인 모든 아르카나의 동일 스킬 증가 레벨을 합산",
+      arcanaCards: "{value}개 아르카나",
       gearTab: "장비", accessoryTab: "장신구",
       emptyOption: "표시할 옵션 없음", acquired: "습득", notAcquired: "미습득",
       equipped: "장착", ownedTitles: "보유 타이틀", mount: "탈것", wing: "날개",
@@ -98,6 +100,8 @@
       stoneTotal: "Equipped manastone totals", stoneTotalNote: "All equipped gear · damage amplification converts at 100 = 1%",
       soulSkillTotal: "Soul engraving skill totals", soulSkillTotalNote: "Combined skill levels across all equipped gear",
       soulSkillLevel: "+{value}", equippedItems: "{value} items",
+      arcanaSkillTotal: "Arcana skill level totals", arcanaSkillTotalNote: "Combined skill level increases across all equipped Arcana",
+      arcanaCards: "{value} Arcana",
       gearTab: "Gear", accessoryTab: "Accessories",
       emptyOption: "No visible option", acquired: "Acquired", notAcquired: "Not acquired",
       equipped: "Equipped", ownedTitles: "Owned titles", mount: "Mount", wing: "Wings",
@@ -135,6 +139,8 @@
       stoneTotalNote: "所有已裝備道具 · 傷害增幅以 100 = 1% 換算", emptyOption: "無可顯示選項",
       soulSkillTotal: "靈魂刻印技能合計", soulSkillTotalNote: "合計所有已裝備道具的相同技能等級",
       soulSkillLevel: "+{value}", equippedItems: "{value}件裝備",
+      arcanaSkillTotal: "阿爾卡納技能提升合計", arcanaSkillTotalNote: "合計所有已裝備阿爾卡納的相同技能提升等級",
+      arcanaCards: "{value}個阿爾卡納",
       gearTab: "裝備", accessoryTab: "飾品",
       acquired: "已學習", notAcquired: "未學習", equipped: "裝備中", ownedTitles: "持有稱號",
       mount: "坐騎", wing: "翅膀", wingSkin: "翅膀外觀", boards: " 個主神",
@@ -1049,14 +1055,13 @@
       card.append(createImage(item.icon, item.name || ""));
       const body = node("div");
       const detail = details[String(item.slotPos)] || {};
-      body.append(textNode("strong", item.name || "—"),
-        textNode("span", `+${number(item.enchantLevel)} · ${detail.gradeName || item.grade || ""}`));
+      body.append(textNode("strong", `+${number(item.enchantLevel)} ${item.name || "—"}`));
       const options = node("ul", "arcana-option-list");
       for (const line of basicItemOptions(detail)) options.append(textNode("li", line));
       for (const skill of Array.isArray(detail.subSkills) ? detail.subSkills : []) {
         const option = node("li", "arcana-skill-option");
-        option.append(createImage(skill.icon, ""), textNode("span", skill.name || "—"),
-          textNode("b", `Lv.${number(skill.level)}`));
+        option.append(createImage(skill.icon, ""), textNode("b", `+${number(skill.level)}`),
+          textNode("span", skill.name || "—"));
         options.append(option);
       }
       if (!options.childElementCount) options.append(textNode("li", copy.emptyOption, "empty-detail"));
@@ -1064,8 +1069,45 @@
       grid.append(card);
     }
     if (!items.length) grid.append(textNode("div", copy.none, "character-search-empty"));
-    section.append(grid);
+    section.append(renderArcanaSkillSummary(items, details), grid);
     return section;
+  }
+
+  function renderArcanaSkillSummary(items, details) {
+    const copy = currentCopy();
+    const totals = new Map();
+    for (const item of items) {
+      const detail = details[String(item.slotPos)] || {};
+      for (const skill of Array.isArray(detail.subSkills) ? detail.subSkills : []) {
+        const name = String(skill?.name || "").trim();
+        if (!name) continue;
+        const key = String(skill.id || name);
+        const current = totals.get(key) || { name, icon: skill.icon || "", level: 0, count: 0 };
+        current.level += number(skill.level);
+        current.count += 1;
+        if (!current.icon && skill.icon) current.icon = skill.icon;
+        totals.set(key, current);
+      }
+    }
+
+    const rows = [...totals.values()].sort((left, right) =>
+      right.level - left.level || left.name.localeCompare(right.name, "ko"));
+    const summary = node("section", "arcana-skill-summary");
+    const heading = node("div", "equipment-summary-heading");
+    heading.append(textNode("strong", copy.arcanaSkillTotal), textNode("span", copy.arcanaSkillTotalNote));
+    const grid = node("div", "arcana-skill-summary-grid");
+    for (const row of rows) {
+      const item = node("div", "arcana-skill-summary-item");
+      item.append(createImage(row.icon, ""));
+      const identity = node("span");
+      identity.append(textNode("strong", row.name),
+        textNode("small", copy.arcanaCards.replace("{value}", row.count)));
+      item.append(identity, textNode("b", copy.soulSkillLevel.replace("{value}", row.level)));
+      grid.append(item);
+    }
+    if (!rows.length) grid.append(textNode("span", copy.emptyOption, "empty-detail"));
+    summary.append(heading, grid);
+    return summary;
   }
 
   function renderSkills(rawSkills) {

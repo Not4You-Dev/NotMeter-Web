@@ -638,6 +638,33 @@ body.character-view .ranking-panel { display: none !important; }
 .equipment-soul-skill-item strong { overflow: hidden; color: #d8e9ee; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .equipment-soul-skill-item small { color: #7194a3; font-size: 8px; }
 .equipment-soul-skill-item b { color: #69ebe2; font-size: 11px; white-space: nowrap; }
+.arcana-skill-summary {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 13px;
+  border: 1px solid #315266;
+  border-radius: 11px;
+  background: linear-gradient(135deg, rgba(17, 43, 57, .82), rgba(9, 29, 40, .78));
+}
+.arcana-skill-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.arcana-skill-summary-item {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 8px;
+  border: 1px solid rgba(55, 112, 132, .42);
+  border-radius: 8px;
+  background: rgba(9, 30, 41, .88);
+}
+.arcana-skill-summary-item > img { width: 34px; height: 34px; border-radius: 7px; object-fit: cover; }
+.arcana-skill-summary-item > span { display: grid; min-width: 0; gap: 2px; }
+.arcana-skill-summary-item strong { overflow: hidden; color: #d8e9ee; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.arcana-skill-summary-item small { color: #7194a3; font-size: 8px; }
+.arcana-skill-summary-item b { color: #69ebe2; font-size: 12px; white-space: nowrap; }
 .equipment-stone-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
 .equipment-stone-summary-item {
   display: grid;
@@ -820,7 +847,8 @@ body.character-view .ranking-panel { display: none !important; }
 }
 .arcana-option-list .arcana-skill-option {
   display: grid;
-  grid-template-columns: 17px minmax(0, 1fr) auto;
+  grid-template-columns: 17px auto minmax(0, 1fr);
+  justify-content: stretch;
 }
 .arcana-option-list b { flex: 0 0 auto; color: #55e4dd; font-size: 9px; }
 
@@ -845,7 +873,8 @@ body.character-view .ranking-panel { display: none !important; }
   .character-skill-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .equipment-card { grid-template-columns: minmax(270px, 1fr) minmax(240px, 1fr); }
   .equipment-stone-summary-grid,
-  .equipment-soul-skill-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .equipment-soul-skill-grid,
+  .arcana-skill-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .equipment-detail-column:last-child { grid-column: 1 / -1; }
 }
 
@@ -870,7 +899,8 @@ body.character-view .ranking-panel { display: none !important; }
   .character-arcana-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .equipment-card { grid-template-columns: 1fr; }
   .equipment-stone-summary-grid,
-  .equipment-soul-skill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .equipment-soul-skill-grid,
+  .arcana-skill-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .equipment-detail-column,
   .equipment-detail-column:last-child { grid-column: auto; padding: 8px 0 0; border-top: 1px solid #173444; border-left: 0; }
   .equipment-stone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -904,7 +934,8 @@ body.character-view .ranking-panel { display: none !important; }
   .equipment-summary-heading { display: grid; }
   .equipment-summary-heading span { text-align: left; }
   .equipment-stone-summary-grid,
-  .equipment-soul-skill-grid { grid-template-columns: 1fr; }
+  .equipment-soul-skill-grid,
+  .arcana-skill-summary-grid { grid-template-columns: 1fr; }
   .character-arcana-grid,
   .arcana-option-list { grid-template-columns: 1fr; }
 }
