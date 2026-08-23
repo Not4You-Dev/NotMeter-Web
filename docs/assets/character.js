@@ -192,7 +192,7 @@
   const state = {
     locale: readLocale(), searchResults: [], searchRace: "all", searchComplete: true,
     searchRequest: 0, profile: null, profileLoad: null, profileRequest: 0,
-    activeLoadout: null,
+    activeLoadout: null, activeEquipmentTab: "gear",
     officialNameCatalog: null, officialNameCatalogLoad: null, koreanNamesByTraditionalChinese: null,
   };
   const elements = {};
@@ -564,7 +564,10 @@
   function applyProfilePayload(data, params, serverId, characterId) {
     const previousCharacterId = state.profile?.info?.profile?.characterId || "";
     const nextCharacterId = data?.info?.profile?.characterId || characterId;
-    if (previousCharacterId && previousCharacterId !== nextCharacterId) state.activeLoadout = null;
+    if (previousCharacterId && previousCharacterId !== nextCharacterId) {
+      state.activeLoadout = null;
+      state.activeEquipmentTab = "gear";
+    }
     state.profile = data;
     const profile = data?.info?.profile || {};
     saveRecent({
@@ -610,10 +613,9 @@
     content.append(
       renderHero(profile, itemLevel, visibleData?.equipment?.petwing || {}, info.title || {},
         visibleData?.fetchedAt, visibleData?.complete !== false),
-      renderLoadoutSelector(data, loadoutView.type),
       renderSectionNav(),
       renderCharacterRankings(profile),
-      renderEquipment(regularEquipment, itemDetails),
+      renderEquipment(regularEquipment, itemDetails, data, loadoutView.type),
       renderSkills(visibleData?.equipment?.skill?.skillList || []),
       renderStats(statList),
       renderArcana(arcana, itemDetails),
@@ -679,13 +681,8 @@
       const label = node("span");
       label.append(textNode("b", type === "PVE" ? copy.pveLoadout : copy.pvpLoadout));
       if (type === currentType) label.append(textNode("em", copy.currentLoadout));
-      const capturedAt = type === currentType ? data?.fetchedAt : snapshot?.capturedAt;
-      button.append(
-        label,
-        textNode("small", available
-          ? formatCopy("loadoutCapturedAt", { value: formatDateTime(capturedAt) })
-          : copy.unavailableLoadout),
-      );
+      button.append(label);
+      if (!available) button.append(textNode("small", copy.unavailableLoadout));
       if (available) {
         button.addEventListener("click", () => {
           state.activeLoadout = type;
@@ -948,7 +945,7 @@
     return item;
   }
 
-  function renderEquipment(items, details) {
+  function renderEquipment(items, details, loadoutData, selectedLoadoutType) {
     const copy = currentCopy();
     const section = createSection("character-equipment", "EQUIPMENT LOADOUT", copy.equipment, copy.equipmentNote,
       formatCopy("itemCount", { value: items.length }));
@@ -964,19 +961,23 @@
       ["gear", copy.gearTab, gear],
       ["accessories", copy.accessoryTab, accessories],
     ];
+    const selectedEquipmentTab = groups.some(([key]) => key === state.activeEquipmentTab)
+      ? state.activeEquipmentTab : "gear";
     for (const [index, [key, label, groupItems]] of groups.entries()) {
+      const selected = key === selectedEquipmentTab;
       const button = node("button", "equipment-tab");
       button.type = "button";
       button.dataset.equipmentTab = key;
       button.setAttribute("role", "tab");
-      button.setAttribute("aria-selected", String(index === 0));
+      button.setAttribute("aria-selected", String(selected));
       button.append(textNode("span", label), textNode("strong", String(groupItems.length)));
       const list = node("div", "equipment-list");
       list.dataset.equipmentPanel = key;
       list.setAttribute("role", "tabpanel");
-      list.hidden = index !== 0;
+      list.hidden = !selected;
       for (const item of groupItems) list.append(renderEquipmentCard(item, details[String(item.slotPos)] || {}));
       button.addEventListener("click", () => {
+        state.activeEquipmentTab = key;
         for (const tab of tabs.querySelectorAll(".equipment-tab")) {
           tab.setAttribute("aria-selected", String(tab === button));
         }
@@ -987,7 +988,8 @@
       tabs.append(button);
       panels.append(list);
     }
-    section.append(tabs, renderSoulSkillSummary(items, details), renderMagicStoneSummary(items, details), panels);
+    section.append(renderLoadoutSelector(loadoutData, selectedLoadoutType), tabs,
+      renderSoulSkillSummary(items, details), renderMagicStoneSummary(items, details), panels);
     return section;
   }
 
