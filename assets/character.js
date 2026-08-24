@@ -838,6 +838,7 @@
   async function loadCharacterRankings(profile) {
     const loader = globalThis.NotMeterPublicRankingCache?.load;
     const loadClass = globalThis.NotMeterPublicRankingCache?.loadClass;
+    const loadView = globalThis.NotMeterPublicRankingCache?.loadView;
     if (typeof loader !== "function") throw new Error("ranking cache loader unavailable");
     const cache = await loader(false);
     if (typeof loadClass === "function" &&
@@ -847,12 +848,20 @@
         .filter(Boolean);
       for (let index = 0; index < dungeonKeys.length; index += 2) {
         const batch = dungeonKeys.slice(index, index + 2);
-        const loaded = await Promise.all(batch.map(async dungeonKey => [
-          dungeonKey,
-          await loadClass(dungeonKey, cache.generatedAt, false),
-        ]));
-        for (const [dungeonKey, classRanking] of loaded) {
+        const loaded = await Promise.all(batch.map(async dungeonKey => {
+          const [classRanking, views] = await Promise.all([
+            loadClass(dungeonKey, cache.generatedAt, false),
+            typeof loadView === "function"
+              ? loadView(dungeonKey, cache.generatedAt, false)
+              : Promise.resolve([]),
+          ]);
+          return [dungeonKey, classRanking, views];
+        }));
+        for (const [dungeonKey, classRanking, views] of loaded) {
           cache.classRankings[dungeonKey] = classRanking;
+          if (Array.isArray(views) && views.length > 0) {
+            cache.views.push(...views);
+          }
         }
       }
     }

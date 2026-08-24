@@ -12,6 +12,7 @@
     `${VPS_RANKING_CACHE_ROOT}/web/contribution`,
   ];
   const CLASS_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/classes`;
+  const VIEW_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/views`;
   const CUSTOM_CP_CACHE_URLS = [
     `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`,
   ];
@@ -19,6 +20,7 @@
     "https://notmeter.112-168-140-142.sslip.io/field-boss/v1/public";
   const EXPECTED_SCHEMA = "notmeter-web-ranking-v1";
   const EXPECTED_CLASS_RANKING_SCHEMA = "notmeter-web-class-ranking-v1";
+  const EXPECTED_VIEW_RANKING_SCHEMA = "notmeter-web-view-ranking-v1";
   const EXPECTED_CLASS_OVERALL_SCHEMA = "notmeter-web-class-overall-v1";
   const EXPECTED_CONTRIBUTION_SCHEMA = "notmeter-web-contribution-stats-v1";
   const EXPECTED_CUSTOM_CP_SCHEMA = "notmeter-web-custom-cp-v4";
@@ -41,6 +43,7 @@
   const CACHE_RETRY_DELAY_MS = 350;
   const CACHE_MAX_COMPRESSED_BYTES = 64 * 1024 * 1024;
   const CACHE_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+  const CACHE_SYNC_JITTER_MS = 3 * 60 * 1000;
   const CACHE_SYNC_THROTTLE_MS = 60 * 1000;
   const FIELD_BOSS_CACHE_SYNC_INTERVAL_MS = 10 * 60 * 1000;
   const FIELD_BOSS_CACHE_RESUME_THROTTLE_MS = 10 * 60 * 1000;
@@ -943,6 +946,8 @@
     customCpRankData: new Map(),
     customCpRankLoads: new Map(),
     classRankingLoads: new Map(),
+    viewRankingLoads: new Map(),
+    loadedViewDungeonKeys: new Set(),
     customCpSummaryIndexes: new Map(),
     customCpRankIndexes: new Map(),
     locale: normalizeLocale(localStorage.getItem("notmeter-stats-locale")),
@@ -1033,11 +1038,7 @@
       openClassPerformanceView(false);
     }
     window.setInterval(updateCacheAge, 60_000);
-    window.setInterval(() => {
-      if (!document.hidden) {
-        void syncLatestCache();
-      }
-    }, CACHE_SYNC_INTERVAL_MS);
+    scheduleRankingCacheSync();
     window.setInterval(() => {
       if (!document.hidden && state.surfaceMode === "fieldBoss") {
         void syncLatestFieldBossCache();
@@ -1506,6 +1507,12 @@
         String(expectedGeneratedAt || ""),
         Boolean(force));
     },
+    async loadView(dungeonKey, expectedGeneratedAt, force = false) {
+      return fetchViewRankingCache(
+        dungeonKey,
+        String(expectedGeneratedAt || ""),
+        Boolean(force));
+    },
   });
 
   function applyDungeonSelection(dungeonKey) {
@@ -1572,6 +1579,11 @@
       const nextDungeon = cache.dungeons.some(item => item.key === previousDungeon)
         ? previousDungeon
         : cache.dungeons[0]?.key || "";
+      const initialViews = await fetchViewRankingCache(
+        nextDungeon,
+        cache.generatedAt,
+        force);
+      cache.views = initialViews;
       const nextDungeonBossCount = cache.dungeons
         .find(item => item.key === nextDungeon)?.bossNames?.length || 0;
       const nextBossIndex = state.bossIndex >= 1 && state.bossIndex <= nextDungeonBossCount
@@ -1581,6 +1593,8 @@
         String(cache.generatedAt) !== String(state.data.generatedAt);
       if (generationChanged) {
         state.classRankingLoads.clear();
+        state.viewRankingLoads.clear();
+        state.loadedViewDungeonKeys.clear();
       }
       let preparedCustomCp = null;
       let preparedCustomCpRank = null;
@@ -1609,6 +1623,7 @@
         state.customCpRankIndexes.clear();
       }
       state.data = cache;
+      state.loadedViewDungeonKeys.add(nextDungeon);
       if (preparedCustomCp) {
         state.customCpData = preparedCustomCp;
       }
@@ -1651,6 +1666,20 @@
       return;
     }
     await loadCache(false, true);
+  }
+
+  function scheduleRankingCacheSync() {
+    const delay = CACHE_SYNC_INTERVAL_MS +
+      Math.floor(Math.random() * CACHE_SYNC_JITTER_MS);
+    window.setTimeout(async () => {
+      try {
+        if (!document.hidden) {
+          await syncLatestCache();
+        }
+      } finally {
+        scheduleRankingCacheSync();
+      }
+    }, delay);
   }
 
   async function syncLatestFieldBossCache(force = false) {
@@ -2651,6 +2680,53 @@
         candidate.classRanking && typeof candidate.classRanking === "object",
       generation);
     return cache.classRanking;
+  }
+
+  async function fetchViewRankingCache(dungeonKey, expectedGeneratedAt, force = false) {
+    const normalizedDungeonKey = normalizeClassRankingDungeonKey(dungeonKey);
+    const generation = String(expectedGeneratedAt || "");
+    if (!generation) {
+      throw new Error(t("cacheUnavailable"));
+    }
+    const cache = await fetchCompressedJson(
+      [`${VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`],
+      force,
+      candidate => candidate?.schema === EXPECTED_VIEW_RANKING_SCHEMA &&
+        Number(candidate.version) === 1 &&
+        String(candidate.generatedAt || "") === generation &&
+        String(candidate.dungeonKey || "").toLowerCase() === normalizedDungeonKey &&
+        Array.isArray(candidate.views),
+      generation);
+    return cache.views;
+  }
+
+  async function ensureViewRankingCache(dungeonKey, force = false) {
+    const normalizedDungeonKey = normalizeClassRankingDungeonKey(dungeonKey);
+    if (state.loadedViewDungeonKeys.has(normalizedDungeonKey)) {
+      return (state.data?.views || []).filter(
+        view => String(view?.dungeonKey || "").toLowerCase() === normalizedDungeonKey);
+    }
+    const generation = String(state.data?.generatedAt || "");
+    if (!generation) {
+      throw new Error(t("cacheUnavailable"));
+    }
+    const loadKey = `${generation}|${normalizedDungeonKey}`;
+    if (state.viewRankingLoads.has(loadKey)) {
+      return state.viewRankingLoads.get(loadKey);
+    }
+    const load = fetchViewRankingCache(normalizedDungeonKey, generation, force)
+      .then(views => {
+        if (String(state.data?.generatedAt || "") === generation) {
+          const retained = (state.data.views || []).filter(
+            view => String(view?.dungeonKey || "").toLowerCase() !== normalizedDungeonKey);
+          state.data.views = retained.concat(views);
+          state.loadedViewDungeonKeys.add(normalizedDungeonKey);
+        }
+        return views;
+      })
+      .finally(() => state.viewRankingLoads.delete(loadKey));
+    state.viewRankingLoads.set(loadKey, load);
+    return load;
   }
 
   async function ensureClassRankingCache(dungeonKey, force = false) {
@@ -4204,6 +4280,23 @@
   }
 
   function renderSummary() {
+    if (!state.loadedViewDungeonKeys.has(state.dungeonKey)) {
+      showState("loading");
+      void ensureViewRankingCache(state.dungeonKey)
+        .then(() => {
+          if (state.mode === "summary" && state.surfaceMode === "ranking") {
+            populateFilters();
+            renderSummary();
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          elements["error-message"].textContent =
+            error instanceof Error && error.message ? error.message : t("cacheUnavailable");
+          showState("error");
+        });
+      return;
+    }
     const view = findSummaryView();
     elements["sample-column-heading"].textContent =
       t(state.cpFilterMode === "custom" ? "recordSample" : "sample");
