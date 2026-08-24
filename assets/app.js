@@ -1579,11 +1579,14 @@
       const nextDungeon = cache.dungeons.some(item => item.key === previousDungeon)
         ? previousDungeon
         : cache.dungeons[0]?.key || "";
+      const globalViews = Array.isArray(cache.views)
+        ? cache.views.filter(view => String(view?.dungeonKey || "").startsWith("__"))
+        : [];
       const initialViews = await fetchViewRankingCache(
         nextDungeon,
         cache.generatedAt,
         force);
-      cache.views = initialViews;
+      cache.views = globalViews.concat(initialViews);
       const nextDungeonBossCount = cache.dungeons
         .find(item => item.key === nextDungeon)?.bossNames?.length || 0;
       const nextBossIndex = state.bossIndex >= 1 && state.bossIndex <= nextDungeonBossCount
