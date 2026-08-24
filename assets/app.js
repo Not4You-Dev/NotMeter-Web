@@ -3,7 +3,7 @@
 
   const VPS_RANKING_CACHE_ROOT = "https://notmeter.112-168-140-142.sslip.io/ranking/v1";
   const CACHE_URLS = [
-    `${VPS_RANKING_CACHE_ROOT}/web/main`,
+    `${VPS_RANKING_CACHE_ROOT}/web/main?layout=view-shards-v2`,
   ];
   const CLASS_OVERALL_CACHE_URLS = [
     `${VPS_RANKING_CACHE_ROOT}/web/class-overall`,
