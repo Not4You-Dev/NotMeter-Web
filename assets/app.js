@@ -11,12 +11,14 @@
   const CONTRIBUTION_CACHE_URLS = [
     `${VPS_RANKING_CACHE_ROOT}/web/contribution`,
   ];
+  const CLASS_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/classes`;
   const CUSTOM_CP_CACHE_URLS = [
     `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`,
   ];
   const VPS_FIELD_BOSS_CACHE_URL =
     "https://notmeter.112-168-140-142.sslip.io/field-boss/v1/public";
   const EXPECTED_SCHEMA = "notmeter-web-ranking-v1";
+  const EXPECTED_CLASS_RANKING_SCHEMA = "notmeter-web-class-ranking-v1";
   const EXPECTED_CLASS_OVERALL_SCHEMA = "notmeter-web-class-overall-v1";
   const EXPECTED_CONTRIBUTION_SCHEMA = "notmeter-web-contribution-stats-v1";
   const EXPECTED_CUSTOM_CP_SCHEMA = "notmeter-web-custom-cp-v4";
@@ -34,6 +36,10 @@
   const DETAIL_REQUEST_TIMEOUT_MS = 12_000;
   const DETAIL_RETRY_DELAY_MS = 350;
   const CACHE_REQUEST_TIMEOUT_MS = 60_000;
+  const CACHE_STREAM_IDLE_TIMEOUT_MS = 20_000;
+  const CACHE_REQUEST_ATTEMPTS = 2;
+  const CACHE_RETRY_DELAY_MS = 350;
+  const CACHE_MAX_COMPRESSED_BYTES = 64 * 1024 * 1024;
   const CACHE_SYNC_INTERVAL_MS = 5 * 60 * 1000;
   const CACHE_SYNC_THROTTLE_MS = 60 * 1000;
   const FIELD_BOSS_CACHE_SYNC_INTERVAL_MS = 10 * 60 * 1000;
@@ -936,6 +942,7 @@
     customCpLoad: null,
     customCpRankData: new Map(),
     customCpRankLoads: new Map(),
+    classRankingLoads: new Map(),
     customCpSummaryIndexes: new Map(),
     customCpRankIndexes: new Map(),
     locale: normalizeLocale(localStorage.getItem("notmeter-stats-locale")),
@@ -1487,8 +1494,17 @@
     async load(force = false) {
       const cache = await fetchRankingCache(Boolean(force));
       validateCache(cache);
+      cache.classRankings = cache.classRankings && typeof cache.classRankings === "object"
+        ? cache.classRankings
+        : {};
       updateDailyUsers(cache);
       return cache;
+    },
+    async loadClass(dungeonKey, expectedGeneratedAt, force = false) {
+      return fetchClassRankingCache(
+        dungeonKey,
+        String(expectedGeneratedAt || ""),
+        Boolean(force));
     },
   });
 
@@ -1517,6 +1533,9 @@
         }),
       ]);
       validateCache(cache);
+      cache.classRankings = cache.classRankings && typeof cache.classRankings === "object"
+        ? cache.classRankings
+        : {};
       cache.bossResistanceStats = Array.isArray(cache.bossResistanceStats)
         ? cache.bossResistanceStats
         : [];
@@ -1560,6 +1579,9 @@
         : 0;
       const generationChanged = !state.data ||
         String(cache.generatedAt) !== String(state.data.generatedAt);
+      if (generationChanged) {
+        state.classRankingLoads.clear();
+      }
       let preparedCustomCp = null;
       let preparedCustomCpRank = null;
       if (state.cpFilterMode === "custom" && (generationChanged || force)) {
@@ -2605,6 +2627,58 @@
     return fetchCompressedJson(CACHE_URLS, force);
   }
 
+  function normalizeClassRankingDungeonKey(dungeonKey) {
+    const normalized = String(dungeonKey || "").trim().toLowerCase();
+    if (!/^[a-z0-9_-]{1,64}$/.test(normalized)) {
+      throw new Error("invalid dungeon key");
+    }
+    return normalized;
+  }
+
+  async function fetchClassRankingCache(dungeonKey, expectedGeneratedAt, force = false) {
+    const normalizedDungeonKey = normalizeClassRankingDungeonKey(dungeonKey);
+    const generation = String(expectedGeneratedAt || "");
+    if (!generation) {
+      throw new Error(t("cacheUnavailable"));
+    }
+    const cache = await fetchCompressedJson(
+      [`${CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`],
+      force,
+      candidate => candidate?.schema === EXPECTED_CLASS_RANKING_SCHEMA &&
+        Number(candidate.version) === 1 &&
+        String(candidate.generatedAt || "") === generation &&
+        String(candidate.dungeonKey || "").toLowerCase() === normalizedDungeonKey &&
+        candidate.classRanking && typeof candidate.classRanking === "object",
+      generation);
+    return cache.classRanking;
+  }
+
+  async function ensureClassRankingCache(dungeonKey, force = false) {
+    const normalizedDungeonKey = normalizeClassRankingDungeonKey(dungeonKey);
+    const ranking = state.data?.classRankings?.[normalizedDungeonKey];
+    if (ranking) {
+      return ranking;
+    }
+    const generation = String(state.data?.generatedAt || "");
+    if (!generation) {
+      throw new Error(t("cacheUnavailable"));
+    }
+    const loadKey = `${generation}|${normalizedDungeonKey}`;
+    if (state.classRankingLoads.has(loadKey)) {
+      return state.classRankingLoads.get(loadKey);
+    }
+    const load = fetchClassRankingCache(normalizedDungeonKey, generation, force)
+      .then(classRanking => {
+        if (String(state.data?.generatedAt || "") === generation) {
+          state.data.classRankings[normalizedDungeonKey] = classRanking;
+        }
+        return classRanking;
+      })
+      .finally(() => state.classRankingLoads.delete(loadKey));
+    state.classRankingLoads.set(loadKey, load);
+    return load;
+  }
+
   async function fetchClassOverallCache(force, expectedGeneratedAt = "") {
     const normalizedExpected = String(expectedGeneratedAt || "");
     return fetchCompressedJson(
@@ -2735,46 +2809,107 @@
   async function fetchCompressedJson(urls, force, accept = null, revision = "") {
     const errors = [];
     for (const baseUrl of urls) {
-      const query = [];
-      if (force) {
-        query.push(`v=${Date.now()}`);
-      }
-      if (revision) {
-        query.push(`generation=${encodeURIComponent(revision)}`);
-      }
-      const separator = baseUrl.includes("?") ? "&" : "?";
-      const url = query.length > 0
-        ? `${baseUrl}${separator}${query.join("&")}`
-        : baseUrl;
-      const controller = typeof AbortController === "function" ? new AbortController() : null;
-      const timeoutId = controller
-        ? window.setTimeout(() => controller.abort(), CACHE_REQUEST_TIMEOUT_MS)
-        : 0;
-      try {
-        const response = await fetch(url, {
-          cache: force ? "reload" : "default",
-          headers: { Accept: "application/gzip, application/json" },
-          signal: controller?.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+      for (let attempt = 1; attempt <= CACHE_REQUEST_ATTEMPTS; attempt += 1) {
+        const query = [];
+        if (force || attempt > 1) {
+          query.push(`v=${Date.now()}`);
         }
-        const bytes = new Uint8Array(await response.arrayBuffer());
-        const text = await decodeCacheBytes(bytes);
-        const cache = JSON.parse(text);
-        if (accept && !accept(cache)) {
-          throw new Error("cache generation mismatch");
+        if (revision) {
+          query.push(`generation=${encodeURIComponent(revision)}`);
         }
-        return cache;
-      } catch (error) {
-        errors.push(`${baseUrl}: ${error instanceof Error ? error.message : String(error)}`);
-      } finally {
-        if (timeoutId) {
-          window.clearTimeout(timeoutId);
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        const url = query.length > 0
+          ? `${baseUrl}${separator}${query.join("&")}`
+          : baseUrl;
+        const controller = typeof AbortController === "function" ? new AbortController() : null;
+        let timeoutId = 0;
+        const touchRequest = () => {
+          if (!controller) {
+            return;
+          }
+          if (timeoutId) {
+            window.clearTimeout(timeoutId);
+          }
+          timeoutId = window.setTimeout(
+            () => controller.abort(),
+            CACHE_STREAM_IDLE_TIMEOUT_MS);
+        };
+        touchRequest();
+        try {
+          const response = await fetch(url, {
+            cache: force || attempt > 1 ? "reload" : "default",
+            headers: { Accept: "application/gzip, application/json" },
+            signal: controller?.signal,
+          });
+          touchRequest();
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const bytes = await readCacheResponseBytes(response, touchRequest);
+          const text = await decodeCacheBytes(bytes);
+          const cache = JSON.parse(text);
+          if (accept && !accept(cache)) {
+            throw new Error("cache generation mismatch");
+          }
+          return cache;
+        } catch (error) {
+          errors.push(`${baseUrl}#${attempt}: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+          if (timeoutId) {
+            window.clearTimeout(timeoutId);
+          }
+        }
+        if (attempt < CACHE_REQUEST_ATTEMPTS) {
+          await new Promise((resolve) => window.setTimeout(resolve, CACHE_RETRY_DELAY_MS));
         }
       }
     }
     throw new Error(`${t("cacheUnavailable")} (${errors.join(" / ")})`);
+  }
+
+  async function readCacheResponseBytes(response, touchRequest) {
+    const contentLength = Number(response.headers.get("content-length")) || 0;
+    if (contentLength > CACHE_MAX_COMPRESSED_BYTES) {
+      throw new Error("cache is too large");
+    }
+    if (!response.body || typeof response.body.getReader !== "function") {
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      if (bytes.byteLength > CACHE_MAX_COMPRESSED_BYTES) {
+        throw new Error("cache is too large");
+      }
+      return bytes;
+    }
+
+    const reader = response.body.getReader();
+    const chunks = [];
+    let totalLength = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        touchRequest();
+        if (!value || value.byteLength === 0) {
+          continue;
+        }
+        totalLength += value.byteLength;
+        if (totalLength > CACHE_MAX_COMPRESSED_BYTES) {
+          throw new Error("cache is too large");
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    const bytes = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return bytes;
   }
 
   async function decodeCacheBytes(bytes) {
@@ -4224,6 +4359,23 @@
         !state.customCpRankData.has(customRankCacheKey)) {
       showState("loading");
       void ensureCustomCpRankCache(state.dungeonKey)
+        .then(() => {
+          if (state.mode === "class") {
+            renderClassRanking();
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          elements["error-message"].textContent =
+            error instanceof Error && error.message ? error.message : t("cacheUnavailable");
+          showState("error");
+        });
+      return;
+    }
+    if (state.cpFilterMode !== "custom" &&
+        !state.data?.classRankings?.[state.dungeonKey]) {
+      showState("loading");
+      void ensureClassRankingCache(state.dungeonKey)
         .then(() => {
           if (state.mode === "class") {
             renderClassRanking();
