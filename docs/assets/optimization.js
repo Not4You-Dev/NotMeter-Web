@@ -548,9 +548,18 @@ const optimizationValue = (value) => Number.isFinite(Number(value)) ? String(val
 function normalizeLocale(value) {
   const saved = String(value || "").trim();
   if (SUPPORTED_LOCALES.includes(saved)) return saved;
-  const browserLocale = String(navigator.language || "").toLowerCase();
-  if (browserLocale.startsWith("zh")) return "zh-TW";
-  return browserLocale.startsWith("ko") ? "ko" : "en";
+  const browserLocales = [
+    ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+    navigator.language,
+  ].map(item => String(item || "").trim().toLowerCase()).filter(Boolean);
+  for (const browserLocale of browserLocales) {
+    if (browserLocale.startsWith("zh-tw") || browserLocale.startsWith("zh-hant") ||
+        browserLocale.startsWith("zh-hk") || browserLocale.startsWith("zh-mo") || browserLocale === "zh") return "zh-TW";
+    if (browserLocale.startsWith("ko")) return "ko";
+    if (browserLocale.startsWith("en")) return "en";
+    if (browserLocale.startsWith("zh")) return "zh-TW";
+  }
+  return "en";
 }
 
 function translated(value) {

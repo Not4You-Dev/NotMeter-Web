@@ -34,6 +34,10 @@
   const DETAIL_REQUEST_TIMEOUT_MS = 12_000;
   const DETAIL_RETRY_DELAY_MS = 350;
   const CACHE_REQUEST_TIMEOUT_MS = 60_000;
+  const CACHE_STREAM_IDLE_TIMEOUT_MS = 20_000;
+  const CACHE_REQUEST_ATTEMPTS = 2;
+  const CACHE_RETRY_DELAY_MS = 350;
+  const CACHE_MAX_COMPRESSED_BYTES = 64 * 1024 * 1024;
   const CACHE_SYNC_INTERVAL_MS = 5 * 60 * 1000;
   const CACHE_SYNC_THROTTLE_MS = 60 * 1000;
   const FIELD_BOSS_CACHE_SYNC_INTERVAL_MS = 10 * 60 * 1000;
@@ -2735,46 +2739,107 @@
   async function fetchCompressedJson(urls, force, accept = null, revision = "") {
     const errors = [];
     for (const baseUrl of urls) {
-      const query = [];
-      if (force) {
-        query.push(`v=${Date.now()}`);
-      }
-      if (revision) {
-        query.push(`generation=${encodeURIComponent(revision)}`);
-      }
-      const separator = baseUrl.includes("?") ? "&" : "?";
-      const url = query.length > 0
-        ? `${baseUrl}${separator}${query.join("&")}`
-        : baseUrl;
-      const controller = typeof AbortController === "function" ? new AbortController() : null;
-      const timeoutId = controller
-        ? window.setTimeout(() => controller.abort(), CACHE_REQUEST_TIMEOUT_MS)
-        : 0;
-      try {
-        const response = await fetch(url, {
-          cache: force ? "reload" : "default",
-          headers: { Accept: "application/gzip, application/json" },
-          signal: controller?.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+      for (let attempt = 1; attempt <= CACHE_REQUEST_ATTEMPTS; attempt += 1) {
+        const query = [];
+        if (force || attempt > 1) {
+          query.push(`v=${Date.now()}`);
         }
-        const bytes = new Uint8Array(await response.arrayBuffer());
-        const text = await decodeCacheBytes(bytes);
-        const cache = JSON.parse(text);
-        if (accept && !accept(cache)) {
-          throw new Error("cache generation mismatch");
+        if (revision) {
+          query.push(`generation=${encodeURIComponent(revision)}`);
         }
-        return cache;
-      } catch (error) {
-        errors.push(`${baseUrl}: ${error instanceof Error ? error.message : String(error)}`);
-      } finally {
-        if (timeoutId) {
-          window.clearTimeout(timeoutId);
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        const url = query.length > 0
+          ? `${baseUrl}${separator}${query.join("&")}`
+          : baseUrl;
+        const controller = typeof AbortController === "function" ? new AbortController() : null;
+        let timeoutId = 0;
+        const touchRequest = () => {
+          if (!controller) {
+            return;
+          }
+          if (timeoutId) {
+            window.clearTimeout(timeoutId);
+          }
+          timeoutId = window.setTimeout(
+            () => controller.abort(),
+            CACHE_STREAM_IDLE_TIMEOUT_MS);
+        };
+        touchRequest();
+        try {
+          const response = await fetch(url, {
+            cache: force || attempt > 1 ? "reload" : "default",
+            headers: { Accept: "application/gzip, application/json" },
+            signal: controller?.signal,
+          });
+          touchRequest();
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const bytes = await readCacheResponseBytes(response, touchRequest);
+          const text = await decodeCacheBytes(bytes);
+          const cache = JSON.parse(text);
+          if (accept && !accept(cache)) {
+            throw new Error("cache generation mismatch");
+          }
+          return cache;
+        } catch (error) {
+          errors.push(`${baseUrl}#${attempt}: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+          if (timeoutId) {
+            window.clearTimeout(timeoutId);
+          }
+        }
+        if (attempt < CACHE_REQUEST_ATTEMPTS) {
+          await new Promise((resolve) => window.setTimeout(resolve, CACHE_RETRY_DELAY_MS));
         }
       }
     }
     throw new Error(`${t("cacheUnavailable")} (${errors.join(" / ")})`);
+  }
+
+  async function readCacheResponseBytes(response, touchRequest) {
+    const contentLength = Number(response.headers.get("content-length")) || 0;
+    if (contentLength > CACHE_MAX_COMPRESSED_BYTES) {
+      throw new Error("cache is too large");
+    }
+    if (!response.body || typeof response.body.getReader !== "function") {
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      if (bytes.byteLength > CACHE_MAX_COMPRESSED_BYTES) {
+        throw new Error("cache is too large");
+      }
+      return bytes;
+    }
+
+    const reader = response.body.getReader();
+    const chunks = [];
+    let totalLength = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        touchRequest();
+        if (!value || value.byteLength === 0) {
+          continue;
+        }
+        totalLength += value.byteLength;
+        if (totalLength > CACHE_MAX_COMPRESSED_BYTES) {
+          throw new Error("cache is too large");
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    const bytes = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return bytes;
   }
 
   async function decodeCacheBytes(bytes) {
