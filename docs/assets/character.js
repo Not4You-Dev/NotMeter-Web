@@ -837,8 +837,25 @@
 
   async function loadCharacterRankings(profile) {
     const loader = globalThis.NotMeterPublicRankingCache?.load;
+    const loadClass = globalThis.NotMeterPublicRankingCache?.loadClass;
     if (typeof loader !== "function") throw new Error("ranking cache loader unavailable");
     const cache = await loader(false);
+    if (typeof loadClass === "function" &&
+        Object.keys(cache.classRankings || {}).length === 0) {
+      const dungeonKeys = (Array.isArray(cache.dungeons) ? cache.dungeons : [])
+        .map(item => String(item?.key || "").trim())
+        .filter(Boolean);
+      for (let index = 0; index < dungeonKeys.length; index += 2) {
+        const batch = dungeonKeys.slice(index, index + 2);
+        const loaded = await Promise.all(batch.map(async dungeonKey => [
+          dungeonKey,
+          await loadClass(dungeonKey, cache.generatedAt, false),
+        ]));
+        for (const [dungeonKey, classRanking] of loaded) {
+          cache.classRankings[dungeonKey] = classRanking;
+        }
+      }
+    }
     const characterName = String(profile?.characterName || "").trim().toLocaleLowerCase();
     const queryServerId = Number(new URLSearchParams(window.location.search).get("serverId"));
     const serverId = Number(profile?.serverId) || queryServerId;

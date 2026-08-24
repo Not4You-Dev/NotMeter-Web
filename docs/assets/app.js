@@ -11,12 +11,14 @@
   const CONTRIBUTION_CACHE_URLS = [
     `${VPS_RANKING_CACHE_ROOT}/web/contribution`,
   ];
+  const CLASS_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/classes`;
   const CUSTOM_CP_CACHE_URLS = [
     `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`,
   ];
   const VPS_FIELD_BOSS_CACHE_URL =
     "https://notmeter.112-168-140-142.sslip.io/field-boss/v1/public";
   const EXPECTED_SCHEMA = "notmeter-web-ranking-v1";
+  const EXPECTED_CLASS_RANKING_SCHEMA = "notmeter-web-class-ranking-v1";
   const EXPECTED_CLASS_OVERALL_SCHEMA = "notmeter-web-class-overall-v1";
   const EXPECTED_CONTRIBUTION_SCHEMA = "notmeter-web-contribution-stats-v1";
   const EXPECTED_CUSTOM_CP_SCHEMA = "notmeter-web-custom-cp-v4";
@@ -940,6 +942,7 @@
     customCpLoad: null,
     customCpRankData: new Map(),
     customCpRankLoads: new Map(),
+    classRankingLoads: new Map(),
     customCpSummaryIndexes: new Map(),
     customCpRankIndexes: new Map(),
     locale: normalizeLocale(localStorage.getItem("notmeter-stats-locale")),
@@ -1491,8 +1494,17 @@
     async load(force = false) {
       const cache = await fetchRankingCache(Boolean(force));
       validateCache(cache);
+      cache.classRankings = cache.classRankings && typeof cache.classRankings === "object"
+        ? cache.classRankings
+        : {};
       updateDailyUsers(cache);
       return cache;
+    },
+    async loadClass(dungeonKey, expectedGeneratedAt, force = false) {
+      return fetchClassRankingCache(
+        dungeonKey,
+        String(expectedGeneratedAt || ""),
+        Boolean(force));
     },
   });
 
@@ -1521,6 +1533,9 @@
         }),
       ]);
       validateCache(cache);
+      cache.classRankings = cache.classRankings && typeof cache.classRankings === "object"
+        ? cache.classRankings
+        : {};
       cache.bossResistanceStats = Array.isArray(cache.bossResistanceStats)
         ? cache.bossResistanceStats
         : [];
@@ -1564,6 +1579,9 @@
         : 0;
       const generationChanged = !state.data ||
         String(cache.generatedAt) !== String(state.data.generatedAt);
+      if (generationChanged) {
+        state.classRankingLoads.clear();
+      }
       let preparedCustomCp = null;
       let preparedCustomCpRank = null;
       if (state.cpFilterMode === "custom" && (generationChanged || force)) {
@@ -2607,6 +2625,58 @@
 
   async function fetchRankingCache(force) {
     return fetchCompressedJson(CACHE_URLS, force);
+  }
+
+  function normalizeClassRankingDungeonKey(dungeonKey) {
+    const normalized = String(dungeonKey || "").trim().toLowerCase();
+    if (!/^[a-z0-9_-]{1,64}$/.test(normalized)) {
+      throw new Error("invalid dungeon key");
+    }
+    return normalized;
+  }
+
+  async function fetchClassRankingCache(dungeonKey, expectedGeneratedAt, force = false) {
+    const normalizedDungeonKey = normalizeClassRankingDungeonKey(dungeonKey);
+    const generation = String(expectedGeneratedAt || "");
+    if (!generation) {
+      throw new Error(t("cacheUnavailable"));
+    }
+    const cache = await fetchCompressedJson(
+      [`${CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`],
+      force,
+      candidate => candidate?.schema === EXPECTED_CLASS_RANKING_SCHEMA &&
+        Number(candidate.version) === 1 &&
+        String(candidate.generatedAt || "") === generation &&
+        String(candidate.dungeonKey || "").toLowerCase() === normalizedDungeonKey &&
+        candidate.classRanking && typeof candidate.classRanking === "object",
+      generation);
+    return cache.classRanking;
+  }
+
+  async function ensureClassRankingCache(dungeonKey, force = false) {
+    const normalizedDungeonKey = normalizeClassRankingDungeonKey(dungeonKey);
+    const ranking = state.data?.classRankings?.[normalizedDungeonKey];
+    if (ranking) {
+      return ranking;
+    }
+    const generation = String(state.data?.generatedAt || "");
+    if (!generation) {
+      throw new Error(t("cacheUnavailable"));
+    }
+    const loadKey = `${generation}|${normalizedDungeonKey}`;
+    if (state.classRankingLoads.has(loadKey)) {
+      return state.classRankingLoads.get(loadKey);
+    }
+    const load = fetchClassRankingCache(normalizedDungeonKey, generation, force)
+      .then(classRanking => {
+        if (String(state.data?.generatedAt || "") === generation) {
+          state.data.classRankings[normalizedDungeonKey] = classRanking;
+        }
+        return classRanking;
+      })
+      .finally(() => state.classRankingLoads.delete(loadKey));
+    state.classRankingLoads.set(loadKey, load);
+    return load;
   }
 
   async function fetchClassOverallCache(force, expectedGeneratedAt = "") {
@@ -4289,6 +4359,23 @@
         !state.customCpRankData.has(customRankCacheKey)) {
       showState("loading");
       void ensureCustomCpRankCache(state.dungeonKey)
+        .then(() => {
+          if (state.mode === "class") {
+            renderClassRanking();
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          elements["error-message"].textContent =
+            error instanceof Error && error.message ? error.message : t("cacheUnavailable");
+          showState("error");
+        });
+      return;
+    }
+    if (state.cpFilterMode !== "custom" &&
+        !state.data?.classRankings?.[state.dungeonKey]) {
+      showState("loading");
+      void ensureClassRankingCache(state.dungeonKey)
         .then(() => {
           if (state.mode === "class") {
             renderClassRanking();
