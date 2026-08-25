@@ -1495,6 +1495,9 @@
     async load(force = false) {
       const cache = await fetchRankingCache(Boolean(force));
       validateCache(cache);
+      if (!shouldApplyRankingCache(cache, state.data)) {
+        return state.data;
+      }
       cache.classRankings = cache.classRankings && typeof cache.classRankings === "object"
         ? cache.classRankings
         : {};
@@ -1540,6 +1543,15 @@
         }),
       ]);
       validateCache(cache);
+      if (!shouldApplyRankingCache(cache, state.data)) {
+        console.warn("older ranking cache ignored", {
+          currentGeneratedAt: state.data?.generatedAt || null,
+          receivedGeneratedAt: cache.generatedAt,
+        });
+        state.lastCacheSyncAt = Date.now();
+        render();
+        return;
+      }
       cache.classRankings = cache.classRankings && typeof cache.classRankings === "object"
         ? cache.classRankings
         : {};
@@ -2659,6 +2671,22 @@
     return fetchCompressedJson(CACHE_URLS, force);
   }
 
+  function rankingCacheGeneration(cache) {
+    return Date.parse(String(cache?.generatedAt || ""));
+  }
+
+  function shouldApplyRankingCache(cache, current) {
+    const nextGeneration = rankingCacheGeneration(cache);
+    if (!Number.isFinite(nextGeneration)) {
+      return false;
+    }
+    if (!current) {
+      return true;
+    }
+    const currentGeneration = rankingCacheGeneration(current);
+    return !Number.isFinite(currentGeneration) || nextGeneration >= currentGeneration;
+  }
+
   function normalizeClassRankingDungeonKey(dungeonKey) {
     const normalized = String(dungeonKey || "").trim().toLowerCase();
     if (!/^[a-z0-9_-]{1,64}$/.test(normalized)) {
@@ -2916,7 +2944,7 @@
         touchRequest();
         try {
           const response = await fetch(url, {
-            cache: force || attempt > 1 ? "reload" : "default",
+            cache: force || attempt > 1 ? "reload" : "no-cache",
             headers: { Accept: "application/gzip, application/json" },
             signal: controller?.signal,
           });
@@ -3006,7 +3034,7 @@
   function validateCache(cache) {
     if (!cache || cache.schema !== EXPECTED_SCHEMA || cache.version !== 1 ||
         !Array.isArray(cache.dungeons) || !Array.isArray(cache.views) ||
-        !cache.classRankings || !cache.generatedAt) {
+        !cache.classRankings || !Number.isFinite(rankingCacheGeneration(cache))) {
       throw new Error(t("cacheInvalid"));
     }
   }
