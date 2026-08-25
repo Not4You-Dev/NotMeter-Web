@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24" role="img" aria-label="대만 국기">
+  <rect width="36" height="24" rx="1.5" fill="#d91920"/>
+  <path fill="#001b69" d="M0 0h18v12H0z"/>
+  <g transform="translate(9 6)" fill="#fff">
+    <path d="m0-5 .75 2.18L2.5-4.33l-.26 2.3 2.27-.43L3.3-.5 5 1.07l-2.3.2.93 2.12-2.1-.98L1.28 4.7-.25 2.98-1.82 4.7l-.2-2.3-2.12.98.98-2.1-2.3-.2L-3.72-.5l-1.18-1.96 2.26.43-.24-2.3 1.74 1.51Z"/>
+    <circle r="2.35" fill="#001b69"/>
+    <circle r="1.85"/>
+  </g>
+  <rect x=".5" y=".5" width="35" height="23" rx="1" fill="none" stroke="#b8c5ce" stroke-opacity=".45"/>
+</svg>
