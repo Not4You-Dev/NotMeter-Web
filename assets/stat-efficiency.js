@@ -69,6 +69,8 @@
       invalid: "공격력·최소/최대 공격력 값을 확인해 주세요.", unavailable: "계산 서버에 연결하지 못했습니다. 자동으로 다시 계산합니다.",
       statWindowAttack: "게임 표시 공격력", effectiveAttack: "보스 유효 공격력", expectedDamage: "기대 피해 지수",
       damageGain: "예상 피해 상승", before: "현재", after: "변경", quickCompare: "스탯별 기본 증가량 비교",
+      easyTitle: "사용 방법", easyOne: "딜미터기 처치 기록 상단에서 ‘내 스탯 복사’를 누릅니다.",
+      easyTwo: "이 페이지 상단 입력칸에 붙여넣습니다.", easyThree: "비교할 옵션 수치를 바꾸면 결과가 같은 위치에서 즉시 갱신됩니다.",
     },
     en: {
       title: "Stat Efficiency Calculator", subtitle: "Every edit instantly compares the selected option against your current stats.",
@@ -97,6 +99,8 @@
       ready: "Up to date", calculating: "Updating", source: "{job} · latest input", invalid: "Check Attack and Min/Max Attack values.",
       unavailable: "Could not reach the calculator. It will retry on the next edit.", statWindowAttack: "Displayed Attack", effectiveAttack: "Effective Boss Attack",
       expectedDamage: "Expected Damage Index", damageGain: "Expected damage gain", before: "Current", after: "Changed", quickCompare: "Quick stat comparison",
+      easyTitle: "How to use", easyOne: "Click Copy My Stats at the top of NotMeter combat records.",
+      easyTwo: "Paste the copied value into the field at the top of this page.", easyThree: "Change any option value and the result updates instantly in place.",
     },
     "zh-TW": {
       title: "屬性效率計算器", subtitle: "每次修改數值都會立即比較目前屬性與選擇的增量。",
@@ -117,6 +121,8 @@
       waitingTitle: "請貼上角色屬性", waitingDescription: "貼上後修改任一增量，結果會在原位立即更新。", resultGuide: "結果是目前數值與所選增量的期望值比較。",
       ready: "已更新", calculating: "計算中", source: "{job} · 已套用最後輸入", invalid: "請確認攻擊力與最小／最大攻擊力。", unavailable: "無法連線至計算服務，下次修改時會自動重試。",
       statWindowAttack: "遊戲顯示攻擊力", effectiveAttack: "首領有效攻擊力", expectedDamage: "預期傷害指數", damageGain: "預期傷害提升", before: "目前", after: "變更後", quickCompare: "屬性快速比較",
+      easyTitle: "使用方式", easyOne: "在 NotMeter 戰鬥紀錄上方點擊「複製我的屬性」。",
+      easyTwo: "將複製的內容貼到本頁上方輸入框。", easyThree: "修改任一選項數值，結果會在原位立即更新。",
     },
   };
 
