@@ -1,23 +1,35 @@
-﻿(() => {
+(() => {
   "use strict";
 
   const VPS_RANKING_CACHE_ROOT = "https://notmeter.112-168-140-142.sslip.io/ranking/v1";
+  const GITHUB_RANKING_REPOSITORY_ROOT =
+    "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web";
+  const GITHUB_RANKING_MANIFEST_URL =
+    `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data/notmeter-ranking-latest.json`;
+  let GITHUB_RANKING_CACHE_ROOT = `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data`;
+  let githubRankingManifestLoad = null;
   const CACHE_URLS = [
+    `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/web/main?layout=view-shards-v2`,
   ];
   const CLASS_OVERALL_CACHE_URLS = [
+    `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/web/class-overall`,
   ];
   const CONTRIBUTION_CACHE_URLS = [
+    `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/web/contribution`,
   ];
   const CLASS_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/classes`;
   const VIEW_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/views`;
   const CUSTOM_CP_CACHE_URLS = [
+    `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`,
   ];
-  const VPS_FIELD_BOSS_CACHE_URL =
-    "https://notmeter.112-168-140-142.sslip.io/field-boss/v1/public";
+  const FIELD_BOSS_CACHE_URLS = [
+    "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web/main/presence/notmeter-field-boss-public.json",
+    "https://notmeter.112-168-140-142.sslip.io/field-boss/v1/public",
+  ];
   const EXPECTED_SCHEMA = "notmeter-web-ranking-v1";
   const EXPECTED_CLASS_RANKING_SCHEMA = "notmeter-web-class-ranking-v1";
   const EXPECTED_VIEW_RANKING_SCHEMA = "notmeter-web-view-ranking-v1";
@@ -1524,6 +1536,64 @@
     resetClassSelection();
   }
 
+  function applyGitHubRankingRevision(revision) {
+    if (!/^[0-9a-f]{40}$/i.test(String(revision || ""))) {
+      throw new Error("invalid GitHub cache revision");
+    }
+    const normalized = String(revision).toLowerCase();
+    GITHUB_RANKING_CACHE_ROOT =
+      `${GITHUB_RANKING_REPOSITORY_ROOT}/${normalized}/data`;
+    CACHE_URLS[0] = `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`;
+    CLASS_OVERALL_CACHE_URLS[0] =
+      `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`;
+    CONTRIBUTION_CACHE_URLS[0] =
+      `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`;
+    CUSTOM_CP_CACHE_URLS[0] =
+      `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`;
+  }
+
+  async function refreshGitHubRankingRevision(force = false) {
+    if (githubRankingManifestLoad) {
+      return githubRankingManifestLoad;
+    }
+    const load = (async () => {
+      const controller = typeof AbortController === "function" ? new AbortController() : null;
+      const timeoutId = controller
+        ? window.setTimeout(() => controller.abort(), 10_000)
+        : 0;
+      try {
+        const separator = GITHUB_RANKING_MANIFEST_URL.includes("?") ? "&" : "?";
+        const response = await fetch(
+          `${GITHUB_RANKING_MANIFEST_URL}${separator}v=${Date.now()}`,
+          {
+            cache: force ? "reload" : "no-cache",
+            headers: { Accept: "application/json" },
+            signal: controller?.signal,
+          });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const manifest = await response.json();
+        if (manifest?.schema !== "notmeter-cache-generation-v1" ||
+            Number(manifest?.version) !== 1) {
+          throw new Error("invalid GitHub cache manifest");
+        }
+        applyGitHubRankingRevision(manifest.revision);
+        return String(manifest.revision).toLowerCase();
+      } finally {
+        if (timeoutId) {
+          window.clearTimeout(timeoutId);
+        }
+      }
+    })();
+    githubRankingManifestLoad = load;
+    try {
+      return await load;
+    } finally {
+      githubRankingManifestLoad = null;
+    }
+  }
+
   async function loadCache(force = false, preserveView = false) {
     if (state.loading) {
       return;
@@ -1535,6 +1605,9 @@
     }
 
     try {
+      await refreshGitHubRankingRevision(force).catch(error => {
+        console.warn("GitHub cache manifest unavailable; using stable fallback", error);
+      });
       const [cache, initialClassOverallCache] = await Promise.all([
         fetchRankingCache(force),
         fetchClassOverallCache(force).catch(error => {
@@ -1594,10 +1667,13 @@
       const globalViews = Array.isArray(cache.views)
         ? cache.views.filter(view => String(view?.dungeonKey || "").startsWith("__"))
         : [];
-      const initialViews = await fetchViewRankingCache(
-        nextDungeon,
-        cache.generatedAt,
-        force);
+      const embeddedViews = Array.isArray(cache.views)
+        ? cache.views.filter(view =>
+            String(view?.dungeonKey || "").toLowerCase() === nextDungeon.toLowerCase())
+        : [];
+      const initialViews = embeddedViews.length > 0
+        ? embeddedViews
+        : await fetchViewRankingCache(nextDungeon, cache.generatedAt, force);
       cache.views = globalViews.concat(initialViews);
       const nextDungeonBossCount = cache.dungeons
         .find(item => item.key === nextDungeon)?.bossNames?.length || 0;
@@ -2114,20 +2190,25 @@
   }
 
   async function fetchFieldBossCache(force) {
-    try {
-      const separator = VPS_FIELD_BOSS_CACHE_URL.includes("?") ? "&" : "?";
-      const cache = await fetchFieldBossCacheJson(
-        `${VPS_FIELD_BOSS_CACHE_URL}${separator}v=${Date.now()}`,
-        force ? "reload" : "no-cache");
-      validateFieldBossCache(cache);
-      if (!Array.isArray(cache.servers) || cache.servers.length === 0) {
-        throw new Error("empty VPS cache");
+    const errors = [];
+    for (const baseUrl of FIELD_BOSS_CACHE_URLS) {
+      try {
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        const cache = await fetchFieldBossCacheJson(
+          `${baseUrl}${separator}v=${Date.now()}`,
+          force ? "reload" : "no-cache");
+        validateFieldBossCache(cache);
+        if (!Array.isArray(cache.servers) || cache.servers.length === 0) {
+          throw new Error("empty cache");
+        }
+        const source = baseUrl.includes("raw.githubusercontent.com") ? "github" : "vps";
+        return { cache, revision: `${source}:${Number(cache.generatedAt) || 0}` };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        errors.push(`${baseUrl}: ${message}`);
       }
-      return { cache, revision: `vps:${Number(cache.generatedAt) || 0}` };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`${t("cacheUnavailable")} (${VPS_FIELD_BOSS_CACHE_URL}: ${message})`);
     }
+    throw new Error(`${t("cacheUnavailable")} (${errors.join(" / ")})`);
   }
 
   async function fetchFieldBossCacheJson(url, cacheMode) {
@@ -3098,7 +3179,11 @@
   }
 
   function customCpRankChunkUrls(dungeonKey, bossIndex) {
-    return [];
+    const safeKey = String(dungeonKey || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    const normalizedBossIndex = Math.max(0, Number(bossIndex) || 0);
+    return [
+      `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp-${safeKey}-boss-${normalizedBossIndex}.json.gz`,
+    ];
   }
 
   function customCpRankCacheUrls(dungeonKey, bossIndex) {
@@ -3160,7 +3245,7 @@
     const normalizedExpected = String(expectedGeneratedAt || "");
     const normalizedBossIndex = Math.max(0, Number(bossIndex) || 0);
     const cache = await fetchCompressedJson(
-      legacyCustomCpRankCacheUrls(dungeonKey),
+      customCpRankCacheUrls(dungeonKey, bossIndex),
       force,
       candidate => isMatchingCustomCpRankCache(
         candidate,
