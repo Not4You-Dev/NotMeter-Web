@@ -19,7 +19,7 @@
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
   <link rel="stylesheet" href="./assets/app.css?v=20260826-3">
-  <link rel="stylesheet" href="./assets/character.css?v=20260826-3">
+  <link rel="stylesheet" href="./assets/character.css?v=20260826-4">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <script>
     (() => {
@@ -195,7 +195,7 @@
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/combat-detail-buffs.js?v=20260826-3" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260826-3" defer></script>
-  <script src="./assets/character.js?v=20260826-3" defer></script>
+  <script src="./assets/character.js?v=20260826-4" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
   <script src="./assets/app.js?v=20260826-3" defer></script>
 </head>
@@ -303,6 +303,20 @@
     </header>
 
     <section class="global-character-search" id="global-character-search" aria-label="캐릭터 검색">
+      <div class="character-search-intro">
+        <span class="character-search-intro-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M12 3.25 19.25 7.4v8.2L12 19.75 4.75 15.6V7.4L12 3.25Z"></path>
+            <circle cx="12" cy="10.25" r="2.65"></circle>
+            <path d="M7.9 16.15c.82-1.75 2.2-2.65 4.1-2.65s3.28.9 4.1 2.65"></path>
+          </svg>
+        </span>
+        <span class="character-search-intro-copy">
+          <span class="character-search-kicker" id="character-search-kicker">CHARACTER LOOKUP</span>
+          <strong id="character-search-title">캐릭터 검색</strong>
+          <span id="character-search-description">닉네임으로 장비·스킬·랭킹을 바로 확인하세요</span>
+        </span>
+      </div>
       <form class="character-search-form" id="character-search-form" role="search" autocomplete="off">
         <span class="character-search-mark" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" focusable="false"

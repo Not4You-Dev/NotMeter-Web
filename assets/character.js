@@ -37,6 +37,8 @@
   const ITEM_GRADE_PRIORITY = Object.freeze({ Mythic: 6, Epic: 5, Unique: 4, Legend: 3, Rare: 2, Common: 1 });
   const COPY = {
     ko: {
+      searchKicker: "CHARACTER LOOKUP", searchTitle: "캐릭터 검색",
+      searchDescription: "닉네임으로 장비·스킬·랭킹을 바로 확인하세요",
       placeholder: "캐릭터 이름을 입력하세요", search: "검색", saved: "즐겨찾기 · 최근 검색",
       favorites: "즐겨찾기", recent: "최근 검색", recentGuide: "즐겨찾기는 고정 · 최근 검색은 최대 10개",
       addFavorite: "즐겨찾기에 추가", removeFavorite: "즐겨찾기에서 제거", deleteRecent: "최근 검색에서 삭제",
@@ -92,6 +94,8 @@
       officialNote: "캐릭터 정보는 아이온2 공식 공개 정보 기준이며, 게임 내 정보 공개 상태와 갱신 시점에 따라 일부 항목이 비어 있을 수 있습니다.",
     },
     en: {
+      searchKicker: "CHARACTER LOOKUP", searchTitle: "Character Search",
+      searchDescription: "View gear, skills, and rankings by character name",
       placeholder: "Enter a character name", search: "Search", saved: "Favorites · Recent",
       favorites: "Favorites", recent: "Recent", recentGuide: "Favorites stay pinned · Up to 10 recent characters",
       addFavorite: "Add to favorites", removeFavorite: "Remove from favorites", deleteRecent: "Remove from recent",
@@ -145,6 +149,8 @@
       officialNote: "Character data comes from AION2's official public profile. Some fields can be empty depending on visibility and refresh time.",
     },
     "zh-TW": {
+      searchKicker: "CHARACTER LOOKUP", searchTitle: "角色搜尋",
+      searchDescription: "輸入角色名稱，快速查看裝備、技能與排名",
       placeholder: "輸入角色名稱", search: "搜尋", saved: "我的最愛 · 最近搜尋",
       favorites: "我的最愛", recent: "最近搜尋", recentGuide: "我的最愛固定顯示 · 最近搜尋最多 10 個",
       addFavorite: "加入我的最愛", removeFavorite: "從我的最愛移除", deleteRecent: "從最近搜尋刪除",
@@ -213,6 +219,7 @@
   function bindElements() {
     for (const id of [
       "character-search-form", "character-search-input", "character-search-submit",
+      "character-search-kicker", "character-search-title", "character-search-description",
       "character-search-popover", "character-search-popover-title", "character-search-status",
       "character-search-results", "character-search-race-filters", "character-surface", "character-page-title",
       "character-page-description", "character-back-button", "character-loading-state",
@@ -253,6 +260,9 @@
 
   function applyCopy() {
     const copy = currentCopy();
+    if (elements["character-search-kicker"]) elements["character-search-kicker"].textContent = copy.searchKicker;
+    if (elements["character-search-title"]) elements["character-search-title"].textContent = copy.searchTitle;
+    if (elements["character-search-description"]) elements["character-search-description"].textContent = copy.searchDescription;
     elements["character-search-input"]?.setAttribute("placeholder", copy.placeholder);
     if (elements["character-search-submit"]) elements["character-search-submit"].textContent = copy.search;
     const raceFilters = elements["character-search-race-filters"];
