@@ -347,6 +347,30 @@ body.character-view .ranking-panel { display: none !important; }
   background: rgba(6, 22, 32, 0.64);
 }
 .character-ranking-state { margin: 0; padding: 28px 18px; color: #8eafbd; text-align: center; }
+.character-ranking-periods { display: grid; gap: 12px; padding: 12px; }
+.character-ranking-period {
+  overflow: hidden;
+  border: 1px solid rgba(52, 101, 120, .72);
+  border-radius: 9px;
+  background: rgba(5, 19, 28, .56);
+}
+.character-ranking-period-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 7px 13px;
+  border-bottom: 1px solid rgba(49, 91, 109, .52);
+  color: #ecf8fb;
+}
+.character-ranking-period-heading strong { font-size: 13px; }
+.character-ranking-period-heading span {
+  color: #57dfd8;
+  font-size: 10px;
+  font-weight: 800;
+}
+.character-ranking-period-weekly { border-color: rgba(91, 214, 204, .72); }
+.character-ranking-scroll { overflow-y: auto; max-height: 330px; scrollbar-gutter: stable; }
 .character-ranking-table { display: grid; }
 .character-ranking-row {
   display: grid;
@@ -360,9 +384,12 @@ body.character-view .ranking-panel { display: none !important; }
 }
 .character-ranking-row:first-child { border-top: 0; }
 .character-ranking-header {
+  position: sticky;
+  z-index: 1;
+  top: 0;
   min-height: 38px;
   color: #7699aa;
-  background: rgba(33, 72, 89, .22);
+  background: #0b2531;
   font-size: 10px;
   font-weight: 800;
 }

@@ -6,6 +6,8 @@
     : "https://notmeter.112-168-140-142.sslip.io/character/v1";
   const RECENT_KEY = "notmeter-character-recent-v1";
   const FAVORITE_KEY = "notmeter-character-favorites-v1";
+  const ALL_TIME_RANKING_LABEL = "__notmeter_replay_top20_v1__";
+  const WEEKLY_RANKING_LABEL = "__notmeter_replay_weekly_top20_v1__";
   const OFFICIAL_NAME_CATALOG_URL = "./assets/game-data.zh-TW.json?v=20260824-1";
   const OFFICIAL_TERMS_KO_TO_ZH_TW = Object.freeze({
     "천족": "天族", "마족": "魔族",
@@ -54,7 +56,8 @@
       skills: "스킬", activeSkills: "스킬", stigmaSkills: "스티그마", passiveSkills: "패시브",
       collection: "탈것 · 날개 · 타이틀",
       ranking: "랭킹", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "구간별 TOP 20",
-      rankingNote: "공개 닉네임으로 등록된 전체 기간 기록 중 던전별 최고 DPS 한 건만 표시합니다.",
+      rankingNote: "공개 닉네임으로 등록된 전체 기간과 이번 주 구간 TOP 20을 나눠 표시합니다. 각 기간에서 던전별 최고 기록 한 건만 보여줍니다.",
+      rankingAllTime: "전체 기간", rankingWeekly: "이번 주",
       rankingLoading: "공개 랭킹을 확인하고 있습니다.",
       rankingEmpty: "공개 닉네임으로 등록된 구간별 TOP 20 기록이 없습니다.",
       rankingError: "랭킹 정보를 불러오지 못했습니다.", rank: "순위", dungeon: "던전", boss: "보스", dps: "DPS",
@@ -107,7 +110,8 @@
       arcana: "Arcana", skills: "Skills", activeSkills: "Skills", stigmaSkills: "Stigma", passiveSkills: "Passive",
       collection: "Mount · Wings · Titles",
       ranking: "Ranking", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "Top 20 by CP bracket",
-      rankingNote: "Shows only the highest-DPS all-time public Top 20 record for each dungeon.",
+      rankingNote: "Shows all-time and current-week public bracket Top 20 records separately, keeping only the best record per dungeon in each period.",
+      rankingAllTime: "All-time", rankingWeekly: "This week",
       rankingLoading: "Checking public rankings.", rankingEmpty: "No public Top 20 bracket record was found.",
       rankingError: "Could not load ranking data.", rank: "Rank", dungeon: "Dungeon", boss: "Boss", dps: "DPS",
       combatPower: "Combat Power", itemLevel: "Item Level", legion: "Legion", none: "None",
@@ -156,7 +160,8 @@
       equipment: "裝備", arcana: "阿爾卡納", skills: "技能", activeSkills: "技能", stigmaSkills: "烙印技能",
       passiveSkills: "被動技能",
       ranking: "排名", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "區間 TOP 20",
-      rankingNote: "每個副本僅顯示公開暱稱的全期間最高 DPS TOP 20 紀錄。",
+      rankingNote: "分別顯示公開暱稱的全部期間與本週區間 TOP 20；每個期間只保留各副本的最高紀錄。",
+      rankingAllTime: "全部期間", rankingWeekly: "本週",
       rankingLoading: "正在確認公開排名。", rankingEmpty: "沒有公開暱稱的區間 TOP 20 紀錄。",
       rankingError: "無法載入排名資料。", rank: "名次", dungeon: "副本", boss: "首領", dps: "DPS",
       collection: "坐騎 · 翅膀 · 稱號", combatPower: "戰鬥力", itemLevel: "道具等級",
@@ -810,25 +815,47 @@
         body.replaceChildren(textNode("p", copy.rankingEmpty, "character-ranking-state"));
         return;
       }
-      const table = node("div", "character-ranking-table");
-      const header = node("div", "character-ranking-row character-ranking-header");
-      for (const label of [copy.rank, copy.dungeon, copy.boss, copy.dps]) {
-        header.append(textNode("span", label));
-      }
-      table.append(header);
-      for (const row of rows) {
-        const item = node("div", "character-ranking-row");
-        const rank = node("span", "character-ranking-rank");
-        rank.append(textNode("strong", `#${row.rank}`), textNode("small", row.cpTierLabel));
-        item.append(
-          rank,
-          textNode("strong", row.dungeonName),
-          textNode("span", row.bossName),
-          textNode("strong", formatNumber(Math.round(row.dps)), "character-ranking-dps"),
+      const periods = [
+        ["allTime", copy.rankingAllTime],
+        ["weekly", copy.rankingWeekly],
+      ];
+      const groups = node("div", "character-ranking-periods");
+      for (const [periodKey, periodLabel] of periods) {
+        const periodRows = rows.filter(row => row.periodKey === periodKey);
+        if (!periodRows.length) continue;
+        const period = node("section", `character-ranking-period character-ranking-period-${periodKey}`);
+        const heading = node("div", "character-ranking-period-heading");
+        heading.append(
+          textNode("strong", periodLabel),
+          textNode(
+            "span",
+            `${periodRows.length}${currentLanguage() === "ko" ? "개" : currentLanguage() === "zh-TW" ? "筆" : ""}`,
+          ),
         );
-        table.append(item);
+        const scroll = node("div", "character-ranking-scroll");
+        const table = node("div", "character-ranking-table");
+        const header = node("div", "character-ranking-row character-ranking-header");
+        for (const label of [copy.rank, copy.dungeon, copy.boss, copy.dps]) {
+          header.append(textNode("span", label));
+        }
+        table.append(header);
+        for (const row of periodRows) {
+          const item = node("div", "character-ranking-row");
+          const rank = node("span", "character-ranking-rank");
+          rank.append(textNode("strong", `#${row.rank}`), textNode("small", row.cpTierLabel));
+          item.append(
+            rank,
+            textNode("strong", row.dungeonName),
+            textNode("span", row.bossName),
+            textNode("strong", formatNumber(Math.round(row.dps)), "character-ranking-dps"),
+          );
+          table.append(item);
+        }
+        scroll.append(table);
+        period.append(heading, scroll);
+        groups.append(period);
       }
-      body.replaceChildren(table);
+      body.replaceChildren(groups);
     }).catch(() => {
       body.replaceChildren(textNode("p", copy.rankingError, "character-ranking-state"));
     });
@@ -875,14 +902,19 @@
     const dungeonIndex = new Map((Array.isArray(cache.dungeons) ? cache.dungeons : [])
       .map((item, index) => [item.key, { ...item, index }]));
     const metadata = new Map((Array.isArray(cache.views) ? cache.views : []).map(view => [
-      `${view.dungeonKey}|${view.bossIndex}|${view.cpTierIndex}|${view.period}`,
+      `${view.dungeonKey}|${view.bossIndex}|${view.cpTierIndex}|${view.periodLabel}`,
       view,
     ]));
     const results = [];
     for (const [dungeonKey, ranking] of Object.entries(cache.classRankings || {})) {
       const views = Array.isArray(ranking?.views) ? ranking.views : [];
+      const rankingViews = new Map();
       for (const view of views) {
-        if (view.period !== "All" || Number(view.cpTierIndex) <= 0 || Number(view.bossIndex) !== 0) continue;
+        if (view.period !== "All" || Number(view.cpTierIndex) <= 0 || Number(view.bossIndex) !== 0 ||
+            ![ALL_TIME_RANKING_LABEL, WEEKLY_RANKING_LABEL].includes(view.periodLabel)) continue;
+        rankingViews.set(`${view.periodLabel}|${view.bossIndex}|${view.cpTierIndex}`, view);
+      }
+      for (const view of rankingViews.values()) {
         const group = (Array.isArray(view.rows) ? view.rows : [])
           .find(row => row.jobName === jobName);
         const player = (Array.isArray(group?.players) ? group.players : []).find(candidate => {
@@ -894,7 +926,7 @@
           return !serverId || !Number(candidate.serverId) || Number(candidate.serverId) === serverId;
         });
         if (!player || Number(player.rank) < 1 || Number(player.rank) > 20) continue;
-        const key = `${dungeonKey}|${view.bossIndex}|${view.cpTierIndex}|${view.period}`;
+        const key = `${dungeonKey}|${view.bossIndex}|${view.cpTierIndex}|${view.periodLabel}`;
         const meta = metadata.get(key) || {};
         const dungeon = dungeonIndex.get(dungeonKey) || {};
         const recordedBossIndex = Number(player.B ?? player.bossIndex) || 0;
@@ -912,17 +944,20 @@
           dungeonOrder: Number(dungeon.index) || 0,
           bossIndex: Number(view.bossIndex) || 0,
           cpTierIndex: Number(view.cpTierIndex) || 0,
+          periodKey: view.periodLabel === WEEKLY_RANKING_LABEL ? "weekly" : "allTime",
         });
       }
     }
-    const bestByDungeon = new Map();
+    const bestByPeriodAndDungeon = new Map();
     for (const row of results) {
-      const current = bestByDungeon.get(row.dungeonKey);
+      const key = `${row.periodKey}|${row.dungeonKey}`;
+      const current = bestByPeriodAndDungeon.get(key);
       if (!current || row.dps > current.dps || (row.dps === current.dps && row.rank < current.rank)) {
-        bestByDungeon.set(row.dungeonKey, row);
+        bestByPeriodAndDungeon.set(key, row);
       }
     }
-    return [...bestByDungeon.values()].sort((left, right) =>
+    return [...bestByPeriodAndDungeon.values()].sort((left, right) =>
+      (left.periodKey === right.periodKey ? 0 : left.periodKey === "allTime" ? -1 : 1) ||
       left.dungeonOrder - right.dungeonOrder || right.dps - left.dps);
   }
 
