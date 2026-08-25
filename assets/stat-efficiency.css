@@ -195,6 +195,19 @@
 .result-card > footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; border-top: 1px solid #193440; color: #607f8f; font-size: 9px; }
 .result-card footer b { color: #799dab; font-weight: 800; }
 
+.result-summary > article { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid #24535b; border-radius: 8px; background: linear-gradient(135deg, rgba(34, 111, 107, .18), rgba(6, 21, 30, .88)); }
+.result-summary > article span { color: #7399a6; font-size: 9px; font-weight: 850; }
+.result-summary > article strong { color: #74e8dd; font-size: 16px; font-variant-numeric: tabular-nums; }
+.result-effect-group { display: grid; gap: 7px; min-width: 0; }
+.result-effect-group h4 { margin: 0; padding: 8px 9px; border-bottom: 1px solid #244653; color: #8ddbd5; background: rgba(7, 20, 29, .97); font-size: 10px; }
+.result-effect-grid { display: grid; gap: 6px; }
+.result-effect-grid article { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: center; gap: 7px; min-height: 42px; padding: 6px 8px; border: 1px solid #1b3a47; border-radius: 7px; background: #091b26; }
+.result-effect-grid article:first-child { border-color: #36867f; background: linear-gradient(90deg, rgba(35, 129, 123, .19), #091b26 72%); }
+.result-effect-grid article > b { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 6px; color: #80ddd5; background: #0b3435; font-size: 9px; }
+.result-effect-grid article > div { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; }
+.result-effect-grid span { overflow: hidden; color: #cbdde4; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.result-effect-grid strong { color: #68e1d7; font-size: 12px; font-variant-numeric: tabular-nums; }
+
 .quality-card { padding: 15px; }
 .quality-card ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 11px 0 0; padding: 0; list-style: none; counter-reset: easy-step; }
 .quality-card li { position: relative; padding-left: 24px; color: #89a7b5; font-size: 10px; line-height: 1.5; counter-increment: easy-step; }

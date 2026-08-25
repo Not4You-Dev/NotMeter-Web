@@ -5,7 +5,7 @@
   const GITHUB_RANKING_REPOSITORY_ROOT =
     "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web";
   const GITHUB_RANKING_MANIFEST_URL =
-    `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data/notmeter-ranking-latest.json`;
+    `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data/client/notmeter-ranking-latest.json`;
   let GITHUB_RANKING_CACHE_ROOT = `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data`;
   let githubRankingManifestLoad = null;
   const CACHE_URLS = [
@@ -1044,6 +1044,8 @@
       openContributionView();
     } else if (pageView === "boss-resistance") {
       openBossResistanceView();
+    } else if (pageView === "stat-efficiency") {
+      openStatEfficiencyView();
     } else if (pageView === "class-top10" || window.location.hash === "#class-top10" ||
         history.state?.notMeterStatsView === "class-top10") {
       openClassTop10View(false);
@@ -1148,6 +1150,7 @@
       state.locale = normalizeLocale(event.currentTarget.value);
       localStorage.setItem("notmeter-stats-locale", state.locale);
       applyLocale();
+      window.NotMeterStatEfficiency?.activate();
       populateFilters();
       render();
       if (openDetail) {
@@ -1792,7 +1795,8 @@
     const view = new URLSearchParams(window.location.search).get("view");
     return view === "class-top10" || view === "field-boss" || view === "optimization" ||
       view === "class-performance" || view === "contribution" ||
-      view === "boss-resistance" || view === "character" ? view : "ranking";
+      view === "boss-resistance" || view === "stat-efficiency" ||
+      view === "character" ? view : "ranking";
   }
 
   function openCharacterView() {
