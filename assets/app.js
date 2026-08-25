@@ -20,8 +20,10 @@
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/web/contribution`,
   ];
-  const CLASS_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/classes`;
-  const VIEW_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/views`;
+  const VPS_CLASS_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/classes`;
+  const VPS_VIEW_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/views`;
+  let GITHUB_CLASS_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/classes`;
+  let GITHUB_VIEW_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/views`;
   const CUSTOM_CP_CACHE_URLS = [
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`,
@@ -1550,6 +1552,8 @@
       `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`;
     CUSTOM_CP_CACHE_URLS[0] =
       `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`;
+    GITHUB_CLASS_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/classes`;
+    GITHUB_VIEW_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/views`;
   }
 
   async function refreshGitHubRankingRevision(force = false) {
@@ -2783,7 +2787,10 @@
       throw new Error(t("cacheUnavailable"));
     }
     const cache = await fetchCompressedJson(
-      [`${CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`],
+      [
+        `${GITHUB_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
+        `${VPS_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
+      ],
       force,
       candidate => candidate?.schema === EXPECTED_CLASS_RANKING_SCHEMA &&
         Number(candidate.version) === 1 &&
@@ -2801,7 +2808,10 @@
       throw new Error(t("cacheUnavailable"));
     }
     const cache = await fetchCompressedJson(
-      [`${VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`],
+      [
+        `${GITHUB_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
+        `${VPS_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
+      ],
       force,
       candidate => candidate?.schema === EXPECTED_VIEW_RANKING_SCHEMA &&
         Number(candidate.version) === 1 &&
