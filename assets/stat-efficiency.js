@@ -21,7 +21,7 @@
   const EFFECT_GROUPS = [
     ["point", "주신 스탯 · +1"],
     ["flat", "공격 수치 · +10"],
-    ["percentPoint", "증폭·판정 · +1%p"],
+    ["percentPoint", "증폭·판정 · +1%"],
   ];
   const EFFECT_NAMES = {
     power: "위력", destruction: "파괴", justice: "정의", wisdom: "지혜",
@@ -178,7 +178,7 @@
   function setupOptionSteppers() {
     const groups = [
       [".option-flat-grid input", 5, "5"],
-      [".option-percent-grid input", 1, "1%p"],
+      [".option-percent-grid input", 1, "1%"],
     ];
     for (const [selector, step, display] of groups) {
       for (const input of form.querySelectorAll(selector)) {
@@ -200,6 +200,20 @@
         input.replaceWith(control);
         control.append(decrease, input, increase);
       }
+    }
+  }
+
+  function setupPercentUnits() {
+    for (const input of form.querySelectorAll('input[name$="Percent"]')) {
+      if (input.closest(".percent-input-control")) continue;
+      const control = document.createElement("span");
+      control.className = "percent-input-control";
+      const unit = document.createElement("span");
+      unit.className = "percent-input-unit";
+      unit.setAttribute("aria-hidden", "true");
+      unit.textContent = "%";
+      input.replaceWith(control);
+      control.append(input, unit);
     }
   }
 
@@ -424,6 +438,7 @@
   });
 
   setupOptionSteppers();
+  setupPercentUnits();
   applyLocale();
   window.NotMeterStatEfficiency = {
     activate() { applyLocale(); scheduleCalculation(0); },

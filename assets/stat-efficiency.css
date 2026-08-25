@@ -121,6 +121,12 @@
 .option-grid input { border-color: #32635f; background: rgba(5, 24, 31, .94); color: #8cf1e8; font-weight: 850; }
 .option-step-control { display: grid; grid-template-columns: 34px minmax(0, 1fr) 34px; min-width: 0; }
 .option-step-control input { position: relative; z-index: 1; border-radius: 0; text-align: center; }
+.percent-input-control { position: relative; display: block; min-width: 0; }
+.percent-input-control input { width: 100%; padding-right: 28px; appearance: textfield; }
+.percent-input-control input::-webkit-inner-spin-button, .percent-input-control input::-webkit-outer-spin-button { margin: 0; appearance: none; }
+.percent-input-unit { position: absolute; z-index: 2; top: 50%; right: 10px; transform: translateY(-50%); color: #70c9c3; font-size: 11px; font-weight: 900; line-height: 1; pointer-events: none; }
+.option-step-control .percent-input-control input { border-radius: 0; text-align: center; }
+.option-step-control .percent-input-unit { right: 9px; color: #79dcd3; }
 .option-step-button { min-width: 0; padding: 0; border: 1px solid #356862; outline: 0; background: #0b272d; color: #79dcd3; cursor: pointer; font-size: 16px; font-weight: 950; }
 .option-step-button:first-child { border-right: 0; border-radius: 8px 0 0 8px; }
 .option-step-button:last-child { border-left: 0; border-radius: 0 8px 8px 0; }
