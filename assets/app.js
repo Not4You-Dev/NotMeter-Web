@@ -1,4 +1,4 @@
-(() => {
+﻿(() => {
   "use strict";
 
   const VPS_RANKING_CACHE_ROOT = "https://notmeter.112-168-140-142.sslip.io/ranking/v1";
@@ -1307,7 +1307,7 @@
       leaveClassView();
       render();
     });
-    elements["refresh-button"].addEventListener("click", () => void loadCache(true));
+    elements["refresh-button"].addEventListener("click", () => void loadCache(false, true));
     elements["retry-button"].addEventListener("click", () => void loadCache(true));
     elements["back-button"].addEventListener("click", event => {
       if (isRepeatedPointerActivation(event)) {
