@@ -44,6 +44,7 @@
       noticeTitle: "실시간 계산", notice: "계산 버튼 없이 모든 입력을 즉시 반영합니다. 입력 도중에는 이전 요청을 취소하고 마지막 값만 표시합니다.",
       optionTitle: "비교할 옵션 증가량", optionHelp: "장비를 바꿨을 때 늘어나는 값만 입력하세요. 음수도 입력할 수 있습니다.",
       flatOptionGroup: "공격 수치", percentOptionGroup: "증폭·판정",
+      decreaseBy: "{value} 감소", increaseBy: "{value} 증가",
       currentDetails: "현재 스탯 상세 보기 · 필요할 때만 펼치세요", divineStats: "피해 연동 주신 스탯",
       divineStatsHelp: "복사한 값에서 올리면 증가분이 자동으로 옵션 비교에 합산됩니다.",
       power: "위력", destruction: "파괴", justice: "정의", wisdom: "지혜",
@@ -84,6 +85,7 @@
       noticeTitle: "Live calculation", notice: "There is no calculate button. Older requests are cancelled and only the latest input is shown.",
       optionTitle: "Option increase to compare", optionHelp: "Enter only the values gained by changing gear. Negative values are allowed.",
       flatOptionGroup: "Attack values", percentOptionGroup: "Amplification and rolls",
+      decreaseBy: "Decrease by {value}", increaseBy: "Increase by {value}",
       currentDetails: "Current stat details · expand only when needed", divineStats: "Damage-linked divine stats",
       divineStatsHelp: "Changes from the copied baseline are added to the option delta.", power: "Power", destruction: "Destruction",
       justice: "Justice", wisdom: "Wisdom", powerGrowth: "+0.1%p Attack Increase per point",
@@ -116,6 +118,7 @@
       noticeTitle: "即時計算", notice: "不需要計算按鈕。舊請求會被取消，只顯示最後輸入的結果。",
       optionTitle: "要比較的選項增量", optionHelp: "只輸入更換裝備後增加的數值，也可輸入負數。", currentDetails: "目前屬性詳細資料 · 需要時再展開",
       flatOptionGroup: "攻擊數值", percentOptionGroup: "增幅與判定",
+      decreaseBy: "減少 {value}", increaseBy: "增加 {value}",
       divineStats: "傷害連動主神屬性", divineStatsHelp: "相對於貼上基準的變化會自動加入選項增量。", power: "威力", destruction: "破壞", justice: "正義", wisdom: "智慧",
       powerGrowth: "每點攻擊力增加 +0.1%p", destructionGrowth: "每點攻擊力增加 +0.2%p", justiceGrowth: "每點完美 +0.2%p", wisdomGrowth: "每點強擊 +0.2%p",
       attackStats: "目前攻擊數值", attackStatsHelp: "可透過複製功能自動填入。", attack: "攻擊力", additionalAttack: "追加攻擊力", minimumAttack: "最小攻擊力", maximumAttack: "最大攻擊力",
@@ -165,6 +168,39 @@
     locale = resolveLocale();
     surface.querySelectorAll("[data-stat-i18n]").forEach(element => { element.textContent = t(element.dataset.statI18n); });
     surface.querySelectorAll("[data-stat-i18n-placeholder]").forEach(element => { element.placeholder = t(element.dataset.statI18nPlaceholder); });
+    surface.querySelectorAll(".option-step-button").forEach(button => {
+      const label = t(Number(button.dataset.step) > 0 ? "increaseBy" : "decreaseBy", { value: button.dataset.stepDisplay });
+      button.setAttribute("aria-label", label);
+      button.title = label;
+    });
+  }
+
+  function setupOptionSteppers() {
+    const groups = [
+      [".option-flat-grid input", 5, "5"],
+      [".option-percent-grid input", 1, "1%p"],
+    ];
+    for (const [selector, step, display] of groups) {
+      for (const input of form.querySelectorAll(selector)) {
+        if (input.closest(".option-step-control")) continue;
+        const control = document.createElement("span");
+        control.className = "option-step-control";
+        const decrease = document.createElement("button");
+        decrease.type = "button";
+        decrease.className = "option-step-button";
+        decrease.dataset.step = String(-step);
+        decrease.dataset.stepDisplay = display;
+        decrease.textContent = "−";
+        const increase = document.createElement("button");
+        increase.type = "button";
+        increase.className = "option-step-button";
+        increase.dataset.step = String(step);
+        increase.dataset.stepDisplay = display;
+        increase.textContent = "+";
+        input.replaceWith(control);
+        control.append(decrease, input, increase);
+      }
+    }
   }
 
   function numeric(source, key) {
@@ -362,6 +398,16 @@
     }
   });
   form.addEventListener("submit", event => event.preventDefault());
+  form.addEventListener("click", event => {
+    const button = event.target.closest(".option-step-button");
+    if (!button || !form.contains(button)) return;
+    const input = button.closest(".option-step-control")?.querySelector("input");
+    if (!input) return;
+    const current = Number(input.value);
+    const step = Number(button.dataset.step);
+    input.value = String(Math.round(((Number.isFinite(current) ? current : 0) + step) * 100) / 100);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
   form.addEventListener("input", event => {
     if (event.target === importInput) return;
     if (!canCalculate()) {
@@ -377,6 +423,7 @@
     if (event.target !== importInput) scheduleCalculation(0);
   });
 
+  setupOptionSteppers();
   applyLocale();
   window.NotMeterStatEfficiency = {
     activate() { applyLocale(); scheduleCalculation(0); },

@@ -119,6 +119,14 @@
 .option-card { border-color: #368c84; background: linear-gradient(145deg, rgba(24, 105, 100, .22), rgba(8, 21, 31, .97)); }
 .option-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .option-grid input { border-color: #32635f; background: rgba(5, 24, 31, .94); color: #8cf1e8; font-weight: 850; }
+.option-step-control { display: grid; grid-template-columns: 34px minmax(0, 1fr) 34px; min-width: 0; }
+.option-step-control input { position: relative; z-index: 1; border-radius: 0; text-align: center; }
+.option-step-button { min-width: 0; padding: 0; border: 1px solid #356862; outline: 0; background: #0b272d; color: #79dcd3; cursor: pointer; font-size: 16px; font-weight: 950; }
+.option-step-button:first-child { border-right: 0; border-radius: 8px 0 0 8px; }
+.option-step-button:last-child { border-left: 0; border-radius: 0 8px 8px 0; }
+.option-step-button:hover { border-color: #54c8bd; color: #ecfffd; background: #12383c; }
+.option-step-button:focus-visible { position: relative; z-index: 2; border-color: #67ded4; box-shadow: 0 0 0 2px rgba(73, 210, 199, .14); }
+.option-step-button:active { color: #fff; background: #19504f; }
 .option-direction { display: grid; grid-template-columns: minmax(0, 1fr) minmax(170px, 210px); align-items: center; gap: 14px; margin-bottom: 13px; padding: 12px 13px; border: 1px solid #438e87; border-radius: 9px; background: rgba(23, 100, 94, .2); }
 .option-direction-copy { display: grid; gap: 4px; min-width: 0; }
 .option-direction-copy b { color: #e0fbf8; font-size: 12px; font-weight: 950; }
@@ -293,4 +301,5 @@
 @media (max-width: 390px) {
   .profile-grid, .stat-grid, .divine-grid, .option-grid { grid-template-columns: 1fr; }
   .calculation-method-grid { grid-template-columns: 1fr; }
+  .option-step-control { grid-template-columns: 38px minmax(0, 1fr) 38px; }
 }
