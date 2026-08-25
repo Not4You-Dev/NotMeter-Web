@@ -54,9 +54,10 @@
       damageAmp: "피해 증폭", weaponDamageAmp: "무기 피해 증폭", pveAmp: "PVE 피해 증폭", bossAmp: "보스 피해 증폭",
       criticalDamageAmp: "치명타 피해 증폭", perfect: "완벽", hardHit: "강타",
       frontAmp: "전방 피해 증폭", backAmp: "후방 피해 증폭",
-      combatAssumptions: "전투 조건", combatAssumptionsHelp: "공격 방향과 기대 판정에 사용됩니다.",
+      combatAssumptions: "세부 판정 조건", combatAssumptionsHelp: "치명타와 강타 기대값을 세부 조정할 때 사용합니다.",
       criticalChance: "치명타 발동률", partyHardHit: "파티 강타 버프", bossHardHitResistance: "보스 강타 저항",
       attackType: "공격 방향", attackNone: "방향 적용 안 함", attackFront: "전방", attackBack: "후방",
+      directionHelp: "전방·후방 피해 증폭을 비교할 방향을 선택하세요.",
       frontRate: "전방 공격 비율", backRate: "후방 공격 비율",
       deltaBaseAttack: "추가 공격력", deltaGearAttack: "공격력", deltaMaxAttack: "최대 공격력",
       deltaPveAttack: "PVE 공격력", deltaBossAttack: "보스 공격력", deltaAttackIncrease: "공격력 증가율",
@@ -88,9 +89,10 @@
       percentStats: "Current amplification and rolls", percentStatsHelp: "Enter the values shown in the character window.", attackIncrease: "Attack Increase",
       damageAmp: "Damage Amplification", weaponDamageAmp: "Weapon Damage Amplification", pveAmp: "PVE Damage Amplification", bossAmp: "Boss Damage Amplification",
       criticalDamageAmp: "Critical Damage Amplification", perfect: "Perfect", hardHit: "Hard Hit", frontAmp: "Front Damage Amplification", backAmp: "Back Damage Amplification",
-      combatAssumptions: "Combat conditions", combatAssumptionsHelp: "Used for direction and expected proc damage.", criticalChance: "Critical proc rate",
+      combatAssumptions: "Detailed proc conditions", combatAssumptionsHelp: "Fine-tune critical and Hard Hit expectations.", criticalChance: "Critical proc rate",
       partyHardHit: "Party Hard Hit buff", bossHardHitResistance: "Boss Hard Hit resistance", attackType: "Attack direction",
       attackNone: "No direction", attackFront: "Front", attackBack: "Back", frontRate: "Front attack rate", backRate: "Back attack rate",
+      directionHelp: "Choose the direction used to compare Front or Back Damage Amplification.",
       deltaBaseAttack: "Additional Attack", deltaGearAttack: "Attack", deltaMaxAttack: "Max Attack", deltaPveAttack: "PVE Attack", deltaBossAttack: "Boss Attack",
       deltaAttackIncrease: "Attack Increase", deltaDamageAmp: "Damage Amplification", deltaWeaponAmp: "Weapon Damage Amplification",
       deltaCriticalAmp: "Critical Damage Amplification", deltaPerfect: "Perfect", deltaHardHit: "Hard Hit", deltaFrontAmp: "Front Damage Amplification", deltaBackAmp: "Back Damage Amplification",
@@ -113,8 +115,9 @@
       attackStats: "目前攻擊數值", attackStatsHelp: "可透過複製功能自動填入。", attack: "攻擊力", additionalAttack: "追加攻擊力", minimumAttack: "最小攻擊力", maximumAttack: "最大攻擊力",
       pveAttack: "PVE 攻擊力", bossAttack: "首領攻擊力", percentStats: "目前傷害增幅與判定", percentStatsHelp: "請輸入角色視窗顯示的數值。", attackIncrease: "攻擊力增加率",
       damageAmp: "傷害增幅", weaponDamageAmp: "武器傷害增幅", pveAmp: "PVE 傷害增幅", bossAmp: "首領傷害增幅", criticalDamageAmp: "暴擊傷害增幅",
-      perfect: "完美", hardHit: "強擊", frontAmp: "正面傷害增幅", backAmp: "後方傷害增幅", combatAssumptions: "戰鬥條件", combatAssumptionsHelp: "用於攻擊方向與判定期望值。",
+      perfect: "完美", hardHit: "強擊", frontAmp: "正面傷害增幅", backAmp: "後方傷害增幅", combatAssumptions: "詳細判定條件", combatAssumptionsHelp: "用於微調暴擊與強擊期望值。",
       criticalChance: "暴擊發動率", partyHardHit: "隊伍強擊增益", bossHardHitResistance: "首領強擊抗性", attackType: "攻擊方向", attackNone: "不套用方向", attackFront: "正面", attackBack: "後方",
+      directionHelp: "請選擇要比較正面或後方傷害增幅的方向。",
       frontRate: "正面攻擊比例", backRate: "後方攻擊比例", deltaBaseAttack: "追加攻擊力", deltaGearAttack: "攻擊力", deltaMaxAttack: "最大攻擊力", deltaPveAttack: "PVE 攻擊力",
       deltaBossAttack: "首領攻擊力", deltaAttackIncrease: "攻擊力增加率", deltaDamageAmp: "傷害增幅", deltaWeaponAmp: "武器傷害增幅", deltaCriticalAmp: "暴擊傷害增幅",
       deltaPerfect: "完美", deltaHardHit: "強擊", deltaFrontAmp: "正面傷害增幅", deltaBackAmp: "後方傷害增幅", resultKicker: "即時選項比較", resultTitle: "預期傷害變化",
@@ -134,7 +137,6 @@
   const resultList = document.getElementById("result-list");
   const resultSource = document.getElementById("result-source");
   const confidence = document.getElementById("confidence");
-  const formulaVersion = document.getElementById("formula-version");
   const formError = document.getElementById("form-error");
   let locale = resolveLocale();
   let baselineDivine = null;
@@ -251,7 +253,6 @@
     confidence.textContent = t("ready");
     confidence.className = "confidence high";
     resultSource.textContent = t("source", { job: result.jobName || "—" });
-    formulaVersion.textContent = result.formulaVersion || "—";
 
     const gain = document.createElement("article");
     gain.className = "damage-gain-card";
