@@ -35,6 +35,7 @@
   };
   const TEXT = {
     ko: {
+      pageKicker: "실시간 스탯 비교",
       title: "스탯 효율 계산기", subtitle: "옵션 수치를 바꾸는 즉시 현재 스탯과 비교해 피해 상승량을 보여줍니다.",
       importTitle: "딜미터기에서 복사한 내 스탯 붙여넣기",
       importDescription: "‘내 스탯 복사’ 값을 붙여넣으면 현재 스탯이 채워지고 바로 계산됩니다.",
@@ -42,6 +43,7 @@
       importSuccess: "{job} · 피해 계산 스탯 {count}개 입력 완료", importInvalid: "딜미터기에서 복사한 유효한 스탯 값이 아닙니다.",
       noticeTitle: "실시간 계산", notice: "계산 버튼 없이 모든 입력을 즉시 반영합니다. 입력 도중에는 이전 요청을 취소하고 마지막 값만 표시합니다.",
       optionTitle: "비교할 옵션 증가량", optionHelp: "장비를 바꿨을 때 늘어나는 값만 입력하세요. 음수도 입력할 수 있습니다.",
+      flatOptionGroup: "공격 수치", percentOptionGroup: "증폭·판정",
       currentDetails: "현재 스탯 상세 보기 · 필요할 때만 펼치세요", divineStats: "피해 연동 주신 스탯",
       divineStatsHelp: "복사한 값에서 올리면 증가분이 자동으로 옵션 비교에 합산됩니다.",
       power: "위력", destruction: "파괴", justice: "정의", wisdom: "지혜",
@@ -74,12 +76,14 @@
       easyTwo: "이 페이지 상단 입력칸에 붙여넣습니다.", easyThree: "비교할 옵션 수치를 바꾸면 결과가 같은 위치에서 즉시 갱신됩니다.",
     },
     en: {
+      pageKicker: "LIVE STAT COMPARISON",
       title: "Stat Efficiency Calculator", subtitle: "Every edit instantly compares the selected option against your current stats.",
       importTitle: "Paste stats copied from NotMeter", importDescription: "Paste Copy My Stats to fill the baseline and calculate immediately.",
       importPlaceholder: "Click here and press Ctrl+V", importWaiting: "Waiting for copied stats",
       importSuccess: "{job} · Filled {count} damage stats", importInvalid: "This is not a valid NotMeter stat copy.",
       noticeTitle: "Live calculation", notice: "There is no calculate button. Older requests are cancelled and only the latest input is shown.",
       optionTitle: "Option increase to compare", optionHelp: "Enter only the values gained by changing gear. Negative values are allowed.",
+      flatOptionGroup: "Attack values", percentOptionGroup: "Amplification and rolls",
       currentDetails: "Current stat details · expand only when needed", divineStats: "Damage-linked divine stats",
       divineStatsHelp: "Changes from the copied baseline are added to the option delta.", power: "Power", destruction: "Destruction",
       justice: "Justice", wisdom: "Wisdom", powerGrowth: "+0.1%p Attack Increase per point",
@@ -105,11 +109,13 @@
       easyTwo: "Paste the copied value into the field at the top of this page.", easyThree: "Change any option value and the result updates instantly in place.",
     },
     "zh-TW": {
+      pageKicker: "即時屬性比較",
       title: "屬性效率計算器", subtitle: "每次修改數值都會立即比較目前屬性與選擇的增量。",
       importTitle: "貼上從 NotMeter 複製的角色屬性", importDescription: "貼上「複製我的屬性」即可填入基準並立即計算。",
       importPlaceholder: "點擊此處並按 Ctrl+V", importWaiting: "等待貼上屬性", importSuccess: "{job} · 已填入 {count} 項傷害屬性", importInvalid: "這不是有效的 NotMeter 屬性資料。",
       noticeTitle: "即時計算", notice: "不需要計算按鈕。舊請求會被取消，只顯示最後輸入的結果。",
       optionTitle: "要比較的選項增量", optionHelp: "只輸入更換裝備後增加的數值，也可輸入負數。", currentDetails: "目前屬性詳細資料 · 需要時再展開",
+      flatOptionGroup: "攻擊數值", percentOptionGroup: "增幅與判定",
       divineStats: "傷害連動主神屬性", divineStatsHelp: "相對於貼上基準的變化會自動加入選項增量。", power: "威力", destruction: "破壞", justice: "正義", wisdom: "智慧",
       powerGrowth: "每點攻擊力增加 +0.1%p", destructionGrowth: "每點攻擊力增加 +0.2%p", justiceGrowth: "每點完美 +0.2%p", wisdomGrowth: "每點強擊 +0.2%p",
       attackStats: "目前攻擊數值", attackStatsHelp: "可透過複製功能自動填入。", attack: "攻擊力", additionalAttack: "追加攻擊力", minimumAttack: "最小攻擊力", maximumAttack: "最大攻擊力",

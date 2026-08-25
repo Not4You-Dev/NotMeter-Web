@@ -20,7 +20,7 @@
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
   <link rel="stylesheet" href="./assets/app.css?v=20260825-4">
   <link rel="stylesheet" href="./assets/character.css?v=20260824-8">
-  <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260825-3">
+  <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-1">
   <script>
     (() => {
       const requestedView = new URLSearchParams(window.location.search).get("view") || "ranking";
@@ -196,7 +196,7 @@
   <script src="./assets/combat-detail-buffs.js?v=20260825-4" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260822-1" defer></script>
   <script src="./assets/character.js?v=20260824-12" defer></script>
-  <script src="./assets/stat-efficiency.js?v=20260825-3" defer></script>
+  <script src="./assets/stat-efficiency.js?v=20260826-1" defer></script>
   <script src="./assets/app.js?v=20260825-4" defer></script>
 </head>
 <body>
@@ -469,7 +469,7 @@
         <div class="stat-efficiency-heading-copy">
           <span class="stat-efficiency-heading-icon" aria-hidden="true">↗</span>
           <div>
-            <span class="stat-efficiency-kicker">FIXED FORMULA · PRIVATE CALCULATION</span>
+            <span class="stat-efficiency-kicker" data-stat-i18n="pageKicker">실시간 스탯 비교</span>
             <h2 data-stat-i18n="title">스탯 효율 계산기</h2>
             <p data-stat-i18n="subtitle">현재 캐릭터에서 실제 피해 기대값을 높이는 스탯만 비교합니다.</p>
           </div>
@@ -503,27 +503,47 @@
         </div>
       </section>
 
+      <section class="quality-card calculator-steps" aria-labelledby="calculator-steps-title">
+        <h3 id="calculator-steps-title" data-stat-i18n="easyTitle">사용 방법</h3>
+        <ol>
+          <li data-stat-i18n="easyOne">딜미터기 처치 기록 상단에서 ‘내 스탯 복사’를 누릅니다.</li>
+          <li data-stat-i18n="easyTwo">이 페이지 상단 입력칸에 붙여넣습니다.</li>
+          <li data-stat-i18n="easyThree">비교할 옵션 수치를 바꾸면 결과가 같은 위치에서 즉시 갱신됩니다.</li>
+        </ol>
+      </section>
+
       <div class="efficiency-layout">
         <form class="efficiency-form" id="efficiency-form" novalidate>
           <input id="stat-job" name="jobName" type="hidden" value="">
           <section class="efficiency-card option-card">
             <header><span>01</span><div><h3 data-stat-i18n="optionTitle">비교할 옵션 증가량</h3><p data-stat-i18n="optionHelp">장비를 바꿨을 때 늘어나는 값만 입력하세요. 음수도 입력할 수 있습니다.</p></div></header>
-            <div class="field-grid option-grid">
-              <label class="option-direction"><span data-stat-i18n="attackType">공격 방향</span><small data-stat-i18n="directionHelp">전방·후방 피해 증폭을 비교할 방향을 선택하세요.</small><select name="attackType"><option value="none" data-stat-i18n="attackNone">방향 적용 안 함</option><option value="front" data-stat-i18n="attackFront">전방</option><option value="back" data-stat-i18n="attackBack">후방</option></select></label>
-              <label><span data-stat-i18n="deltaGearAttack">공격력</span><input name="deltaGearAttack" type="number" step="1" value="0"></label>
-              <label><span data-stat-i18n="deltaBaseAttack">추가 공격력</span><input name="deltaBaseAttack" type="number" step="1" value="0"></label>
-              <label><span data-stat-i18n="deltaMaxAttack">최대 공격력</span><input name="deltaMaxAttack" type="number" step="1" value="0"></label>
-              <label><span data-stat-i18n="deltaPveAttack">PVE 공격력</span><input name="deltaPveAttack" type="number" step="1" value="0"></label>
-              <label><span data-stat-i18n="deltaBossAttack">보스 공격력</span><input name="deltaBossAttack" type="number" step="1" value="0"></label>
-              <label><span data-stat-i18n="deltaAttackIncrease">공격력 증가율</span><input name="deltaAttackIncreasePercent" type="number" step="0.01" value="0"></label>
-              <label><span data-stat-i18n="deltaDamageAmp">피해 증폭</span><input name="deltaDamageBoostPercent" type="number" step="0.01" value="0"></label>
-              <label><span data-stat-i18n="deltaWeaponAmp">무기 피해 증폭</span><input name="deltaWeaponDamageBoostPercent" type="number" step="0.01" value="0"></label>
-              <label><span data-stat-i18n="deltaCriticalAmp">치명타 피해 증폭</span><input name="deltaCriticalDamageBoostPercent" type="number" step="0.01" value="0"></label>
-              <label><span data-stat-i18n="deltaPerfect">완벽</span><input name="deltaPerfectPercent" type="number" step="0.01" value="0"></label>
-              <label><span data-stat-i18n="deltaHardHit">강타</span><input name="deltaSmitePercent" type="number" step="0.01" value="0"></label>
-              <label><span data-stat-i18n="deltaFrontAmp">전방 피해 증폭</span><input name="deltaFrontDamageBoostPercent" type="number" step="0.01" value="0"></label>
-              <label><span data-stat-i18n="deltaBackAmp">후방 피해 증폭</span><input name="deltaBackDamageBoostPercent" type="number" step="0.01" value="0"></label>
-            </div>
+            <label class="option-direction">
+              <span class="option-direction-copy"><b data-stat-i18n="attackType">공격 방향</b><small data-stat-i18n="directionHelp">전방·후방 피해 증폭을 비교할 방향을 선택하세요.</small></span>
+              <select name="attackType"><option value="none" data-stat-i18n="attackNone">방향 적용 안 함</option><option value="front" data-stat-i18n="attackFront">전방</option><option value="back" data-stat-i18n="attackBack">후방</option></select>
+            </label>
+            <section class="option-field-group" aria-labelledby="flat-option-group-title">
+              <h4 id="flat-option-group-title" data-stat-i18n="flatOptionGroup">공격 수치</h4>
+              <div class="field-grid option-grid option-flat-grid">
+                <label><span data-stat-i18n="deltaGearAttack">공격력</span><input name="deltaGearAttack" type="number" step="1" value="0"></label>
+                <label><span data-stat-i18n="deltaBaseAttack">추가 공격력</span><input name="deltaBaseAttack" type="number" step="1" value="0"></label>
+                <label><span data-stat-i18n="deltaMaxAttack">최대 공격력</span><input name="deltaMaxAttack" type="number" step="1" value="0"></label>
+                <label><span data-stat-i18n="deltaPveAttack">PVE 공격력</span><input name="deltaPveAttack" type="number" step="1" value="0"></label>
+                <label><span data-stat-i18n="deltaBossAttack">보스 공격력</span><input name="deltaBossAttack" type="number" step="1" value="0"></label>
+              </div>
+            </section>
+            <section class="option-field-group" aria-labelledby="percent-option-group-title">
+              <h4 id="percent-option-group-title" data-stat-i18n="percentOptionGroup">증폭·판정</h4>
+              <div class="field-grid option-grid option-percent-grid">
+                <label><span data-stat-i18n="deltaAttackIncrease">공격력 증가율</span><input name="deltaAttackIncreasePercent" type="number" step="0.01" value="0"></label>
+                <label><span data-stat-i18n="deltaDamageAmp">피해 증폭</span><input name="deltaDamageBoostPercent" type="number" step="0.01" value="0"></label>
+                <label><span data-stat-i18n="deltaWeaponAmp">무기 피해 증폭</span><input name="deltaWeaponDamageBoostPercent" type="number" step="0.01" value="0"></label>
+                <label><span data-stat-i18n="deltaCriticalAmp">치명타 피해 증폭</span><input name="deltaCriticalDamageBoostPercent" type="number" step="0.01" value="0"></label>
+                <label><span data-stat-i18n="deltaPerfect">완벽</span><input name="deltaPerfectPercent" type="number" step="0.01" value="0"></label>
+                <label><span data-stat-i18n="deltaHardHit">강타</span><input name="deltaSmitePercent" type="number" step="0.01" value="0"></label>
+                <label><span data-stat-i18n="deltaFrontAmp">전방 피해 증폭</span><input name="deltaFrontDamageBoostPercent" type="number" step="0.01" value="0"></label>
+                <label><span data-stat-i18n="deltaBackAmp">후방 피해 증폭</span><input name="deltaBackDamageBoostPercent" type="number" step="0.01" value="0"></label>
+              </div>
+            </section>
             <div class="live-calculation-note"><span aria-hidden="true">●</span><strong data-stat-i18n="calculating">자동 계산 중</strong><small data-stat-i18n="notice">계산 버튼 없이 모든 입력을 즉시 반영합니다. 입력 도중에는 이전 요청을 취소하고 마지막 값만 표시합니다.</small></div>
           </section>
 
@@ -590,14 +610,6 @@
             <div class="result-summary" id="result-summary" hidden></div>
             <details class="result-quick-details"><summary data-stat-i18n="quickCompare">스탯별 기본 증가량 비교</summary><div class="result-list" id="result-list" hidden></div></details>
             <footer><span data-stat-i18n="resultGuide">+1, +10, +1%p처럼 같은 단위끼리 비교하세요.</span></footer>
-          </section>
-          <section class="quality-card">
-            <h3 data-stat-i18n="easyTitle">사용 방법</h3>
-            <ol>
-              <li data-stat-i18n="easyOne">딜미터기 처치 기록 상단에서 ‘내 스탯 복사’를 누릅니다.</li>
-              <li data-stat-i18n="easyTwo">이 페이지 상단 입력칸에 붙여넣습니다.</li>
-              <li data-stat-i18n="easyThree">비교할 옵션 수치를 바꾸면 결과가 같은 위치에서 즉시 갱신됩니다.</li>
-            </ol>
           </section>
         </aside>
       </div>
