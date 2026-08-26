@@ -1758,12 +1758,18 @@
         : [];
       const embeddedViews = Array.isArray(cache.views)
         ? cache.views.filter(view =>
-            String(view?.dungeonKey || "").toLowerCase() === nextDungeon.toLowerCase())
+            !String(view?.dungeonKey || "").startsWith("__"))
         : [];
-      const initialViews = embeddedViews.length > 0
-        ? embeddedViews
+      const initialDungeonViews = embeddedViews.filter(view =>
+        String(view?.dungeonKey || "").toLowerCase() === nextDungeon.toLowerCase());
+      const initialViews = initialDungeonViews.length > 0
+        ? initialDungeonViews
         : await fetchViewRankingCache(nextDungeon, cache.generatedAt, force);
-      cache.views = globalViews.concat(initialViews);
+      // 현재 Release의 웹 본문에는 모든 던전 요약 뷰가 이미 들어 있다.
+      // 이를 버린 뒤 오래된 분할 파일을 다시 받으면 세대 불일치 재시도와
+      // VPS 대기열을 거치므로, 본문에 포함된 뷰는 그대로 재사용한다.
+      cache.views = globalViews.concat(
+        embeddedViews.length > 0 ? embeddedViews : initialViews);
       const nextDungeonBossCount = cache.dungeons
         .find(item => item.key === nextDungeon)?.bossNames?.length || 0;
       const nextBossIndex = state.bossIndex >= 1 && state.bossIndex <= nextDungeonBossCount
@@ -1803,6 +1809,12 @@
         state.customCpRankIndexes.clear();
       }
       state.data = cache;
+      for (const view of cache.views) {
+        const embeddedDungeonKey = String(view?.dungeonKey || "").trim().toLowerCase();
+        if (embeddedDungeonKey && !embeddedDungeonKey.startsWith("__")) {
+          state.loadedViewDungeonKeys.add(embeddedDungeonKey);
+        }
+      }
       state.loadedViewDungeonKeys.add(nextDungeon);
       if (preparedCustomCp) {
         state.customCpData = preparedCustomCp;
