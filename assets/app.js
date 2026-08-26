@@ -6,7 +6,11 @@
     "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web";
   const GITHUB_RANKING_MANIFEST_URL =
     `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data/client/notmeter-ranking-latest.json`;
+  const GITHUB_RANKING_RELEASE_ROOT =
+    "https://github.com/Not4You-Dev/NotMeter-Web/releases/download";
   let GITHUB_RANKING_CACHE_ROOT = `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data`;
+  let githubRankingReleaseTag = "";
+  let githubRankingReleaseGeneration = "";
   let githubRankingManifestLoad = null;
   const CACHE_URLS = [
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`,
@@ -58,6 +62,10 @@
   const CACHE_MAX_COMPRESSED_BYTES = 64 * 1024 * 1024;
   const CACHE_SYNC_INTERVAL_MS = 5 * 60 * 1000;
   const CACHE_SYNC_JITTER_MS = 3 * 60 * 1000;
+  const VPS_FALLBACK_MINIMUM_DELAY_MS = 5_000;
+  const VPS_FALLBACK_MAXIMUM_DELAY_MS = 45_000;
+  let vpsFallbackQueue = Promise.resolve();
+  let vpsFallbackSpreadPromise = null;
   const CACHE_SYNC_THROTTLE_MS = 60 * 1000;
   const FIELD_BOSS_CACHE_SYNC_INTERVAL_MS = 10 * 60 * 1000;
   const FIELD_BOSS_CACHE_RESUME_THROTTLE_MS = 10 * 60 * 1000;
@@ -1559,6 +1567,72 @@
     GITHUB_VIEW_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/views`;
   }
 
+  function encodeReleaseAssetPath(path) {
+    const normalized = String(path || "").replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+    if (!normalized || normalized.split("/").some(part => !part || part === "." || part === "..")) {
+      throw new Error("invalid GitHub release cache path");
+    }
+    const bytes = new TextEncoder().encode(normalized);
+    let binary = "";
+    for (const byte of bytes) {
+      binary += String.fromCharCode(byte);
+    }
+    return window.btoa(binary).replace(/=+$/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  }
+
+  function applyGitHubRankingRelease(release) {
+    const previousGeneration = githubRankingReleaseGeneration;
+    githubRankingReleaseTag = "";
+    githubRankingReleaseGeneration = "";
+    if (release?.schema !== "notmeter-release-cache-v1" ||
+        release?.assetEncoding !== "base64url-path-v1" ||
+        !/^(notmeter-cache-a|notmeter-cache-b)$/.test(String(release?.tag || "")) ||
+        !/^[0-9a-f]{12,64}$/i.test(String(release?.generation || ""))) {
+      return;
+    }
+    githubRankingReleaseTag = String(release.tag);
+    githubRankingReleaseGeneration = String(release.generation).toLowerCase();
+    if (githubRankingReleaseGeneration !== previousGeneration) {
+      vpsFallbackSpreadPromise = null;
+    }
+  }
+
+  function githubReleaseCacheUrl(path) {
+    if (!githubRankingReleaseTag || !githubRankingReleaseGeneration) {
+      return "";
+    }
+    const assetName = `g-${githubRankingReleaseGeneration}-p-${encodeReleaseAssetPath(path)}`;
+    return `${GITHUB_RANKING_RELEASE_ROOT}/${encodeURIComponent(githubRankingReleaseTag)}/${encodeURIComponent(assetName)}`;
+  }
+
+  function githubCacheCandidates(path, rawUrl) {
+    const releaseUrl = githubReleaseCacheUrl(path);
+    return releaseUrl ? [releaseUrl, rawUrl] : [rawUrl];
+  }
+
+  function refreshRankingCacheCandidateUrls() {
+    CACHE_URLS.splice(0, CACHE_URLS.length,
+      ...githubCacheCandidates(
+        "data/notmeter-ranking.json.gz",
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`),
+      `${VPS_RANKING_CACHE_ROOT}/web/main?layout=view-shards-v2`);
+    CLASS_OVERALL_CACHE_URLS.splice(0, CLASS_OVERALL_CACHE_URLS.length,
+      ...githubCacheCandidates(
+        "data/notmeter-ranking-class-overall.json.gz",
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`),
+      `${VPS_RANKING_CACHE_ROOT}/web/class-overall`);
+    CONTRIBUTION_CACHE_URLS.splice(0, CONTRIBUTION_CACHE_URLS.length,
+      ...githubCacheCandidates(
+        "data/notmeter-ranking-contribution.json.gz",
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`),
+      `${VPS_RANKING_CACHE_ROOT}/web/contribution`);
+    CUSTOM_CP_CACHE_URLS.splice(0, CUSTOM_CP_CACHE_URLS.length,
+      ...githubCacheCandidates(
+        "data/notmeter-ranking-custom-cp.json.gz",
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`),
+      `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`);
+  }
+
   async function refreshGitHubRankingRevision(force = false) {
     if (githubRankingManifestLoad) {
       return githubRankingManifestLoad;
@@ -1586,6 +1660,8 @@
           throw new Error("invalid GitHub cache manifest");
         }
         applyGitHubRankingRevision(manifest.revision);
+        applyGitHubRankingRelease(manifest.release);
+        refreshRankingCacheCandidateUrls();
         return String(manifest.revision).toLowerCase();
       } finally {
         if (timeoutId) {
@@ -2792,7 +2868,9 @@
     }
     const cache = await fetchCompressedJson(
       [
-        `${GITHUB_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
+        ...githubCacheCandidates(
+          `data/classes/${normalizedDungeonKey}.json.gz`,
+          `${GITHUB_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`),
         `${VPS_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
       ],
       force,
@@ -2813,7 +2891,9 @@
     }
     const cache = await fetchCompressedJson(
       [
-        `${GITHUB_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
+        ...githubCacheCandidates(
+          `data/views/${normalizedDungeonKey}.json.gz`,
+          `${GITHUB_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`),
         `${VPS_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
       ],
       force,
@@ -3011,7 +3091,11 @@
   async function fetchCompressedJson(urls, force, accept = null, revision = "") {
     const errors = [];
     for (const baseUrl of urls) {
-      for (let attempt = 1; attempt <= CACHE_REQUEST_ATTEMPTS; attempt += 1) {
+      const releaseVpsSlot = isVpsRankingCacheUrl(baseUrl)
+        ? await enterVpsFallbackQueue()
+        : null;
+      try {
+        for (let attempt = 1; attempt <= CACHE_REQUEST_ATTEMPTS; attempt += 1) {
         const query = [];
         if (force || attempt > 1) {
           query.push(`v=${Date.now()}`);
@@ -3061,12 +3145,45 @@
             window.clearTimeout(timeoutId);
           }
         }
-        if (attempt < CACHE_REQUEST_ATTEMPTS) {
-          await new Promise((resolve) => window.setTimeout(resolve, CACHE_RETRY_DELAY_MS));
+          if (attempt < CACHE_REQUEST_ATTEMPTS) {
+            await new Promise((resolve) => window.setTimeout(resolve, CACHE_RETRY_DELAY_MS));
+          }
         }
+      } finally {
+        releaseVpsSlot?.();
       }
     }
     throw new Error(`${t("cacheUnavailable")} (${errors.join(" / ")})`);
+  }
+
+  function isVpsRankingCacheUrl(url) {
+    try {
+      const host = new URL(String(url), window.location.href).hostname.toLowerCase();
+      return host.endsWith(".sslip.io") || host.endsWith(".nip.io");
+    } catch {
+      return false;
+    }
+  }
+
+  async function enterVpsFallbackQueue() {
+    let releaseCurrent;
+    const previous = vpsFallbackQueue;
+    vpsFallbackQueue = new Promise(resolve => {
+      releaseCurrent = resolve;
+    });
+    await previous;
+    try {
+      if (!vpsFallbackSpreadPromise) {
+        const range = VPS_FALLBACK_MAXIMUM_DELAY_MS - VPS_FALLBACK_MINIMUM_DELAY_MS;
+        const delay = VPS_FALLBACK_MINIMUM_DELAY_MS + Math.floor(Math.random() * (range + 1));
+        vpsFallbackSpreadPromise = new Promise(resolve => window.setTimeout(resolve, delay));
+      }
+      await vpsFallbackSpreadPromise;
+      return () => releaseCurrent();
+    } catch (error) {
+      releaseCurrent();
+      throw error;
+    }
   }
 
   async function readCacheResponseBytes(response, touchRequest) {
@@ -3196,7 +3313,9 @@
     const safeKey = String(dungeonKey || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const normalizedBossIndex = Math.max(0, Number(bossIndex) || 0);
     return [
-      `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp-${safeKey}-boss-${normalizedBossIndex}.json.gz`,
+      ...githubCacheCandidates(
+        `data/notmeter-ranking-custom-cp-${safeKey}-boss-${normalizedBossIndex}.json.gz`,
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp-${safeKey}-boss-${normalizedBossIndex}.json.gz`),
     ];
   }
 
