@@ -1606,7 +1606,13 @@
   }
 
   function githubCacheCandidates(path, rawUrl) {
-    const releaseUrl = githubReleaseCacheUrl(path);
+    // The fixed Release slots currently publish client dungeon shards under
+    // data/client/classes, but the web-only data/views and data/classes shards
+    // remain on the immutable Git revision. Do not spend two retries on a
+    // release asset that cannot exist before using the matching revision URL.
+    const releaseAssetAvailable =
+      !/^data\/(?:views|classes)\//i.test(String(path || ""));
+    const releaseUrl = releaseAssetAvailable ? githubReleaseCacheUrl(path) : "";
     return releaseUrl ? [releaseUrl, rawUrl] : [rawUrl];
   }
 
