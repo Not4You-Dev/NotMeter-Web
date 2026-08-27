@@ -25,6 +25,11 @@
   const RECENT_LIMIT = 10;
   const FAVORITE_LIMIT = 30;
   const REQUEST_TIMEOUT_MS = 45_000;
+  const SEARCH_SESSION_TTL_MS = 5 * 60_000;
+  const PROFILE_SESSION_TTL_MS = 10 * 60_000;
+  const SESSION_PROFILE_LIMIT = 4;
+  const PROFILE_SESSION_INDEX_KEY = "notmeter-character-profile-session-index-v1";
+  const RANKING_LOAD_PARALLELISM = 4;
   const CORE_STAT_TYPES = new Set(["STR", "DEX", "INT", "CON", "AGI", "WIS"]);
   const DIVINE_STAT_TYPES = new Set([
     "Justice", "Freedom", "Illusion", "Life", "Time", "Destruction",
@@ -203,6 +208,8 @@
   const state = {
     locale: readLocale(), searchResults: [], searchRace: "all", searchComplete: true,
     searchRequest: 0, profile: null, profileLoad: null, profileRequest: 0,
+    profileRenderSignature: "",
+    rankingKey: "", rankingStatus: "idle", rankingRows: [], rankingLoad: null,
     activeLoadout: null, activeEquipmentTab: "gear",
     officialNameCatalog: null, officialNameCatalogLoad: null, koreanNamesByTraditionalChinese: null,
   };
@@ -303,20 +310,29 @@
     elements["character-search-status"].textContent = copy.searching;
     state.searchRace = "all";
     state.searchComplete = true;
+    state.searchResults = [];
     const requestId = ++state.searchRequest;
     setRaceFiltersVisible(true);
     renderLoadingRows();
     setPopover(true);
+    const region = searchOfficialRegion();
+    const sessionKey = searchSessionKey(name, region);
+    const sessionPayload = readSessionPayload(sessionKey, SEARCH_SESSION_TTL_MS);
+    if (sessionPayload) applySearchPayload(sessionPayload, region);
     try {
-      const region = searchOfficialRegion();
       const data = await fetchJson(
         `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1`);
       if (requestId !== state.searchRequest) return;
-      applySearchPayload(data);
-      if (!state.searchComplete || state.searchResults.length === 0) {
+      const preserveCompleteSession = sessionPayload?.complete !== false && data?.complete === false;
+      if (!preserveCompleteSession) {
+        writeSessionPayload(sessionKey, data);
+        applySearchPayload(data, region);
+      }
+      if (data?.complete === false || !Array.isArray(data?.results) || data.results.length === 0) {
         void pollSearchResults(name, region, requestId);
       }
     } catch {
+      if (sessionPayload) return;
       setRaceFiltersVisible(false);
       elements["character-search-status"].textContent = copy.searchError;
       renderMessage(copy.searchError);
@@ -337,7 +353,7 @@
 
   async function pollSearchResults(name, region, requestId) {
     for (let attempt = 0; attempt < 90 && requestId === state.searchRequest; attempt += 1) {
-      await new Promise(resolve => window.setTimeout(resolve, attempt < 10 ? 350 : 1000));
+      await new Promise(resolve => window.setTimeout(resolve, attempt < 8 ? 500 : 1250));
       if (requestId !== state.searchRequest) return;
       try {
         const data = await fetchJson(
@@ -345,8 +361,12 @@
           { cache: "no-store" },
         );
         if (requestId !== state.searchRequest) return;
-        applySearchPayload(data, region);
-        if (state.searchComplete && state.searchResults.length > 0) return;
+        const preserveCompletePayload = state.searchComplete && state.searchResults.length > 0 && data?.complete === false;
+        if (!preserveCompletePayload) {
+          writeSessionPayload(searchSessionKey(name, region), data);
+          applySearchPayload(data, region);
+        }
+        if (data?.complete !== false && Array.isArray(data?.results) && data.results.length > 0) return;
       } catch {
         // The first result list remains usable while a background CP lookup is retried.
       }
@@ -541,7 +561,12 @@
       return;
     }
     if (state.profileLoad && !force) return state.profileLoad;
-    if (!refreshOfficial || !state.profile) showProfileState("loading");
+    const sessionKey = profileSessionKey(region, serverId, characterId);
+    const sessionPayload = !force
+      ? readSessionPayload(sessionKey, PROFILE_SESSION_TTL_MS)
+      : null;
+    if (sessionPayload) applyProfilePayload(sessionPayload, params, serverId, characterId);
+    if ((!refreshOfficial || !state.profile) && !sessionPayload) showProfileState("loading");
     const refreshSuffix = refreshOfficial ? "&refresh=1" : "";
     const fastSuffix = refreshOfficial ? "" : "&fast=1";
     const requestId = ++state.profileRequest;
@@ -549,6 +574,7 @@
       `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&lang=${officialLanguage()}${refreshSuffix}${fastSuffix}`,
       { cache: refreshOfficial ? "no-store" : "default" },
     ).then(data => {
+      writeProfileSessionPayload(sessionKey, data);
       applyProfilePayload(data, params, serverId, characterId);
       if (data?.complete === false) void pollProfile(params, region, serverId, characterId, requestId);
       return true;
@@ -562,7 +588,7 @@
 
   async function pollProfile(params, region, serverId, characterId, requestId) {
     for (let attempt = 0; attempt < 90 && requestId === state.profileRequest; attempt += 1) {
-      await new Promise(resolve => window.setTimeout(resolve, attempt < 8 ? 350 : 1500));
+      await new Promise(resolve => window.setTimeout(resolve, attempt < 6 ? 600 : 1250));
       if (requestId !== state.profileRequest) return;
       try {
         const data = await fetchJson(
@@ -570,6 +596,7 @@
           { cache: "no-store" },
         );
         if (requestId !== state.profileRequest) return;
+        writeProfileSessionPayload(profileSessionKey(region, serverId, characterId), data);
         applyProfilePayload(data, params, serverId, characterId);
         if (data?.complete !== false) return;
       } catch {
@@ -581,10 +608,14 @@
   function applyProfilePayload(data, params, serverId, characterId) {
     const previousCharacterId = state.profile?.info?.profile?.characterId || "";
     const nextCharacterId = data?.info?.profile?.characterId || characterId;
+    if (previousCharacterId === nextCharacterId && state.profile?.complete !== false && data?.complete === false) {
+      return;
+    }
     if (previousCharacterId && previousCharacterId !== nextCharacterId) {
       state.activeLoadout = null;
       state.activeEquipmentTab = "gear";
     }
+    const renderSignature = profilePayloadSignature(data, characterId);
     state.profile = data;
     const profile = data?.info?.profile || {};
     saveRecent({
@@ -599,7 +630,10 @@
       profileImage: profile.profileImage || "",
       region: currentOfficialRegion(params),
     });
-    renderProfile(data);
+    if (renderSignature !== state.profileRenderSignature) {
+      state.profileRenderSignature = renderSignature;
+      renderProfile(data);
+    }
     showProfileState("content");
   }
 
@@ -819,59 +853,110 @@
     const section = createSection(
       "character-rankings", copy.rankingEyebrow, copy.rankingTitle, copy.rankingNote);
     const body = node("div", "character-ranking-body");
-    body.append(textNode("p", copy.rankingLoading, "character-ranking-state"));
+    const rankingKey = rankingProfileKey(profile);
+    if (state.rankingKey !== rankingKey) {
+      state.rankingKey = rankingKey;
+      state.rankingStatus = "idle";
+      state.rankingRows = [];
+      state.rankingLoad = null;
+    }
+    body.dataset.rankingKey = rankingKey;
+    renderCharacterRankingBody(body);
     section.append(body);
 
-    void loadCharacterRankings(profile).then(rows => {
-      if (!rows.length) {
-        body.replaceChildren(textNode("p", copy.rankingEmpty, "character-ranking-state"));
-        return;
-      }
-      const periods = [
-        ["allTime", copy.rankingAllTime],
-        ["weekly", copy.rankingWeekly],
-      ];
-      const groups = node("div", "character-ranking-periods");
-      for (const [periodKey, periodLabel] of periods) {
-        const periodRows = rows.filter(row => row.periodKey === periodKey);
-        if (!periodRows.length) continue;
-        const period = node("section", `character-ranking-period character-ranking-period-${periodKey}`);
-        const heading = node("div", "character-ranking-period-heading");
-        heading.append(
-          textNode("strong", periodLabel),
-          textNode(
-            "span",
-            `${periodRows.length}${currentLanguage() === "ko" ? "개" : currentLanguage() === "zh-TW" ? "筆" : ""}`,
-          ),
-        );
-        const scroll = node("div", "character-ranking-scroll");
-        const table = node("div", "character-ranking-table");
-        const header = node("div", "character-ranking-row character-ranking-header");
-        for (const label of [copy.rank, copy.dungeon, copy.boss, copy.dps]) {
-          header.append(textNode("span", label));
-        }
-        table.append(header);
-        for (const row of periodRows) {
-          const item = node("div", "character-ranking-row");
-          const rank = node("span", "character-ranking-rank");
-          rank.append(textNode("strong", `#${row.rank}`), textNode("small", row.cpTierLabel));
-          item.append(
-            rank,
-            textNode("strong", row.dungeonName),
-            textNode("span", row.bossName),
-            textNode("strong", formatNumber(Math.round(row.dps)), "character-ranking-dps"),
-          );
-          table.append(item);
-        }
-        scroll.append(table);
-        period.append(heading, scroll);
-        groups.append(period);
-      }
-      body.replaceChildren(groups);
-    }).catch(() => {
-      body.replaceChildren(textNode("p", copy.rankingError, "character-ranking-state"));
-    });
+    if (state.rankingStatus === "idle") startCharacterRankingLoad(profile, rankingKey);
     return section;
+  }
+
+  function rankingProfileKey(profile) {
+    const params = new URLSearchParams(window.location.search);
+    return [
+      state.locale,
+      currentOfficialRegion(params),
+      Number(profile?.serverId) || Number(params.get("serverId")) || 0,
+      String(profile?.characterId || params.get("characterId") || profile?.characterName || "").trim(),
+      canonicalJobName(profile?.className),
+    ].join("|");
+  }
+
+  function startCharacterRankingLoad(profile, rankingKey) {
+    state.rankingStatus = "loading";
+    const load = loadCharacterRankings(profile);
+    state.rankingLoad = load;
+    void load.then(rows => {
+      if (state.rankingKey !== rankingKey || state.rankingLoad !== load) return;
+      state.rankingRows = rows;
+      state.rankingStatus = "ready";
+      refreshCharacterRankingBody(rankingKey);
+    }).catch(() => {
+      if (state.rankingKey !== rankingKey || state.rankingLoad !== load) return;
+      state.rankingRows = [];
+      state.rankingStatus = "error";
+      refreshCharacterRankingBody(rankingKey);
+    });
+  }
+
+  function refreshCharacterRankingBody(rankingKey) {
+    const body = document.querySelector("#character-rankings .character-ranking-body");
+    if (!body || body.dataset.rankingKey !== rankingKey) return;
+    renderCharacterRankingBody(body);
+  }
+
+  function renderCharacterRankingBody(body) {
+    const copy = currentCopy();
+    if (state.rankingStatus === "idle" || state.rankingStatus === "loading") {
+      body.replaceChildren(textNode("p", copy.rankingLoading, "character-ranking-state"));
+      return;
+    }
+    if (state.rankingStatus === "error") {
+      body.replaceChildren(textNode("p", copy.rankingError, "character-ranking-state"));
+      return;
+    }
+    if (!state.rankingRows.length) {
+      body.replaceChildren(textNode("p", copy.rankingEmpty, "character-ranking-state"));
+      return;
+    }
+    const periods = [
+      ["allTime", copy.rankingAllTime],
+      ["weekly", copy.rankingWeekly],
+    ];
+    const groups = node("div", "character-ranking-periods");
+    for (const [periodKey, periodLabel] of periods) {
+      const periodRows = state.rankingRows.filter(row => row.periodKey === periodKey);
+      if (!periodRows.length) continue;
+      const period = node("section", `character-ranking-period character-ranking-period-${periodKey}`);
+      const heading = node("div", "character-ranking-period-heading");
+      heading.append(
+        textNode("strong", periodLabel),
+        textNode(
+          "span",
+          `${periodRows.length}${currentLanguage() === "ko" ? "개" : currentLanguage() === "zh-TW" ? "筆" : ""}`,
+        ),
+      );
+      const scroll = node("div", "character-ranking-scroll");
+      const table = node("div", "character-ranking-table");
+      const header = node("div", "character-ranking-row character-ranking-header");
+      for (const label of [copy.rank, copy.dungeon, copy.boss, copy.dps]) {
+        header.append(textNode("span", label));
+      }
+      table.append(header);
+      for (const row of periodRows) {
+        const item = node("div", "character-ranking-row");
+        const rank = node("span", "character-ranking-rank");
+        rank.append(textNode("strong", `#${row.rank}`), textNode("small", row.cpTierLabel));
+        item.append(
+          rank,
+          textNode("strong", row.dungeonName),
+          textNode("span", row.bossName),
+          textNode("strong", formatNumber(Math.round(row.dps)), "character-ranking-dps"),
+        );
+        table.append(item);
+      }
+      scroll.append(table);
+      period.append(heading, scroll);
+      groups.append(period);
+    }
+    body.replaceChildren(groups);
   }
 
   async function loadCharacterRankings(profile) {
@@ -885,8 +970,8 @@
       const dungeonKeys = (Array.isArray(cache.dungeons) ? cache.dungeons : [])
         .map(item => String(item?.key || "").trim())
         .filter(Boolean);
-      for (let index = 0; index < dungeonKeys.length; index += 2) {
-        const batch = dungeonKeys.slice(index, index + 2);
+      for (let index = 0; index < dungeonKeys.length; index += RANKING_LOAD_PARALLELISM) {
+        const batch = dungeonKeys.slice(index, index + RANKING_LOAD_PARALLELISM);
         const loaded = await Promise.all(batch.map(async dungeonKey => {
           const [classRanking, views] = await Promise.all([
             loadClass(dungeonKey, cache.generatedAt, false),
@@ -1414,6 +1499,69 @@
     } finally {
       window.clearTimeout(timer);
     }
+  }
+
+  function searchSessionKey(name, region) {
+    const normalizedName = String(name || "").trim().normalize("NFC").toLocaleLowerCase();
+    return `notmeter-character-search-session-v1:${normalizeOfficialRegion(region)}:${officialLanguage()}:${normalizedName}`;
+  }
+
+  function profileSessionKey(region, serverId, characterId) {
+    return `notmeter-character-profile-session-v1:${normalizeOfficialRegion(region)}:${officialLanguage()}:${Number(serverId) || 0}:${String(characterId || "")}`;
+  }
+
+  function readSessionPayload(key, ttlMs) {
+    try {
+      const entry = JSON.parse(sessionStorage.getItem(key) || "null");
+      if (!entry || !entry.savedAt || Date.now() - Number(entry.savedAt) > ttlMs) {
+        sessionStorage.removeItem(key);
+        return null;
+      }
+      return entry.payload || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeSessionPayload(key, payload) {
+    if (!key || !payload) return;
+    try {
+      sessionStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), payload }));
+    } catch {
+      // A full or disabled session store must not block character lookup.
+    }
+  }
+
+  function writeProfileSessionPayload(key, payload) {
+    const existing = readSessionPayload(key, PROFILE_SESSION_TTL_MS);
+    if (existing?.complete !== false && payload?.complete === false) return;
+    writeSessionPayload(key, payload);
+    try {
+      const parsed = JSON.parse(sessionStorage.getItem(PROFILE_SESSION_INDEX_KEY) || "[]");
+      const keys = Array.isArray(parsed) ? parsed.filter(item => item !== key) : [];
+      keys.unshift(key);
+      for (const staleKey of keys.slice(SESSION_PROFILE_LIMIT)) sessionStorage.removeItem(staleKey);
+      sessionStorage.setItem(PROFILE_SESSION_INDEX_KEY, JSON.stringify(keys.slice(0, SESSION_PROFILE_LIMIT)));
+    } catch {
+      // The profile remains usable even when the optional session index cannot be saved.
+    }
+  }
+
+  function profilePayloadSignature(data, fallbackCharacterId = "") {
+    const profile = data?.info?.profile || {};
+    const detailKeys = Object.keys(data?.itemDetails || {}).sort().join(",");
+    const loadoutSignature = Object.entries(data?.loadouts || {})
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, value]) => `${key}:${value?.contentHash || value?.capturedAt || ""}`)
+      .join(",");
+    return [
+      profile.characterId || fallbackCharacterId,
+      data?.fetchedAt || "",
+      data?.complete !== false ? "complete" : "partial",
+      detailKeys,
+      data?.currentLoadoutType || "",
+      loadoutSignature,
+    ].join("|");
   }
 
   function readRecent() {
