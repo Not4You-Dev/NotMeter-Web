@@ -2427,8 +2427,64 @@ button:focus-visible,
   color: #ffe18d;
 }
 
+.ranker-guide-heading {
+  gap: 4px;
+}
+
+.ranker-guide-heading strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.ranker-guide-required {
+  display: inline-flex;
+  min-height: 19px;
+  align-items: center;
+  padding: 1px 7px;
+  border: 1px solid rgba(255, 213, 105, 0.65);
+  border-radius: 999px;
+  background: rgba(111, 72, 8, 0.58);
+  color: #ffe28b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.ranker-guide-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+.ranker-guide-summary-chips > span {
+  display: inline-flex;
+  min-height: 20px;
+  align-items: center;
+  padding: 2px 7px;
+  border: 1px solid rgba(69, 121, 138, 0.68);
+  border-radius: 6px;
+  background: rgba(7, 25, 35, 0.86);
+  color: #b9dce6;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.ranker-guide-summary-chips > span:nth-child(2) {
+  border-color: rgba(225, 180, 68, 0.68);
+  color: #ffe088;
+}
+
+.ranker-guide-summary-chips > span:nth-child(3) {
+  border-color: rgba(64, 203, 182, 0.54);
+  color: #7ce7d8;
+}
+
 .ranker-dungeon-guide-body {
-  gap: 10px;
+  gap: 12px;
 }
 
 .ranker-dungeon-guide-intro {
@@ -2436,6 +2492,135 @@ button:focus-visible,
   color: #d7e5ec;
   font-size: 11px;
   line-height: 1.55;
+}
+
+.ranker-guide-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ranker-guide-answer-card {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border: 1px solid rgba(61, 118, 137, 0.7);
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(10, 36, 48, 0.94), rgba(7, 22, 31, 0.9));
+}
+
+.ranker-guide-answer-card > span {
+  color: #78c9d5;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.ranker-guide-answer-card > strong {
+  color: #f1fbfc;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.ranker-guide-answer-card > p,
+.ranker-guide-flow p,
+.ranker-guide-retention p {
+  margin: 0;
+  color: #a6bdc8;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.ranker-guide-answer-effect {
+  border-color: rgba(225, 180, 68, 0.68);
+  background: linear-gradient(135deg, rgba(74, 54, 12, 0.5), rgba(7, 22, 31, 0.92) 72%);
+}
+
+.ranker-guide-answer-effect > span,
+.ranker-guide-answer-effect > strong {
+  color: #ffe18a;
+}
+
+.ranker-guide-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid rgba(62, 106, 123, 0.68);
+  border-radius: 9px;
+  background: rgba(6, 18, 26, 0.74);
+}
+
+.ranker-guide-flow article {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  gap: 8px;
+  padding: 11px;
+}
+
+.ranker-guide-flow article + article {
+  border-left: 1px solid rgba(62, 106, 123, 0.52);
+}
+
+.ranker-guide-flow article > div {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.ranker-guide-flow strong {
+  color: #e8f8fa;
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.ranker-guide-flow-number {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(71, 210, 197, 0.62);
+  border-radius: 7px;
+  background: rgba(10, 72, 72, 0.58);
+  color: #79eee2;
+  font: 900 10px/1 "Segoe UI", sans-serif;
+}
+
+.ranker-guide-retention {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(191, 145, 52, 0.5);
+  border-radius: 8px;
+  background: rgba(70, 48, 8, 0.2);
+}
+
+.ranker-guide-retention strong {
+  color: #ffd66e;
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.ranker-dungeon-section-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px;
+  padding-top: 2px;
+}
+
+.ranker-dungeon-section-title strong {
+  color: #edf8fa;
+  font-size: 11.5px;
+  font-weight: 900;
+}
+
+.ranker-dungeon-section-title span {
+  color: #8faabc;
+  font-size: 9.5px;
+  font-weight: 700;
 }
 
 .ranker-dungeon-list {
@@ -5761,6 +5946,21 @@ tr:nth-child(3) .rank-badge {
 
   .ranker-dungeon-list {
     grid-template-columns: 1fr;
+  }
+
+  .ranker-guide-answer-grid,
+  .ranker-guide-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .ranker-guide-flow article + article {
+    border-top: 1px solid rgba(62, 106, 123, 0.52);
+    border-left: 0;
+  }
+
+  .ranker-guide-retention {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .table-scroll {
