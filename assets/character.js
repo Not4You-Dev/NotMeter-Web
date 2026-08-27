@@ -63,10 +63,10 @@
       skills: "스킬", activeSkills: "스킬", stigmaSkills: "스티그마", passiveSkills: "패시브",
       collection: "탈것 · 날개 · 타이틀",
       ranking: "랭킹", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "구간별 TOP 20",
-      rankingNote: "공개 닉네임으로 등록된 전체 기간과 이번 주 구간 TOP 20을 나눠 표시합니다. 각 기간에서 던전별 최고 기록 한 건만 보여줍니다.",
+      rankingNote: "현재 PVE 장비 전투력이 속한 동일 직업·25K 구간의 전체 기간과 이번 주 TOP 20을 나눠 표시합니다. 각 기간에서 던전별 최고 기록 한 건만 보여줍니다.",
       rankingAllTime: "전체 기간", rankingWeekly: "이번 주",
       rankingLoading: "공개 랭킹을 확인하고 있습니다.",
-      rankingEmpty: "공개 닉네임으로 등록된 구간별 TOP 20 기록이 없습니다.",
+      rankingEmpty: "현재 PVE 장비 전투력이 속한 동일 직업·25K 구간에 공개 TOP 20 기록이 없습니다.",
       rankingError: "랭킹 정보를 불러오지 못했습니다.", rank: "순위", dungeon: "던전", boss: "보스", dps: "DPS",
       combatPower: "전투력", itemLevel: "아이템 레벨", legion: "레기온", none: "없음",
       updatedAt: "최근 갱신", refreshProfile: "정보 새로고침", refreshingProfile: "갱신 중",
@@ -119,9 +119,9 @@
       arcana: "Arcana", skills: "Skills", activeSkills: "Skills", stigmaSkills: "Stigma", passiveSkills: "Passive",
       collection: "Mount · Wings · Titles",
       ranking: "Ranking", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "Top 20 by CP bracket",
-      rankingNote: "Shows all-time and current-week public bracket Top 20 records separately, keeping only the best record per dungeon in each period.",
+      rankingNote: "Shows all-time and current-week Top 20 records for the same class and 25K bracket as the current PVE loadout, keeping only the best record per dungeon in each period.",
       rankingAllTime: "All-time", rankingWeekly: "This week",
-      rankingLoading: "Checking public rankings.", rankingEmpty: "No public Top 20 bracket record was found.",
+      rankingLoading: "Checking public rankings.", rankingEmpty: "No public Top 20 record was found for the same class and 25K bracket as the current PVE loadout.",
       rankingError: "Could not load ranking data.", rank: "Rank", dungeon: "Dungeon", boss: "Boss", dps: "DPS",
       combatPower: "Combat Power", itemLevel: "Item Level", legion: "Legion", none: "None",
       updatedAt: "Last updated", refreshProfile: "Refresh profile", refreshingProfile: "Refreshing",
@@ -171,9 +171,9 @@
       equipment: "裝備", arcana: "阿爾卡納", skills: "技能", activeSkills: "技能", stigmaSkills: "烙印技能",
       passiveSkills: "被動技能",
       ranking: "排名", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "區間 TOP 20",
-      rankingNote: "分別顯示公開暱稱的全部期間與本週區間 TOP 20；每個期間只保留各副本的最高紀錄。",
+      rankingNote: "依目前 PVE 裝備戰鬥力所屬的同職業 25K 區間，分別顯示全部期間與本週 TOP 20；每個期間只保留各副本的最高紀錄。",
       rankingAllTime: "全部期間", rankingWeekly: "本週",
-      rankingLoading: "正在確認公開排名。", rankingEmpty: "沒有公開暱稱的區間 TOP 20 紀錄。",
+      rankingLoading: "正在確認公開排名。", rankingEmpty: "目前 PVE 裝備戰鬥力所屬的同職業 25K 區間，沒有公開暱稱的 TOP 20 紀錄。",
       rankingError: "無法載入排名資料。", rank: "名次", dungeon: "副本", boss: "首領", dps: "DPS",
       collection: "坐騎 · 翅膀 · 稱號", combatPower: "戰鬥力", itemLevel: "道具等級",
       updatedAt: "最近更新", refreshProfile: "更新資料", refreshingProfile: "更新中",
@@ -665,7 +665,7 @@
       renderHero(profile, itemLevel, visibleData?.equipment?.petwing || {}, info.title || {},
         visibleData?.fetchedAt, visibleData?.complete !== false),
       renderSectionNav(),
-      renderCharacterRankings(profile),
+      renderCharacterRankings(data),
       renderEquipment(regularEquipment, itemDetails, data, loadoutView.type),
       renderSkills(visibleData?.equipment?.skill?.skillList || []),
       renderStats(statList),
@@ -848,12 +848,12 @@
     return nav;
   }
 
-  function renderCharacterRankings(profile) {
+  function renderCharacterRankings(data) {
     const copy = currentCopy();
     const section = createSection(
       "character-rankings", copy.rankingEyebrow, copy.rankingTitle, copy.rankingNote);
     const body = node("div", "character-ranking-body");
-    const rankingKey = rankingProfileKey(profile);
+    const rankingKey = rankingProfileKey(data);
     if (state.rankingKey !== rankingKey) {
       state.rankingKey = rankingKey;
       state.rankingStatus = "idle";
@@ -864,11 +864,12 @@
     renderCharacterRankingBody(body);
     section.append(body);
 
-    if (state.rankingStatus === "idle") startCharacterRankingLoad(profile, rankingKey);
+    if (state.rankingStatus === "idle") startCharacterRankingLoad(data, rankingKey);
     return section;
   }
 
-  function rankingProfileKey(profile) {
+  function rankingProfileKey(data) {
+    const profile = data?.info?.profile || {};
     const params = new URLSearchParams(window.location.search);
     return [
       state.locale,
@@ -876,12 +877,13 @@
       Number(profile?.serverId) || Number(params.get("serverId")) || 0,
       String(profile?.characterId || params.get("characterId") || profile?.characterName || "").trim(),
       canonicalJobName(profile?.className),
+      resolvePveCombatPower(data),
     ].join("|");
   }
 
-  function startCharacterRankingLoad(profile, rankingKey) {
+  function startCharacterRankingLoad(data, rankingKey) {
     state.rankingStatus = "loading";
-    const load = loadCharacterRankings(profile);
+    const load = loadCharacterRankings(data);
     state.rankingLoad = load;
     void load.then(rows => {
       if (state.rankingKey !== rankingKey || state.rankingLoad !== load) return;
@@ -959,12 +961,34 @@
     body.replaceChildren(groups);
   }
 
-  async function loadCharacterRankings(profile) {
+  function resolvePveCombatPower(data) {
+    const currentType = normalizeLoadoutType(data?.currentLoadoutType);
+    if (currentType === "PVE") {
+      return Math.max(0, Math.trunc(number(data?.info?.profile?.combatPower)));
+    }
+    return Math.max(0, Math.trunc(number(data?.loadouts?.PVE?.profile?.combatPower)));
+  }
+
+  function resolveDetailedCpTier(cpTiers, combatPower) {
+    if (!(combatPower > 0)) return null;
+    return (Array.isArray(cpTiers) ? cpTiers : []).find(tier => {
+      const minimum = Number(tier?.minCombatPower);
+      const maximumExclusive = Number(tier?.maxCombatPowerExclusive);
+      return Number(tier?.index) >= 100 && Number.isFinite(minimum) &&
+        Number.isFinite(maximumExclusive) && maximumExclusive - minimum === 25_000 &&
+        combatPower >= minimum && combatPower < maximumExclusive;
+    }) || null;
+  }
+
+  async function loadCharacterRankings(data) {
     const loader = globalThis.NotMeterPublicRankingCache?.load;
     const loadClass = globalThis.NotMeterPublicRankingCache?.loadClass;
     const loadView = globalThis.NotMeterPublicRankingCache?.loadView;
     if (typeof loader !== "function") throw new Error("ranking cache loader unavailable");
     const cache = await loader(false);
+    const pveCombatPower = resolvePveCombatPower(data);
+    const targetCpTier = resolveDetailedCpTier(cache.cpTiers, pveCombatPower);
+    if (!targetCpTier) return [];
     if (typeof loadClass === "function" &&
         Object.keys(cache.classRankings || {}).length === 0) {
       const dungeonKeys = (Array.isArray(cache.dungeons) ? cache.dungeons : [])
@@ -989,6 +1013,7 @@
         }
       }
     }
+    const profile = data?.info?.profile || {};
     const characterName = String(profile?.characterName || "").trim().toLocaleLowerCase();
     const queryServerId = Number(new URLSearchParams(window.location.search).get("serverId"));
     const serverId = Number(profile?.serverId) || queryServerId;
@@ -1007,7 +1032,8 @@
       const views = Array.isArray(ranking?.views) ? ranking.views : [];
       const rankingViews = new Map();
       for (const view of views) {
-        if (view.period !== "All" || Number(view.cpTierIndex) <= 0 || Number(view.bossIndex) !== 0 ||
+        if (view.period !== "All" || Number(view.cpTierIndex) !== Number(targetCpTier.index) ||
+            Number(view.bossIndex) !== 0 ||
             ![ALL_TIME_RANKING_LABEL, WEEKLY_RANKING_LABEL].includes(view.periodLabel)) continue;
         rankingViews.set(`${view.periodLabel}|${view.bossIndex}|${view.cpTierIndex}`, view);
       }
