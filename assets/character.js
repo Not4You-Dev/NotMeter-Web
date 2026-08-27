@@ -313,7 +313,9 @@
         `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1`);
       if (requestId !== state.searchRequest) return;
       applySearchPayload(data);
-      if (!state.searchComplete) void pollSearchResults(name, region, requestId);
+      if (!state.searchComplete || state.searchResults.length === 0) {
+        void pollSearchResults(name, region, requestId);
+      }
     } catch {
       setRaceFiltersVisible(false);
       elements["character-search-status"].textContent = copy.searchError;
@@ -344,7 +346,7 @@
         );
         if (requestId !== state.searchRequest) return;
         applySearchPayload(data, region);
-        if (state.searchComplete) return;
+        if (state.searchComplete && state.searchResults.length > 0) return;
       } catch {
         // The first result list remains usable while a background CP lookup is retried.
       }
@@ -559,8 +561,8 @@
   }
 
   async function pollProfile(params, region, serverId, characterId, requestId) {
-    for (let attempt = 0; attempt < 40 && requestId === state.profileRequest; attempt += 1) {
-      await new Promise(resolve => window.setTimeout(resolve, attempt < 8 ? 350 : 750));
+    for (let attempt = 0; attempt < 90 && requestId === state.profileRequest; attempt += 1) {
+      await new Promise(resolve => window.setTimeout(resolve, attempt < 8 ? 350 : 1500));
       if (requestId !== state.profileRequest) return;
       try {
         const data = await fetchJson(
