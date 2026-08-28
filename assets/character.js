@@ -890,8 +890,7 @@
       state.rankingRows = rows;
       state.rankingStatus = "ready";
       refreshCharacterRankingBody(rankingKey);
-    }).catch(error => {
-      console.error("character ranking load failed", error);
+    }).catch(() => {
       if (state.rankingKey !== rankingKey || state.rankingLoad !== load) return;
       state.rankingRows = [];
       state.rankingStatus = "error";
@@ -933,7 +932,7 @@
         textNode("strong", periodLabel),
         textNode(
           "span",
-          `${periodRows.length}${currentLanguage() === "ko" ? "개" : currentLanguage() === "zh-TW" ? "筆" : ""}`,
+          `${periodRows.length}${state.locale === "ko" ? "개" : state.locale === "zh-TW" ? "筆" : ""}`,
         ),
       );
       const scroll = node("div", "character-ranking-scroll");
