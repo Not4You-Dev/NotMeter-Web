@@ -888,6 +888,21 @@
     </section>
 
     <section class="filter-panel" aria-label="통계 필터" data-i18n-aria-label="statsFiltersAria">
+      <div class="ranking-metric-choice" id="ranking-metric-choice">
+        <div class="ranking-metric-copy">
+          <span data-i18n="rankingMetric">랭킹 기준</span>
+          <strong id="ranking-metric-description" data-i18n="dpsRankingDescription">파티 버프를 포함한 기존 총 DPS 순위입니다.</strong>
+        </div>
+        <div class="ranking-metric-buttons" role="radiogroup" aria-label="랭킹 기준 선택" data-i18n-aria-label="rankingMetricAria">
+          <button class="ranking-metric-button is-active" id="ranking-metric-dps" type="button"
+            data-ranking-metric="dps" role="radio" aria-checked="true">DPS</button>
+          <button class="ranking-metric-button ranking-metric-ndps" id="ranking-metric-ndps" type="button"
+            data-ranking-metric="ndps" role="radio" aria-checked="false">
+            <span class="ranking-metric-test" data-i18n="testBadge">TEST</span>
+            <span>nDPS</span>
+          </button>
+        </div>
+      </div>
       <div class="filter-choice filter-choice-dungeon">
         <div class="filter-choice-heading">
           <span data-i18n="dungeon">던전</span>
@@ -1217,7 +1232,7 @@
       </div>
 
       <div class="empty-state" id="empty-state" hidden>
-        <p data-i18n="empty">선택한 조건에 해당하는 통계가 아직 없습니다</p>
+        <p id="empty-message" data-i18n="empty">선택한 조건에 해당하는 통계가 아직 없습니다</p>
       </div>
 
       <div class="table-scroll" id="summary-view" hidden>
@@ -1247,7 +1262,7 @@
               <th data-i18n="character">캐릭터</th>
               <th data-i18n="boss">보스</th>
               <th class="number-column" data-i18n="duration">전투 시간</th>
-              <th class="number-column">DPS</th>
+              <th class="number-column" id="class-metric-heading">DPS</th>
               <th class="detail-column" data-i18n="details">상세</th>
             </tr>
           </thead>

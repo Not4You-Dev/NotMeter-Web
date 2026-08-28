@@ -242,6 +242,16 @@
       raidDpsUnavailableTitle: "파티 버프 기여도를 정확히 확인할 수 없어 관련 수치를 0으로 표시한 기록입니다.",
       normalizedDpsDescription: "외부 파티 버프가 만든 검증된 추가 피해를 제외한 개인 DPS",
       raidDpsDescription: "nDPS에 본인이 다른 파티원에게 제공한 검증된 추가 피해를 더한 DPS",
+      rankingMetric: "랭킹 기준",
+      rankingMetricAria: "랭킹 기준 선택",
+      testBadge: "TEST",
+      dpsRankingDescription: "파티 버프를 포함한 기존 총 DPS 순위입니다.",
+      ndpsRankingDescription: "외부 파티 버프의 검증된 추가 피해를 제외한 nDPS 순위입니다.",
+      ndpsRankingUnavailableCombatTime: "이 콘텐츠는 전투 시간 순위만 제공합니다.",
+      ndpsEmpty: "선택한 조건에 검증된 nDPS 기록이 아직 없습니다",
+      classNdps: "{job} nDPS 1~{count}위",
+      uniqueNormalizedRankers: "표시 캐릭터 {count}명 · 검증된 nDPS가 있는 기록 중 가장 높은 기록만 표시",
+      totalDpsShort: "DPS",
       languageSwitchAria: "언어 전환",
       advertisementAria: "광고",
       fieldBossRegionsAria: "필드보스 지역",
@@ -487,6 +497,7 @@
       rankerDungeonGuideDummy: "훈련용 허수아비(1분)는 홈페이지 랭킹만 제공하며, 딜미터기 전투 종료 구간 순위·상위% 배지와 실시간 랭커 마크 대상에서는 제외됩니다.",
       rankerDungeonGuidePeriod: "상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주 기록을 사용합니다. 이번 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.",
       weeklyCompare: "▲▼는 직전 주 동일 조건의 직업별 상위 25% DPS 변화",
+      weeklyCompareNdps: "▲▼는 직전 주 동일 조건의 직업별 상위 25% nDPS 변화",
       weeklyTooltip: "직전 주 동일 조건 비교",
       weeklyGuideTitle: "▲▼ 이번 주 변화 표시 안내",
       weeklyGuideSubtitle: "직전 주 동일 조건의 직업별 상위 25% DPS와 비교합니다",
@@ -619,6 +630,16 @@
       raidDpsUnavailableTitle: "Party-buff contribution could not be verified, so the related values are shown as zero.",
       normalizedDpsDescription: "Personal DPS after removing verified extra damage created by external party buffs",
       raidDpsDescription: "nDPS plus verified extra damage this player granted to other party members",
+      rankingMetric: "Ranking metric",
+      rankingMetricAria: "Select ranking metric",
+      testBadge: "TEST",
+      dpsRankingDescription: "The existing total-DPS ranking, including party buffs.",
+      ndpsRankingDescription: "Ranks verified nDPS after removing extra damage from external party buffs.",
+      ndpsRankingUnavailableCombatTime: "This content is ranked by combat time only.",
+      ndpsEmpty: "No verified nDPS records match the selected filters yet",
+      classNdps: "{job} nDPS — Top {count}",
+      uniqueNormalizedRankers: "{count} characters shown · only each character's highest verified nDPS is shown",
+      totalDpsShort: "DPS",
       languageSwitchAria: "Switch language",
       advertisementAria: "Advertisement",
       fieldBossRegionsAria: "Field boss regions",
@@ -864,6 +885,7 @@
       rankerDungeonGuideDummy: "Training Dummy (1 min) provides website rankings only. It does not show the meter's post-combat bracket-rank or Top % badge, and it does not award a live rank marker.",
       rankerDungeonGuidePeriod: "Top % uses all-time records below 800K CP and current-week records at 800K CP or above. The current week runs from Wednesday 05:00 KST to the following Wednesday 05:00 KST.",
       weeklyCompare: "▲▼ shows the change in each class's top-25% DPS under the same filters",
+      weeklyCompareNdps: "▲▼ shows the change in each class's top-25% nDPS under the same filters",
       weeklyTooltip: "Previous week, same filters",
       weeklyGuideTitle: "What the ▲▼ weekly change means",
       weeklyGuideSubtitle: "Compares each class's top-25% DPS with the previous week under identical filters",
@@ -974,6 +996,17 @@
     raidDpsUnavailableTitle: "無法確認隊伍增益貢獻，因此相關數值顯示為 0。",
     normalizedDpsDescription: "扣除外部隊伍 Buff 所產生之已驗證追加傷害後的個人 DPS",
     raidDpsDescription: "nDPS 加上本人提供給其他隊員之已驗證追加傷害",
+    rankingMetric: "排行基準",
+    rankingMetricAria: "選擇排行基準",
+    testBadge: "TEST",
+    dpsRankingDescription: "包含隊伍 Buff 的既有總 DPS 排行。",
+    ndpsRankingDescription: "扣除外部隊伍 Buff 所產生之已驗證追加傷害後的 nDPS 排行。",
+    ndpsRankingUnavailableCombatTime: "此內容僅提供戰鬥時間排行。",
+    ndpsEmpty: "所選條件目前沒有已驗證的 nDPS 紀錄",
+    classNdps: "{job} nDPS 第 1～{count} 名",
+    uniqueNormalizedRankers: "顯示 {count} 名角色 · 僅顯示每名角色最高的已驗證 nDPS 紀錄",
+    totalDpsShort: "DPS",
+    weeklyCompareNdps: "▲▼ 顯示相同條件下各職業前 25% nDPS 與上週的變化",
   };
 
   function normalizeLocale(value) {
@@ -1023,6 +1056,7 @@
     customCpMinK: Math.min(1998, Math.max(400, Number(localStorage.getItem("notmeter-stats-custom-cp-min-k")) || 400)),
     customCpMaxK: Math.min(1999, Math.max(401, Number(localStorage.getItem("notmeter-stats-custom-cp-max-k")) || 420)),
     period: "Weekly",
+    rankingMetric: "dps",
     selectedJob: "",
     selectedOverallJob: "",
     performanceMetric: localStorage.getItem("notmeter-class-performance-metric") || "p75Score",
@@ -1151,14 +1185,15 @@
       "field-boss-error-state", "field-boss-error-message", "field-boss-empty-state",
       "field-boss-content", "field-boss-tabs", "field-boss-list",
       "dungeon-filter", "dungeon-filter-buttons", "dungeon-filter-more",
+      "ranking-metric-choice", "ranking-metric-description", "ranking-metric-dps", "ranking-metric-ndps",
       "boss-filter", "boss-filter-buttons", "cp-filter", "cp-filter-toggle",
       "cp-filter-current", "cp-filter-menu", "cp-filter-menu-close",
       "cp-filter-quick", "cp-filter-groups",
       "custom-cp-panel", "custom-cp-min", "custom-cp-max", "custom-cp-apply", "custom-cp-result",
       "period-filter", "refresh-button", "retry-button", "snapshot-title", "snapshot-caption",
       "sample-meta", "generated-meta", "weekly-guide", "class-heading", "class-title",
-      "class-badge", "class-caption", "sample-column-heading",
-      "back-button", "loading-state", "error-state", "error-message", "empty-state",
+      "class-badge", "class-caption", "sample-column-heading", "class-metric-heading",
+      "back-button", "loading-state", "error-state", "error-message", "empty-state", "empty-message",
       "summary-view", "summary-rows", "class-view", "class-rows", "cache-age",
       "combat-detail-modal", "detail-close", "detail-job-icon", "detail-title",
       "detail-character", "detail-duration", "detail-cp", "detail-total-damage",
@@ -1301,6 +1336,20 @@
       closeCombatDetail();
       applyDungeonSelection(event.target.value);
       populateFilters();
+      render();
+    });
+    elements["ranking-metric-choice"].addEventListener("click", event => {
+      const button = event.target.closest("[data-ranking-metric]");
+      if (!button || button.disabled) {
+        return;
+      }
+      const metric = button.dataset.rankingMetric === "ndps" ? "ndps" : "dps";
+      if (metric === state.rankingMetric) {
+        return;
+      }
+      state.rankingMetric = metric;
+      closeCombatDetail();
+      leaveClassView();
       render();
     });
     elements["dungeon-filter-buttons"].addEventListener("click", event => {
@@ -1586,6 +1635,9 @@
   function applyDungeonSelection(dungeonKey) {
     state.dungeonKey = dungeonKey;
     state.bossIndex = 0;
+    if (usesCombatTimeRanking(dungeonKey)) {
+      state.rankingMetric = "dps";
+    }
     resetClassSelection();
   }
 
@@ -3609,6 +3661,7 @@
       item => item,
       item => periodName(item),
       state.period);
+    syncRankingMetricControl();
   }
 
   function renderDungeonFilterButtons() {
@@ -4006,6 +4059,7 @@
     applyLocale();
     updateDailyUsers();
     updateCacheAge();
+    syncRankingMetricControl();
     state.mode === "class" ? renderClassRanking() : renderSummary();
   }
 
@@ -4607,6 +4661,7 @@
     const view = findSummaryView();
     elements["sample-column-heading"].textContent =
       t(state.cpFilterMode === "custom" ? "recordSample" : "sample");
+    elements["empty-message"].textContent = t(usesNormalizedRanking() ? "ndpsEmpty" : "empty");
     elements["class-heading"].hidden = true;
     elements["class-view"].hidden = true;
     if (!view || !Array.isArray(view.rows) || view.rows.length === 0) {
@@ -4616,8 +4671,14 @@
     }
 
     updateSnapshot(view);
-    const rows = [...view.rows]
+    const rows = view.rows
+      .map(projectSummaryRowForMetric)
+      .filter(Boolean)
       .sort((left, right) => Number(right.p75Dps) - Number(left.p75Dps));
+    if (rows.length === 0) {
+      showState("empty");
+      return;
+    }
     const max = Math.max(1, ...rows.map(item => Number(item.maxDps) || 0));
     const fragment = document.createDocumentFragment();
     rows.forEach((row, index) => fragment.append(buildSummaryRow(row, index + 1, max)));
@@ -4720,6 +4781,55 @@
     return dungeonKey === "nightmare-atheron-10";
   }
 
+  function usesNormalizedRanking() {
+    return state.rankingMetric === "ndps" && !usesCombatTimeRanking();
+  }
+
+  function syncRankingMetricControl() {
+    const unavailable = usesCombatTimeRanking();
+    if (unavailable && state.rankingMetric !== "dps") {
+      state.rankingMetric = "dps";
+    }
+    const normalized = usesNormalizedRanking();
+    elements["ranking-metric-dps"].classList.toggle("is-active", !normalized);
+    elements["ranking-metric-dps"].setAttribute("aria-checked", String(!normalized));
+    elements["ranking-metric-ndps"].classList.toggle("is-active", normalized);
+    elements["ranking-metric-ndps"].setAttribute("aria-checked", String(normalized));
+    elements["ranking-metric-ndps"].disabled = unavailable;
+    elements["ranking-metric-description"].textContent = t(unavailable
+      ? "ndpsRankingUnavailableCombatTime"
+      : normalized
+        ? "ndpsRankingDescription"
+        : "dpsRankingDescription");
+  }
+
+  function projectSummaryRowForMetric(row) {
+    if (!usesNormalizedRanking()) {
+      return row;
+    }
+    const metric = row?.normalizedDps;
+    const sampleCount = Number(metric?.sampleCount) || 0;
+    if (sampleCount <= 0) {
+      return null;
+    }
+    const percentiles = Array.isArray(metric.percentiles)
+      ? metric.percentiles
+      : Array.isArray(metric.dpsPercentiles)
+        ? metric.dpsPercentiles
+        : null;
+    return {
+      ...row,
+      sampleCount,
+      minDps: Number(metric.minDps ?? metric.min) || 0,
+      p25Dps: Number(metric.p25Dps ?? metric.p25) || 0,
+      medianDps: Number(metric.medianDps ?? metric.median) || 0,
+      p75Dps: Number(metric.p75Dps ?? metric.p75) || 0,
+      p90Dps: Number(metric.p90Dps ?? metric.p90) || 0,
+      maxDps: Number(metric.maxDps ?? metric.max) || 0,
+      dpsPercentiles: percentiles,
+    };
+  }
+
   function rankingDuration(player) {
     const duration = Number(player?.U ?? player?.durationSeconds);
     return Number.isFinite(duration) && duration > 0
@@ -4731,6 +4841,14 @@
     return Number(player?.X ?? player?.dps) || 0;
   }
 
+  function rankingNormalizedDps(player) {
+    const verified = player?.A ?? player?.raidDpsVerified;
+    if (verified !== true && Number(verified) !== 1) {
+      return 0;
+    }
+    return Math.max(0, Number(player?.Y ?? player?.normalizedDps) || 0);
+  }
+
   function compareClassRankingPlayers(left, right) {
     if (usesCombatTimeRanking()) {
       const durationDifference = rankingDuration(left) - rankingDuration(right);
@@ -4738,7 +4856,9 @@
         return durationDifference;
       }
     }
-    const dpsDifference = rankingDps(right) - rankingDps(left);
+    const dpsDifference = usesNormalizedRanking()
+      ? rankingNormalizedDps(right) - rankingNormalizedDps(left)
+      : rankingDps(right) - rankingDps(left);
     if (dpsDifference !== 0) {
       return dpsDifference;
     }
@@ -4790,26 +4910,38 @@
       return;
     }
     const view = findClassView();
-    const players = view?.rows
-      ?.find(item => item.jobName === state.selectedJob)
-      ?.players || [];
+    const jobRow = view?.rows?.find(item => item.jobName === state.selectedJob);
+    const players = usesNormalizedRanking()
+      ? jobRow?.Y ?? jobRow?.normalizedPlayers ?? []
+      : jobRow?.players || [];
     const sorted = [...players]
+      .filter(player => !usesNormalizedRanking() || rankingNormalizedDps(player) > 0)
       .sort(compareClassRankingPlayers)
       .slice(0, 20)
       .map((player, index) => ({ ...player, rank: index + 1 }));
 
     elements["class-heading"].hidden = false;
     elements["class-title"].textContent = t(
-      usesCombatTimeRanking() ? "classCombatTime" : "classDps", {
+      usesCombatTimeRanking()
+        ? "classCombatTime"
+        : usesNormalizedRanking()
+          ? "classNdps"
+          : "classDps", {
       job: jobName(state.selectedJob),
       count: sorted.length,
     });
     elements["class-badge"].textContent = t("top20", { count: sorted.length });
     elements["class-caption"].textContent = state.cpFilterMode === "custom"
       ? `${filterDescription()} · ${t(
-          usesCombatTimeRanking() ? "uniqueCombatTimeRankers" : "uniqueRankers",
+          usesCombatTimeRanking()
+            ? "uniqueCombatTimeRankers"
+            : usesNormalizedRanking()
+              ? "uniqueNormalizedRankers"
+              : "uniqueRankers",
           { count: sorted.length })}`
       : filterDescription();
+    elements["class-metric-heading"].textContent = usesNormalizedRanking() ? "nDPS" : "DPS";
+    elements["empty-message"].textContent = t(usesNormalizedRanking() ? "ndpsEmpty" : "empty");
     elements["summary-view"].hidden = true;
     updateSnapshot(findSummaryView());
     if (sorted.length === 0) {
@@ -6019,10 +6151,22 @@
           dpsPercentiles: state.period === "Weekly" && previous
             ? [previous.p75Dps, current.p75Dps, previous.sampleCount]
             : null,
+          normalizedDps: {
+            ...current.normalizedDps,
+            dpsPercentiles: state.period === "Weekly" && previous?.normalizedDps?.sampleCount > 0
+              ? [
+                  previous.normalizedDps.p75Dps,
+                  current.normalizedDps.p75Dps,
+                  previous.normalizedDps.sampleCount,
+                ]
+              : null,
+          },
         };
       });
     const playerSampleCount = [...currentByJob.values()]
-      .reduce((sum, row) => sum + row.sampleCount, 0);
+      .reduce((sum, row) => sum + (usesNormalizedRanking()
+        ? row.normalizedDps.sampleCount
+        : row.sampleCount), 0);
     return {
       dungeonKey: state.dungeonKey,
       bossIndex: state.bossIndex,
@@ -6049,6 +6193,9 @@
         if (!name || serverId <= 0) {
           continue;
         }
+        if (usesNormalizedRanking() && rankingNormalizedDps(player) <= 0) {
+          continue;
+        }
         const participant = String(player.G || `${serverId}:${name}`);
         const key = `${jobName}\u0000${participant}`;
         const current = bestByCharacter.get(key);
@@ -6073,6 +6220,7 @@
           dps: Number(item.player.X) || 0,
           normalizedDps: Number(item.player.Y) || 0,
           raidDps: Number(item.player.Z) || 0,
+          raidDpsVerified: item.player.A === true || Number(item.player.A) === 1,
           P: String(item.player.P || ""),
           B: item.bossIndex,
           D: state.dungeonKey === "training-dummy-60s"
@@ -6186,31 +6334,40 @@
     }
     const summaryByJob = new Map();
     for (const [jobName, rows] of bucketsByJob) {
-      const samples = [];
-      let sampleCount = 0;
-      for (const row of rows) {
-        const count = Math.max(0, Number(row.N) || 0);
-        sampleCount += count;
-        const values = [row.L, row.A, row.E, row.H, row.Q, row.X]
-          .map(Number)
-          .filter(value => value > 0);
-        const weight = values.length > 0 ? count / values.length : 0;
-        for (const dps of values) {
-          if (weight > 0) samples.push([dps, weight]);
-        }
-      }
-      samples.sort((left, right) => left[0] - right[0]);
+      const dps = aggregateCustomMetric(rows, "N", ["L", "A", "E", "H", "Q", "X"]);
+      const normalized = aggregateCustomMetric(rows, "S", ["I", "D", "F", "G", "P", "Y"]);
       summaryByJob.set(jobName, {
-        sampleCount,
-        minDps: weightedQuantile(samples, 0),
-        p25Dps: weightedQuantile(samples, 0.25),
-        medianDps: weightedQuantile(samples, 0.5),
-        p75Dps: weightedQuantile(samples, 0.75),
-        p90Dps: weightedQuantile(samples, 0.9),
-        maxDps: weightedQuantile(samples, 1),
+        ...dps,
+        normalizedDps: normalized,
       });
     }
     return summaryByJob;
+  }
+
+  function aggregateCustomMetric(rows, countKey, valueKeys) {
+    const samples = [];
+    let sampleCount = 0;
+    for (const row of rows) {
+      const count = Math.max(0, Number(row[countKey]) || 0);
+      sampleCount += count;
+      const values = valueKeys
+        .map(key => Number(row[key]))
+        .filter(value => value > 0);
+      const weight = values.length > 0 ? count / values.length : 0;
+      for (const value of values) {
+        if (weight > 0) samples.push([value, weight]);
+      }
+    }
+    samples.sort((left, right) => left[0] - right[0]);
+    return {
+      sampleCount,
+      minDps: weightedQuantile(samples, 0),
+      p25Dps: weightedQuantile(samples, 0.25),
+      medianDps: weightedQuantile(samples, 0.5),
+      p75Dps: weightedQuantile(samples, 0.75),
+      p90Dps: weightedQuantile(samples, 0.9),
+      maxDps: weightedQuantile(samples, 1),
+    };
   }
 
   function percentile(sortedValues, quantile) {
@@ -6392,7 +6549,7 @@
       ? parseWeeklyRange(view?.periodLabel)
       : null;
     elements["snapshot-caption"].textContent = weeklyRange
-      ? `${formatWeeklyRange(weeklyRange)} · ${t("weeklyCompare")}`
+      ? `${formatWeeklyRange(weeklyRange)} · ${t(usesNormalizedRanking() ? "weeklyCompareNdps" : "weeklyCompare")}`
       : "";
     elements["snapshot-caption"].hidden = !weeklyRange;
     elements["weekly-guide"].hidden = state.period !== "Weekly";
@@ -6418,7 +6575,12 @@
       : state.cpTierIndex === 0
         ? t("allCp")
         : state.data.cpTiers.find(item => Number(item.index) === state.cpTierIndex)?.label || t("allCp");
-    return `${dungeonName(dungeon)} · ${boss} · ${cp} · ${periodName(state.period)}`;
+    const metric = usesCombatTimeRanking()
+      ? t("duration")
+      : usesNormalizedRanking()
+        ? "nDPS"
+        : "DPS";
+    return `${metric} · ${dungeonName(dungeon)} · ${boss} · ${cp} · ${periodName(state.period)}`;
   }
 
   function customCpRangeLabel() {
@@ -6736,14 +6898,16 @@
       : 0;
     const td = document.createElement("td");
     td.className = "numeric accent class-dps";
-    td.dataset.label = "DPS";
+    const normalizedRanking = usesNormalizedRanking();
+    td.dataset.label = normalizedRanking ? "nDPS" : "DPS";
 
     const total = document.createElement("strong");
-    total.className = "class-dps-total";
-    total.textContent = formatInteger(Math.round(dps));
+    total.className = `class-dps-total${normalizedRanking ? " normalized" : ""}`;
+    total.textContent = formatInteger(Math.round(normalizedRanking ? normalizedDps : dps));
 
     const adjusted = document.createElement("span");
-    adjusted.className = `class-dps-adjusted ${verified ? "verified" : "unavailable"}`;
+    adjusted.className = `class-dps-adjusted ${verified ? "verified" : "unavailable"}` +
+      (normalizedRanking ? " normalized-ranking" : "");
     const status = document.createElement("span");
     status.className = "class-dps-status";
     status.textContent = verified ? t("raidDpsVerified") : t("raidDpsUnavailable");
@@ -6752,10 +6916,10 @@
     normalized.className = "class-dps-metric normalized";
     const normalizedLabel = document.createElement("span");
     normalizedLabel.className = "class-dps-metric-label";
-    normalizedLabel.textContent = "nDPS";
+    normalizedLabel.textContent = normalizedRanking ? t("totalDpsShort") : "nDPS";
     const normalizedValue = document.createElement("span");
     normalizedValue.className = "class-dps-metric-value";
-    normalizedValue.textContent = formatInteger(Math.round(normalizedDps));
+    normalizedValue.textContent = formatInteger(Math.round(normalizedRanking ? dps : normalizedDps));
     normalized.append(normalizedLabel, normalizedValue);
     const raid = document.createElement("span");
     raid.className = "class-dps-metric raid";
@@ -6766,7 +6930,7 @@
     raidValue.className = "class-dps-metric-value";
     raidValue.textContent = formatInteger(Math.round(raidDps));
     raid.append(raidLabel, raidValue);
-    adjusted.append(status, normalized, raid);
+    adjusted.append(...(normalizedRanking ? [normalized, raid] : [status, normalized, raid]));
 
     td.title = `DPS ${formatInteger(Math.round(dps))}\n` +
       `nDPS ${formatInteger(Math.round(normalizedDps))} · ${t("normalizedDpsDescription")}\n` +
