@@ -4,10 +4,11 @@
   const API_ROOT = ["localhost", "127.0.0.1"].includes(window.location.hostname)
     ? "http://127.0.0.1:5080/character/v1"
     : "https://notmeter.112-168-140-142.sslip.io/character/v1";
+  const CHARACTER_RANKING_API_ROOT = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+    ? "http://127.0.0.1:5080/ranking/v1/character"
+    : "https://notmeter.112-168-140-142.sslip.io/ranking/v1/character";
   const RECENT_KEY = "notmeter-character-recent-v1";
   const FAVORITE_KEY = "notmeter-character-favorites-v1";
-  const ALL_TIME_RANKING_LABEL = "__notmeter_replay_top20_v1__";
-  const WEEKLY_RANKING_LABEL = "__notmeter_replay_weekly_top20_v1__";
   const OFFICIAL_NAME_CATALOG_URL = "./assets/game-data.zh-TW.json?v=20260824-1";
   const OFFICIAL_TERMS_KO_TO_ZH_TW = Object.freeze({
     "천족": "天族", "마족": "魔族",
@@ -29,7 +30,6 @@
   const PROFILE_SESSION_TTL_MS = 10 * 60_000;
   const SESSION_PROFILE_LIMIT = 4;
   const PROFILE_SESSION_INDEX_KEY = "notmeter-character-profile-session-index-v1";
-  const RANKING_LOAD_PARALLELISM = 4;
   const CORE_STAT_TYPES = new Set(["STR", "DEX", "INT", "CON", "AGI", "WIS"]);
   const DIVINE_STAT_TYPES = new Set([
     "Justice", "Freedom", "Illusion", "Life", "Time", "Destruction",
@@ -969,108 +969,48 @@
     return Math.max(0, Math.trunc(number(data?.loadouts?.PVE?.profile?.combatPower)));
   }
 
-  function resolveDetailedCpTier(cpTiers, combatPower) {
-    if (!(combatPower > 0)) return null;
-    return (Array.isArray(cpTiers) ? cpTiers : []).find(tier => {
-      const minimum = Number(tier?.minCombatPower);
-      const maximumExclusive = Number(tier?.maxCombatPowerExclusive);
-      return Number(tier?.index) >= 100 && Number.isFinite(minimum) &&
-        Number.isFinite(maximumExclusive) && maximumExclusive - minimum === 25_000 &&
-        combatPower >= minimum && combatPower < maximumExclusive;
-    }) || null;
-  }
-
   async function loadCharacterRankings(data) {
-    const loader = globalThis.NotMeterPublicRankingCache?.load;
-    const loadClass = globalThis.NotMeterPublicRankingCache?.loadClass;
-    const loadView = globalThis.NotMeterPublicRankingCache?.loadView;
-    if (typeof loader !== "function") throw new Error("ranking cache loader unavailable");
-    const cache = await loader(false);
     const pveCombatPower = resolvePveCombatPower(data);
-    const targetCpTier = resolveDetailedCpTier(cache.cpTiers, pveCombatPower);
-    if (!targetCpTier) return [];
-    if (typeof loadClass === "function" &&
-        Object.keys(cache.classRankings || {}).length === 0) {
-      const dungeonKeys = (Array.isArray(cache.dungeons) ? cache.dungeons : [])
-        .map(item => String(item?.key || "").trim())
-        .filter(Boolean);
-      for (let index = 0; index < dungeonKeys.length; index += RANKING_LOAD_PARALLELISM) {
-        const batch = dungeonKeys.slice(index, index + RANKING_LOAD_PARALLELISM);
-        const loaded = await Promise.all(batch.map(async dungeonKey => {
-          const [classRanking, views] = await Promise.all([
-            loadClass(dungeonKey, cache.generatedAt, false),
-            typeof loadView === "function"
-              ? loadView(dungeonKey, cache.generatedAt, false)
-              : Promise.resolve([]),
-          ]);
-          return [dungeonKey, classRanking, views];
-        }));
-        for (const [dungeonKey, classRanking, views] of loaded) {
-          cache.classRankings[dungeonKey] = classRanking;
-          if (Array.isArray(views) && views.length > 0) {
-            cache.views.push(...views);
-          }
-        }
-      }
-    }
     const profile = data?.info?.profile || {};
-    const characterName = String(profile?.characterName || "").trim().toLocaleLowerCase();
-    const queryServerId = Number(new URLSearchParams(window.location.search).get("serverId"));
+    const params = new URLSearchParams(window.location.search);
+    const characterName = String(profile?.characterName || params.get("name") || "").trim();
+    const queryServerId = Number(params.get("serverId"));
     const serverId = Number(profile?.serverId) || queryServerId;
-    const region = currentOfficialRegion();
     const jobName = canonicalJobName(profile?.className);
-    if (!characterName || !jobName) return [];
+    if (!characterName || !serverId || !jobName || !pveCombatPower) return [];
 
-    const dungeonIndex = new Map((Array.isArray(cache.dungeons) ? cache.dungeons : [])
-      .map((item, index) => [item.key, { ...item, index }]));
-    const metadata = new Map((Array.isArray(cache.views) ? cache.views : []).map(view => [
-      `${view.dungeonKey}|${view.bossIndex}|${view.cpTierIndex}|${view.periodLabel}`,
-      view,
-    ]));
-    const results = [];
-    for (const [dungeonKey, ranking] of Object.entries(cache.classRankings || {})) {
-      const views = Array.isArray(ranking?.views) ? ranking.views : [];
-      const rankingViews = new Map();
-      for (const view of views) {
-        if (view.period !== "All" || Number(view.cpTierIndex) !== Number(targetCpTier.index) ||
-            Number(view.bossIndex) !== 0 ||
-            ![ALL_TIME_RANKING_LABEL, WEEKLY_RANKING_LABEL].includes(view.periodLabel)) continue;
-        rankingViews.set(`${view.periodLabel}|${view.bossIndex}|${view.cpTierIndex}`, view);
-      }
-      for (const view of rankingViews.values()) {
-        const group = (Array.isArray(view.rows) ? view.rows : [])
-          .find(row => row.jobName === jobName);
-        const player = (Array.isArray(group?.players) ? group.players : []).find(candidate => {
-          const rawName = String(candidate?.name || "").trim();
-          const candidateRegion = /^\[TW\]/i.test(rawName) ? "tw" : "kr";
-          const name = rawName.replace(/^\[TW\]\s*/i, "").trim();
-          if (!name || name.includes("*") || name.toLocaleLowerCase() !== characterName ||
-              candidateRegion !== region) return false;
-          return !serverId || !Number(candidate.serverId) || Number(candidate.serverId) === serverId;
-        });
-        if (!player || Number(player.rank) < 1 || Number(player.rank) > 20) continue;
-        const key = `${dungeonKey}|${view.bossIndex}|${view.cpTierIndex}|${view.periodLabel}`;
-        const meta = metadata.get(key) || {};
-        const dungeon = dungeonIndex.get(dungeonKey) || {};
-        const recordedBossIndex = Number(player.B ?? player.bossIndex) || 0;
-        const recordedBossName = recordedBossIndex > 0
-          ? dungeon.bossNames?.[recordedBossIndex - 1]
-          : player.bossName;
-        results.push({
-          rank: Number(player.rank),
-          dps: number(player.dps),
-          dungeonKey,
-          dungeonName: localizeGameName(meta.dungeonName || dungeon.displayName || dungeonKey),
-          bossName: cleanBossName(localizeGameName(recordedBossName || meta.bossName || "—", "mob")),
-          cpTierLabel: String(meta.cpTierLabel || cache.cpTiers?.find(tier =>
-            Number(tier.index) === Number(view.cpTierIndex))?.label || ""),
-          dungeonOrder: Number(dungeon.index) || 0,
-          bossIndex: Number(view.bossIndex) || 0,
-          cpTierIndex: Number(view.cpTierIndex) || 0,
-          periodKey: view.periodLabel === WEEKLY_RANKING_LABEL ? "weekly" : "allTime",
-        });
-      }
+    const query = new URLSearchParams({
+      name: characterName,
+      serverId: String(serverId),
+      job: jobName,
+      combatPower: String(pveCombatPower),
+    });
+    const characterId = String(profile?.characterId || params.get("characterId") || "").trim();
+    if (characterId) query.set("characterId", characterId);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12_000);
+    let response;
+    try {
+      response = await fetch(`${CHARACTER_RANKING_API_ROOT}?${query}`, {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+    } finally {
+      window.clearTimeout(timeout);
     }
+    if (!response.ok) throw new Error(`character ranking ${response.status}`);
+    const payload = await response.json();
+    const results = (Array.isArray(payload?.rows) ? payload.rows : []).map(row => ({
+      rank: Number(row?.rank),
+      dps: number(row?.dps),
+      dungeonKey: String(row?.dungeonKey || ""),
+      dungeonName: localizeGameName(row?.dungeonName || row?.dungeonKey || "—"),
+      bossName: cleanBossName(localizeGameName(row?.bossName || "—", "mob")),
+      cpTierLabel: String(row?.cpTierLabel || ""),
+      dungeonOrder: Number(row?.dungeonIndex) || 0,
+      bossIndex: Number(row?.bossIndex) || 0,
+      periodKey: row?.periodKey === "weekly" ? "weekly" : "allTime",
+    })).filter(row => row.rank >= 1 && row.rank <= 20 && row.dps > 0 && row.dungeonKey);
     const bestByPeriodAndDungeon = new Map();
     for (const row of results) {
       const key = `${row.periodKey}|${row.dungeonKey}`;
