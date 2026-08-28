@@ -890,7 +890,8 @@
       state.rankingRows = rows;
       state.rankingStatus = "ready";
       refreshCharacterRankingBody(rankingKey);
-    }).catch(() => {
+    }).catch(error => {
+      console.error("character ranking load failed", error);
       if (state.rankingKey !== rankingKey || state.rankingLoad !== load) return;
       state.rankingRows = [];
       state.rankingStatus = "error";
