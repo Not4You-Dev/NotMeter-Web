@@ -236,12 +236,11 @@
       advertisement: "광고",
       serviceLinksAria: "NotMeter 바로가기",
       dailyUsersTitle: "최근 집계된 일일 사용자 수",
-      raidDpsVerified: "산식 검증",
-      raidDpsUnavailable: "검증 불가",
-      raidDpsVerifiedTitle: "파티 버프의 기여도가 정확히 확인된 기록입니다.",
-      raidDpsUnavailableTitle: "파티 버프 기여도를 정확히 확인할 수 없어 관련 수치를 0으로 표시한 기록입니다.",
+      normalizedDpsVerified: "nDPS 산정 완료",
+      normalizedDpsUnavailable: "nDPS 산정 불가",
+      normalizedDpsVerifiedTitle: "외부 파티 효과를 제외한 nDPS를 산정할 수 있는 기록입니다.",
+      normalizedDpsUnavailableTitle: "nDPS 산정에 필요한 정보가 충분하지 않은 기록입니다.",
       normalizedDpsDescription: "외부 파티 버프가 만든 검증된 추가 피해를 제외한 개인 DPS",
-      raidDpsDescription: "nDPS에 본인이 다른 파티원에게 제공한 검증된 추가 피해를 더한 DPS",
       rankingMetric: "DPS / nDPS 랭킹 기준",
       rankingMetricAria: "랭킹 기준 선택",
       testBadge: "TEST",
@@ -624,12 +623,11 @@
       advertisement: "Ad",
       serviceLinksAria: "NotMeter shortcuts",
       dailyUsersTitle: "Recently counted daily users",
-      raidDpsVerified: "Verified",
-      raidDpsUnavailable: "Unavailable",
-      raidDpsVerifiedTitle: "Party-buff contribution was verified for this record.",
-      raidDpsUnavailableTitle: "Party-buff contribution could not be verified, so the related values are shown as zero.",
+      normalizedDpsVerified: "nDPS ready",
+      normalizedDpsUnavailable: "nDPS unavailable",
+      normalizedDpsVerifiedTitle: "This record can calculate nDPS with external party effects removed.",
+      normalizedDpsUnavailableTitle: "This record does not contain enough information to calculate nDPS.",
       normalizedDpsDescription: "Personal DPS after removing verified extra damage created by external party buffs",
-      raidDpsDescription: "nDPS plus verified extra damage this player granted to other party members",
       rankingMetric: "DPS / nDPS ranking metric",
       rankingMetricAria: "Select ranking metric",
       testBadge: "TEST",
@@ -990,12 +988,11 @@
     bossResistanceNoData: "目前沒有可顯示的首領資訊。",
     characterProfile: "角色資料",
     characterProfileShort: "角色",
-    raidDpsVerified: "公式已驗證",
-    raidDpsUnavailable: "無法驗證",
-    raidDpsVerifiedTitle: "此紀錄的隊伍增益貢獻已完成驗證。",
-    raidDpsUnavailableTitle: "無法確認隊伍增益貢獻，因此相關數值顯示為 0。",
+    normalizedDpsVerified: "nDPS 已完成",
+    normalizedDpsUnavailable: "無法計算 nDPS",
+    normalizedDpsVerifiedTitle: "此紀錄可計算排除外部隊伍增益後的 nDPS。",
+    normalizedDpsUnavailableTitle: "此紀錄缺少計算 nDPS 所需的資訊。",
     normalizedDpsDescription: "扣除外部隊伍 Buff 所產生之已驗證追加傷害後的個人 DPS",
-    raidDpsDescription: "nDPS 加上本人提供給其他隊員之已驗證追加傷害",
     rankingMetric: "DPS / nDPS 排行基準",
     rankingMetricAria: "選擇排行基準",
     testBadge: "TEST",
@@ -6219,7 +6216,6 @@
           partyJobNames: null,
           dps: Number(item.player.X) || 0,
           normalizedDps: Number(item.player.Y) || 0,
-          raidDps: Number(item.player.Z) || 0,
           raidDpsVerified: item.player.A === true || Number(item.player.A) === 1,
           P: String(item.player.P || ""),
           B: item.bossIndex,
@@ -6893,9 +6889,6 @@
     const normalizedDps = verified
       ? Math.max(0, Number(player?.Y ?? player?.normalizedDps) || 0)
       : 0;
-    const raidDps = verified
-      ? Math.max(0, Number(player?.Z ?? player?.raidDps) || 0)
-      : 0;
     const td = document.createElement("td");
     td.className = "numeric accent class-dps";
     const normalizedRanking = usesNormalizedRanking();
@@ -6910,8 +6903,8 @@
       (normalizedRanking ? " normalized-ranking" : "");
     const status = document.createElement("span");
     status.className = "class-dps-status";
-    status.textContent = verified ? t("raidDpsVerified") : t("raidDpsUnavailable");
-    status.title = verified ? t("raidDpsVerifiedTitle") : t("raidDpsUnavailableTitle");
+    status.textContent = verified ? t("normalizedDpsVerified") : t("normalizedDpsUnavailable");
+    status.title = verified ? t("normalizedDpsVerifiedTitle") : t("normalizedDpsUnavailableTitle");
     const normalized = document.createElement("span");
     normalized.className = "class-dps-metric normalized";
     const normalizedLabel = document.createElement("span");
@@ -6921,21 +6914,11 @@
     normalizedValue.className = "class-dps-metric-value";
     normalizedValue.textContent = formatInteger(Math.round(normalizedRanking ? dps : normalizedDps));
     normalized.append(normalizedLabel, normalizedValue);
-    const raid = document.createElement("span");
-    raid.className = "class-dps-metric raid";
-    const raidLabel = document.createElement("span");
-    raidLabel.className = "class-dps-metric-label";
-    raidLabel.textContent = "rDPS";
-    const raidValue = document.createElement("span");
-    raidValue.className = "class-dps-metric-value";
-    raidValue.textContent = formatInteger(Math.round(raidDps));
-    raid.append(raidLabel, raidValue);
-    adjusted.append(...(normalizedRanking ? [normalized, raid] : [status, normalized, raid]));
+    adjusted.append(...(normalizedRanking ? [normalized] : [status, normalized]));
 
     td.title = `DPS ${formatInteger(Math.round(dps))}\n` +
       `nDPS ${formatInteger(Math.round(normalizedDps))} · ${t("normalizedDpsDescription")}\n` +
-      `rDPS ${formatInteger(Math.round(raidDps))} · ${t("raidDpsDescription")}\n` +
-      (verified ? t("raidDpsVerifiedTitle") : t("raidDpsUnavailableTitle"));
+      (verified ? t("normalizedDpsVerifiedTitle") : t("normalizedDpsUnavailableTitle"));
     td.append(total, adjusted);
     return td;
   }
