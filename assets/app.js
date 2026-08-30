@@ -498,6 +498,10 @@
       weeklyCompare: "▲▼는 직전 주 동일 조건의 직업별 상위 25% DPS 변화",
       weeklyCompareNdps: "▲▼는 직전 주 동일 조건의 직업별 상위 25% nDPS 변화",
       weeklyTooltip: "직전 주 동일 조건 비교",
+      weeklyPreviousTitle: "지난주 통계",
+      weeklyPreviousRange: "동일 조건 · {range}",
+      weeklyPreviousChange: "상위 25% 대비 {value}",
+      weeklyPreviousNoData: "지난주 동일 조건 표본 없음",
       weeklyGuideTitle: "▲▼ 이번 주 변화 표시 안내",
       weeklyGuideSubtitle: "직전 주 동일 조건의 직업별 상위 25% DPS와 비교합니다",
       weeklyUp: "상승",
@@ -511,7 +515,7 @@
       weeklyGuideMeaning: "변화율은 (이번 주 P75−직전 주 P75)÷직전 주 P75×100으로 계산합니다. ▲2.4%는 이번 주 값이 2.4% 높고, ▼2.4%는 2.4% 낮다는 뜻입니다.",
       weeklyGuideRankingTitle: "랭킹 반영 방식",
       weeklyGuideRanking: "직업 순서는 이번 주 상위 25% DPS로 정렬합니다. 구간 1~20위와 TOP 3 닉네임 효과 권한은 전투력 800K 이상에서 전체 기간 또는 이번 주 중 하나만 충족해도 인정합니다. 보스 처치 후 상위 %는 800K 미만은 전체 기간, 800K 이상은 이번 주 기록을 사용합니다.",
-      weeklyGuideNote: "직전 주에 같은 조건의 기록이 없으면 화살표가 표시되지 않습니다. 화살표에 마우스를 올리면 이전·현재 DPS와 표본 수를 확인할 수 있습니다.",
+      weeklyGuideNote: "각 직업 행 아래에서 직전 주의 표본·상위 10%·상위 25%·중앙값·최고값을 함께 확인할 수 있습니다. 직전 주에 같은 조건의 기록이 없으면 비교 수치와 화살표가 표시되지 않습니다.",
       classDps: "{job} DPS 1~{count}위",
       classCombatTime: "{job} 전투 시간 1~{count}위",
       top20: "TOP {count}",
@@ -885,6 +889,10 @@
       weeklyCompare: "▲▼ shows the change in each class's top-25% DPS under the same filters",
       weeklyCompareNdps: "▲▼ shows the change in each class's top-25% nDPS under the same filters",
       weeklyTooltip: "Previous week, same filters",
+      weeklyPreviousTitle: "Previous week",
+      weeklyPreviousRange: "Same filters · {range}",
+      weeklyPreviousChange: "Top 25% vs. previous week {value}",
+      weeklyPreviousNoData: "No previous-week sample under the same filters",
       weeklyGuideTitle: "What the ▲▼ weekly change means",
       weeklyGuideSubtitle: "Compares each class's top-25% DPS with the previous week under identical filters",
       weeklyUp: "Higher",
@@ -898,7 +906,7 @@
       weeklyGuideMeaning: "The change is calculated as (this week's P75 − previous week's P75) ÷ previous week's P75 × 100. ▲2.4% means this week's value is 2.4% higher, while ▼2.4% means it is 2.4% lower.",
       weeklyGuideRankingTitle: "How ranking uses it",
       weeklyGuideRanking: "Classes are sorted by this week's top-25% DPS. At 800K CP or above, bracket Top 20 and Top 3 nickname-effect access qualify from either all-time or current-week records. Post-combat Top % uses all-time records below 800K and current-week records at 800K or above.",
-      weeklyGuideNote: "No arrow is shown when the previous week has no records under the same filters. Hover over an arrow to see the previous and current DPS and sample counts.",
+      weeklyGuideNote: "Each class row includes the previous week's sample count, top 10%, top 25%, median, and maximum under the same filters. Comparison values and arrows are hidden when no previous-week sample exists.",
       classDps: "{job} DPS — Top {count}",
       classCombatTime: "{job} Combat Time — Top {count}",
       top20: "TOP {count}",
@@ -1004,6 +1012,10 @@
     uniqueNormalizedRankers: "顯示 {count} 名角色 · 僅顯示每名角色最高的已驗證 nDPS 紀錄",
     totalDpsShort: "DPS",
     weeklyCompareNdps: "▲▼ 顯示相同條件下各職業前 25% nDPS 與上週的變化",
+    weeklyPreviousTitle: "上週統計",
+    weeklyPreviousRange: "相同條件 · {range}",
+    weeklyPreviousChange: "前 25% 較上週 {value}",
+    weeklyPreviousNoData: "相同條件下沒有上週樣本",
   };
 
   function normalizeLocale(value) {
@@ -4678,7 +4690,17 @@
     }
     const max = Math.max(1, ...rows.map(item => Number(item.maxDps) || 0));
     const fragment = document.createDocumentFragment();
-    rows.forEach((row, index) => fragment.append(buildSummaryRow(row, index + 1, max)));
+    rows.forEach((row, index) => {
+      const rank = index + 1;
+      const summaryRow = buildSummaryRow(row, rank, max);
+      const previousRow = buildPreviousWeekRow(row, rank, view);
+      if (previousRow) {
+        summaryRow.classList.add("has-previous-week");
+        fragment.append(summaryRow, previousRow);
+      } else {
+        fragment.append(summaryRow);
+      }
+    });
     elements["summary-rows"].replaceChildren(fragment);
     showState("summary");
   }
@@ -4686,6 +4708,7 @@
   function buildSummaryRow(row, rank, globalMax) {
     const tr = document.createElement("tr");
     tr.className = "job-row";
+    tr.dataset.rank = String(rank);
     tr.tabIndex = 0;
     tr.setAttribute("role", "button");
     tr.setAttribute("aria-label", `${jobName(row.jobName)} ${t("details")}`);
@@ -4774,6 +4797,126 @@
     return tr;
   }
 
+  function buildPreviousWeekRow(row, rank, view) {
+    if (state.period !== "Weekly") {
+      return null;
+    }
+    const previous = resolvePreviousWeekStats(row);
+    const range = previousWeeklyRange(view?.periodLabel);
+    const tr = document.createElement("tr");
+    tr.className = "weekly-previous-row";
+    tr.dataset.rank = String(rank);
+    const cell = document.createElement("td");
+    cell.colSpan = 9;
+    const panel = document.createElement("div");
+    panel.className = `weekly-previous-panel${previous ? "" : " is-empty"}`;
+
+    const heading = document.createElement("div");
+    heading.className = "weekly-previous-heading";
+    const title = document.createElement("strong");
+    title.textContent = t("weeklyPreviousTitle");
+    const caption = document.createElement("span");
+    caption.textContent = range
+      ? t("weeklyPreviousRange", { range: formatWeeklyRange(range) })
+      : t("weeklyTooltip");
+    heading.append(title, caption);
+
+    if (!previous) {
+      const empty = document.createElement("span");
+      empty.className = "weekly-previous-empty";
+      empty.textContent = t("weeklyPreviousNoData");
+      panel.append(heading, empty);
+      cell.append(panel);
+      tr.append(cell);
+      return tr;
+    }
+
+    const change = weeklyP75Change(row, previous);
+    if (change) {
+      const changeLabel = document.createElement("span");
+      changeLabel.className = `weekly-previous-change ${change.direction}`;
+      changeLabel.textContent = t("weeklyPreviousChange", { value: change.label });
+      heading.append(changeLabel);
+    }
+
+    const stats = document.createElement("div");
+    stats.className = "weekly-previous-stats";
+    const values = [
+      [t("sample"), formatInteger(previous.sampleCount), "sample"],
+      [t("top10Threshold"), formatPreviousWeekDps(previous.p90), "p90"],
+      [t("top25"), formatPreviousWeekDps(previous.p75), "p75"],
+      [t("median"), formatPreviousWeekDps(previous.median), "median"],
+      [t("max"), formatPreviousWeekDps(previous.max), "max"],
+    ];
+    for (const [label, value, modifier] of values) {
+      const stat = document.createElement("span");
+      stat.className = `weekly-previous-stat ${modifier}`;
+      const statLabel = document.createElement("small");
+      statLabel.textContent = label;
+      const statValue = document.createElement("b");
+      statValue.textContent = value;
+      stat.append(statLabel, statValue);
+      stats.append(stat);
+    }
+    panel.append(heading, stats);
+    cell.append(panel);
+    tr.append(cell);
+    return tr;
+  }
+
+  function resolvePreviousWeekStats(row) {
+    const published = previousWeekSummary(row?.previousWeek);
+    if (published) {
+      return published;
+    }
+    if (!Array.isArray(row?.dpsPercentiles) || row.dpsPercentiles.length < 3) {
+      return null;
+    }
+    const sampleCount = Math.max(0, Math.round(Number(row.dpsPercentiles[2]) || 0));
+    const p75 = Number(row.dpsPercentiles[0]) || 0;
+    if (sampleCount <= 0 || p75 <= 0) {
+      return null;
+    }
+    return {
+      sampleCount,
+      p90: 0,
+      p75,
+      median: usesNormalizedRanking() ? 0 : Number(row.dpsPercentiles[1]) || 0,
+      max: 0,
+    };
+  }
+
+  function previousWeeklyRange(periodLabel) {
+    const current = parseWeeklyRange(periodLabel);
+    if (!current) {
+      return null;
+    }
+    const week = 7 * 24 * 60 * 60 * 1000;
+    return {
+      start: new Date(current.start.getTime() - week),
+      end: new Date(current.end.getTime() - week),
+    };
+  }
+
+  function weeklyP75Change(row, previous = resolvePreviousWeekStats(row)) {
+    const currentP75 = Number(row?.p75Dps);
+    const previousP75 = Number(previous?.p75);
+    if (!(currentP75 > 0) || !(previousP75 > 0)) {
+      return null;
+    }
+    const value = (currentP75 - previousP75) / previousP75 * 100;
+    const direction = value > 0.05 ? "up" : value < -0.05 ? "down" : "flat";
+    return {
+      direction,
+      value,
+      label: `${direction === "up" ? "▲" : direction === "down" ? "▼" : "–"} ${Math.abs(value).toFixed(1)}%`,
+    };
+  }
+
+  function formatPreviousWeekDps(value) {
+    return Number(value) > 0 ? formatDps(value) : "—";
+  }
+
   function usesCombatTimeRanking(dungeonKey = state.dungeonKey) {
     return dungeonKey === "nightmare-atheron-10";
   }
@@ -4824,6 +4967,7 @@
       p90Dps: Number(metric.p90Dps ?? metric.p90) || 0,
       maxDps: Number(metric.maxDps ?? metric.max) || 0,
       dpsPercentiles: percentiles,
+      previousWeek: metric.previousWeek || null,
     };
   }
 
@@ -6148,6 +6292,9 @@
           dpsPercentiles: state.period === "Weekly" && previous
             ? [previous.p75Dps, current.p75Dps, previous.sampleCount]
             : null,
+          previousWeek: state.period === "Weekly"
+            ? previousWeekSummary(previous)
+            : null,
           normalizedDps: {
             ...current.normalizedDps,
             dpsPercentiles: state.period === "Weekly" && previous?.normalizedDps?.sampleCount > 0
@@ -6156,6 +6303,9 @@
                   current.normalizedDps.p75Dps,
                   previous.normalizedDps.sampleCount,
                 ]
+              : null,
+            previousWeek: state.period === "Weekly"
+              ? previousWeekSummary(previous?.normalizedDps)
               : null,
           },
         };
@@ -6459,6 +6609,9 @@
     const weeklyComparison = state.period === "Weekly"
       ? mergeWeeklyComparison(rows)
       : null;
+    const previousWeek = state.period === "Weekly"
+      ? mergePreviousWeekSummaries(rows.map(row => row.previousWeek))
+      : null;
     return {
       jobName,
       sampleCount,
@@ -6469,6 +6622,7 @@
       p90Dps: weightedQuantile(samples, 0.9),
       maxDps: weightedQuantile(samples, 1),
       dpsPercentiles: weeklyComparison,
+      previousWeek,
     };
   }
 
@@ -6491,7 +6645,7 @@
   function mergeWeeklyComparison(rows) {
     const available = rows
       .map(row => row.dpsPercentiles)
-      .filter(value => Array.isArray(value) && value.length === 3 && Number(value[2]) > 0);
+      .filter(value => Array.isArray(value) && value.length >= 3 && Number(value[2]) > 0);
     if (available.length === 0) {
       return null;
     }
@@ -6501,6 +6655,46 @@
       available.reduce((sum, value) => sum + Number(value[1]) * Number(value[2]), 0) / count,
       count,
     ];
+  }
+
+  function previousWeekSummary(value) {
+    const sampleCount = Math.max(0, Math.round(Number(value?.sampleCount) || 0));
+    if (sampleCount <= 0) {
+      return null;
+    }
+    return {
+      sampleCount,
+      p90: Number(value?.p90Dps ?? value?.p90) || 0,
+      p75: Number(value?.p75Dps ?? value?.p75) || 0,
+      median: Number(value?.medianDps ?? value?.median) || 0,
+      max: Number(value?.maxDps ?? value?.max) || 0,
+    };
+  }
+
+  function mergePreviousWeekSummaries(values) {
+    const available = values
+      .map(previousWeekSummary)
+      .filter(Boolean);
+    if (available.length === 0) {
+      return null;
+    }
+    const samples = [];
+    for (const value of available) {
+      const metrics = [value.median, value.p75, value.p90, value.max]
+        .filter(metric => metric > 0);
+      const weight = metrics.length > 0 ? value.sampleCount / metrics.length : 0;
+      for (const metric of metrics) {
+        if (weight > 0) samples.push([metric, weight]);
+      }
+    }
+    samples.sort((left, right) => left[0] - right[0]);
+    return {
+      sampleCount: available.reduce((sum, value) => sum + value.sampleCount, 0),
+      p90: weightedQuantile(samples, 0.9),
+      p75: weightedQuantile(samples, 0.75),
+      median: weightedQuantile(samples, 0.5),
+      max: weightedQuantile(samples, 1),
+    };
   }
 
   function mergeCustomClassViews(views) {
@@ -6839,26 +7033,21 @@
   }
 
   function buildWeeklyComparisonBadge(row) {
-    if (state.period !== "Weekly" ||
-        !Array.isArray(row.dpsPercentiles) ||
-        row.dpsPercentiles.length < 3) {
+    if (state.period !== "Weekly") {
       return null;
     }
-    const previousP75 = Number(row.dpsPercentiles[0]);
-    const previousSamples = Math.max(0, Math.round(Number(row.dpsPercentiles[2]) || 0));
-    const currentP75 = Number(row.p75Dps);
-    if (!(previousP75 > 0) || !(previousSamples > 0) || !Number.isFinite(currentP75)) {
+    const previous = resolvePreviousWeekStats(row);
+    const change = weeklyP75Change(row, previous);
+    if (!previous || !change) {
       return null;
     }
-    const change = (currentP75 - previousP75) / previousP75 * 100;
-    const direction = change > 0.05 ? "up" : change < -0.05 ? "down" : "flat";
     const badge = document.createElement("span");
-    badge.className = `weekly-change ${direction}`;
-    badge.textContent = `${direction === "up" ? "▲" : direction === "down" ? "▼" : "–"} ${Math.abs(change).toFixed(1)}%`;
+    badge.className = `weekly-change ${change.direction}`;
+    badge.textContent = change.label;
     badge.title =
       `${t("weeklyTooltip")}\n` +
-      `${t("top25")} ${formatDps(previousP75)} → ${formatDps(currentP75)}\n` +
-      `${t("samples")} ${formatInteger(previousSamples)} → ${formatInteger(row.sampleCount)}`;
+      `${t("top25")} ${formatDps(previous.p75)} → ${formatDps(row.p75Dps)}\n` +
+      `${t("samples")} ${formatInteger(previous.sampleCount)} → ${formatInteger(row.sampleCount)}`;
     return badge;
   }
 

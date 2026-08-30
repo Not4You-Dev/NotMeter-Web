@@ -4153,6 +4153,178 @@ tr:nth-child(3) .rank-badge {
   color: #ff8792;
 }
 
+.summary-table .job-row[data-rank] td {
+  border-top: 0;
+  border-bottom: 0;
+  background: #0d1b28;
+}
+
+.summary-table .job-row[data-rank="1"] td {
+  border-top: 1px solid rgba(255, 221, 105, 0.27);
+  border-bottom: 1px solid rgba(255, 221, 105, 0.16);
+  background: #171b1c;
+}
+
+.summary-table .job-row[data-rank="2"] td {
+  border-top: 1px solid rgba(107, 219, 255, 0.37);
+  border-bottom: 1px solid rgba(107, 219, 255, 0.21);
+  background: #102837;
+}
+
+.summary-table .job-row[data-rank="3"] td {
+  border-top: 1px solid rgba(231, 158, 102, 0.3);
+  border-bottom: 1px solid rgba(231, 158, 102, 0.18);
+  background: #1a1b1c;
+}
+
+.summary-table .job-row[data-rank] .rank-badge {
+  border-color: #45647a;
+  background: rgba(72, 105, 128, 0.18);
+  color: #9cb8ca;
+}
+
+.summary-table .job-row[data-rank="1"] .rank-badge {
+  border-color: #a48a32;
+  background: rgba(164, 138, 50, 0.2);
+  color: #ffe070;
+}
+
+.summary-table .job-row[data-rank="2"] .rank-badge {
+  border-color: #648b9c;
+  background: rgba(100, 139, 156, 0.18);
+  color: #c7efff;
+}
+
+.summary-table .job-row[data-rank="3"] .rank-badge {
+  border-color: #916440;
+  background: rgba(145, 100, 64, 0.18);
+  color: #f1ba86;
+}
+
+.ranking-table tbody tr.weekly-previous-row,
+.ranking-table tbody tr.weekly-previous-row:nth-child(-n + 3) {
+  filter: none;
+}
+
+.ranking-table tbody tr.weekly-previous-row > td,
+.ranking-table tbody tr.weekly-previous-row:nth-child(-n + 3) > td {
+  height: auto;
+  padding: 0 9px 5px 67px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.weekly-previous-panel {
+  display: grid;
+  min-height: 52px;
+  box-sizing: border-box;
+  grid-template-columns: minmax(205px, 1.15fr) minmax(0, 2.3fr);
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border: 1px solid rgba(44, 111, 128, 0.48);
+  border-left: 3px solid rgba(63, 211, 208, 0.72);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(39, 154, 155, 0.1), transparent 34%),
+    rgba(7, 22, 32, 0.84);
+}
+
+.weekly-previous-panel.is-empty {
+  grid-template-columns: minmax(205px, 1fr) minmax(0, 2.3fr);
+  border-left-color: rgba(100, 131, 147, 0.7);
+  background: rgba(7, 22, 32, 0.7);
+}
+
+.weekly-previous-heading {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.weekly-previous-heading strong {
+  color: #9ff5eb;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.weekly-previous-heading > span:not(.weekly-previous-change) {
+  overflow: hidden;
+  max-width: 100%;
+  color: #6f8d9e;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekly-previous-change {
+  margin-top: 3px;
+  color: #aebdca;
+  font-size: 9.5px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.weekly-previous-change.up {
+  color: #5ee3ae;
+}
+
+.weekly-previous-change.down {
+  color: #ff8792;
+}
+
+.weekly-previous-stats {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.weekly-previous-stat {
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  flex-direction: column;
+  padding-left: 8px;
+  border-left: 1px solid rgba(47, 83, 101, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.weekly-previous-stat small {
+  color: #6f8d9e;
+  font-size: 8.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.weekly-previous-stat b {
+  overflow: hidden;
+  max-width: 100%;
+  color: #bed0da;
+  font-size: 11.5px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekly-previous-stat.p90 b {
+  color: #79d8d2;
+}
+
+.weekly-previous-stat.p75 b {
+  color: #5dc9c7;
+}
+
+.weekly-previous-empty {
+  color: #728e9e;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
 .numeric {
   color: #ecf5fa;
   font-variant-numeric: tabular-nums;
@@ -6278,6 +6450,100 @@ tr:nth-child(3) .rank-badge {
   .summary-table .chevron-column,
   .summary-table .row-chevron {
     display: none;
+  }
+
+  .summary-table tbody tr.job-row[data-rank] {
+    border-color: #1b3344;
+    background: #0d1b28;
+  }
+
+  .summary-table tbody tr.job-row[data-rank="1"] {
+    border-color: rgba(255, 221, 105, 0.27);
+    background: #171b1c;
+  }
+
+  .summary-table tbody tr.job-row[data-rank="2"] {
+    border-color: rgba(107, 219, 255, 0.37);
+    background: #102837;
+  }
+
+  .summary-table tbody tr.job-row[data-rank="3"] {
+    border-color: rgba(231, 158, 102, 0.3);
+    background: #1a1b1c;
+  }
+
+  .summary-table tbody tr.job-row.has-previous-week {
+    margin-bottom: 0;
+    border-bottom-color: rgba(43, 92, 108, 0.64);
+    border-radius: 10px 10px 0 0;
+  }
+
+  .summary-table tbody tr.weekly-previous-row,
+  .summary-table tbody tr.weekly-previous-row:nth-child(-n + 3) {
+    display: block;
+    margin-top: -1px;
+    margin-bottom: 7px;
+    overflow: visible;
+    border: 1px solid #1b3344;
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
+    background: rgba(7, 22, 32, 0.86);
+  }
+
+  .summary-table tbody tr.weekly-previous-row > td,
+  .summary-table tbody tr.weekly-previous-row:nth-child(-n + 3) > td {
+    display: block;
+    padding: 0;
+  }
+
+  .weekly-previous-panel,
+  .weekly-previous-panel.is-empty {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 7px;
+    padding: 8px 10px 9px 55px;
+    border: 0;
+    border-left: 3px solid rgba(63, 211, 208, 0.72);
+    border-radius: 0 0 9px 9px;
+    background: linear-gradient(90deg, rgba(39, 154, 155, 0.1), transparent 46%);
+  }
+
+  .weekly-previous-panel.is-empty {
+    border-left-color: rgba(100, 131, 147, 0.7);
+  }
+
+  .weekly-previous-heading {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 2px 7px;
+  }
+
+  .weekly-previous-heading > span:not(.weekly-previous-change) {
+    text-align: right;
+  }
+
+  .weekly-previous-change {
+    grid-column: 1 / 3;
+    margin-top: 1px;
+  }
+
+  .weekly-previous-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px 3px;
+  }
+
+  .weekly-previous-stat {
+    align-items: flex-start;
+    padding-left: 7px;
+  }
+
+  .weekly-previous-stat b {
+    font-size: 11px;
+  }
+
+  .weekly-previous-empty {
+    padding: 0 0 2px;
   }
 
   .class-table tbody tr {
