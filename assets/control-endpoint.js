@@ -16,6 +16,7 @@
     "notmeter.112-168-140-142.sslip.io",
     "notmeter.112-168-140-142.nip.io",
   ]);
+  const TRANSIENT_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
   const nativeFetch = window.fetch.bind(window);
   let verified = null;
   let refreshPromise = null;
@@ -175,15 +176,25 @@
     if (!LEGACY_HOSTS.has(parsed.hostname.toLowerCase())) return nativeFetch(input, init);
 
     const endpoints = await getEndpoints();
-    if (!endpoints.length) throw new TypeError("The signed control endpoint is unavailable.");
+    // The legacy HTTPS authority is compiled into the page and remains a safe
+    // last resort. A temporary GitHub/manifest outage must not turn a healthy
+    // calculator into a client-side connection error.
+    if (!endpoints.length) return nativeFetch(input, init);
     const baseRequest = input instanceof Request ? new Request(input, init) : new Request(parsed.toString(), init);
     let lastError = null;
+    let lastTransientResponse = null;
+    const retryTransientResponse = parsed.pathname === "/stat-efficiency/v1/calculate";
     const attempted = new Set();
     for (const endpoint of endpoints) {
       attempted.add(endpoint);
       try {
         const response = await nativeFetch(new Request(rewriteUrl(parsed.toString(), endpoint), baseRequest.clone()));
-        return response;
+        if (!retryTransientResponse || !TRANSIENT_STATUS_CODES.has(response.status)) {
+          lastTransientResponse?.body?.cancel().catch(() => {});
+          return response;
+        }
+        lastTransientResponse?.body?.cancel().catch(() => {});
+        lastTransientResponse = response;
       } catch (error) {
         lastError = error;
       }
@@ -192,11 +203,18 @@
     const refreshedEndpoints = await getEndpoints();
     for (const endpoint of refreshedEndpoints.filter(value => !attempted.has(value))) {
       try {
-        return await nativeFetch(new Request(rewriteUrl(parsed.toString(), endpoint), baseRequest.clone()));
+        const response = await nativeFetch(new Request(rewriteUrl(parsed.toString(), endpoint), baseRequest.clone()));
+        if (!retryTransientResponse || !TRANSIENT_STATUS_CODES.has(response.status)) {
+          lastTransientResponse?.body?.cancel().catch(() => {});
+          return response;
+        }
+        lastTransientResponse?.body?.cancel().catch(() => {});
+        lastTransientResponse = response;
       } catch (error) {
         lastError = error;
       }
     }
+    if (lastTransientResponse) return lastTransientResponse;
     if (lastError) throw lastError;
     return nativeFetch(input, init);
   };
