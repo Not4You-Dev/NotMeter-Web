@@ -4764,19 +4764,44 @@
         count: formatInteger(row.sampleCount),
       });
     }
-    appendPreviousWeekValue(sampleCell, previous, value => formatInteger(value.sampleCount));
+    appendPreviousWeekValue(
+      sampleCell,
+      previous,
+      value => formatInteger(value.sampleCount),
+      row.sampleCount,
+      value => value.sampleCount);
     tr.append(sampleCell);
     const p90Cell = numericCell(formatSummaryDps(summaryP90Dps(row)), "summary-p90", t("top10Threshold"));
-    appendPreviousWeekValue(p90Cell, previous, value => formatPreviousWeekDps(value.p90));
+    appendPreviousWeekValue(
+      p90Cell,
+      previous,
+      value => formatPreviousWeekDps(value.p90),
+      summaryP90Dps(row),
+      value => value.p90);
     tr.append(p90Cell);
     const p75Cell = numericCell(formatDps(row.p75Dps), "accent summary-p75", t("top25"));
-    appendPreviousWeekValue(p75Cell, previous, value => formatPreviousWeekDps(value.p75));
+    appendPreviousWeekValue(
+      p75Cell,
+      previous,
+      value => formatPreviousWeekDps(value.p75),
+      row.p75Dps,
+      value => value.p75);
     tr.append(p75Cell);
     const medianCell = numericCell(formatDps(row.medianDps), "median summary-median", t("median"));
-    appendPreviousWeekValue(medianCell, previous, value => formatPreviousWeekDps(value.median));
+    appendPreviousWeekValue(
+      medianCell,
+      previous,
+      value => formatPreviousWeekDps(value.median),
+      row.medianDps,
+      value => value.median);
     tr.append(medianCell);
     const maxCell = numericCell(formatDps(row.maxDps), "max summary-max", t("max"));
-    appendPreviousWeekValue(maxCell, previous, value => formatPreviousWeekDps(value.max));
+    appendPreviousWeekValue(
+      maxCell,
+      previous,
+      value => formatPreviousWeekDps(value.max),
+      row.maxDps,
+      value => value.max);
     tr.append(maxCell);
 
     const distributionCell = document.createElement("td");
@@ -4803,7 +4828,7 @@
     return tr;
   }
 
-  function appendPreviousWeekValue(cell, previous, formatter) {
+  function appendPreviousWeekValue(cell, previous, formatter, currentMetric, previousMetricSelector) {
     if (!previous) {
       return;
     }
@@ -4813,6 +4838,12 @@
     const previousValue = document.createElement("small");
     previousValue.className = "weekly-previous-inline";
     previousValue.textContent = `${t("weeklyPreviousShort")} ${formatter(previous)}`;
+    const currentNumber = Number(currentMetric) || 0;
+    const previousNumber = Number(previousMetricSelector(previous)) || 0;
+    if (currentNumber > 0 && previousNumber > 0) {
+      previousValue.classList.add(
+        currentNumber > previousNumber ? "up" : currentNumber < previousNumber ? "down" : "flat");
+    }
     cell.classList.add("has-weekly-previous");
     cell.replaceChildren(current, previousValue);
   }

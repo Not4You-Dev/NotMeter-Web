@@ -4225,6 +4225,14 @@ tr:nth-child(3) .rank-badge {
   line-height: 10px;
 }
 
+.weekly-previous-inline.up {
+  color: #5ee3ae;
+}
+
+.weekly-previous-inline.down {
+  color: #ff8792;
+}
+
 .numeric.accent {
   color: var(--accent);
 }
