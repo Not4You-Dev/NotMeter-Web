@@ -498,6 +498,7 @@
       weeklyCompare: "▲▼는 직전 주 동일 조건의 직업별 상위 25% DPS 변화",
       weeklyCompareNdps: "▲▼는 직전 주 동일 조건의 직업별 상위 25% nDPS 변화",
       weeklyTooltip: "직전 주 동일 조건 비교",
+      weeklyPreviousShort: "전주",
       weeklyPreviousTitle: "지난주 통계",
       weeklyPreviousRange: "동일 조건 · {range}",
       weeklyPreviousChange: "상위 25% 대비 {value}",
@@ -889,6 +890,7 @@
       weeklyCompare: "▲▼ shows the change in each class's top-25% DPS under the same filters",
       weeklyCompareNdps: "▲▼ shows the change in each class's top-25% nDPS under the same filters",
       weeklyTooltip: "Previous week, same filters",
+      weeklyPreviousShort: "Prev.",
       weeklyPreviousTitle: "Previous week",
       weeklyPreviousRange: "Same filters · {range}",
       weeklyPreviousChange: "Top 25% vs. previous week {value}",
@@ -1012,6 +1014,7 @@
     uniqueNormalizedRankers: "顯示 {count} 名角色 · 僅顯示每名角色最高的已驗證 nDPS 紀錄",
     totalDpsShort: "DPS",
     weeklyCompareNdps: "▲▼ 顯示相同條件下各職業前 25% nDPS 與上週的變化",
+    weeklyPreviousShort: "上週",
     weeklyPreviousTitle: "上週統計",
     weeklyPreviousRange: "相同條件 · {range}",
     weeklyPreviousChange: "前 25% 較上週 {value}",
@@ -4692,20 +4695,14 @@
     const fragment = document.createDocumentFragment();
     rows.forEach((row, index) => {
       const rank = index + 1;
-      const summaryRow = buildSummaryRow(row, rank, max);
-      const previousRow = buildPreviousWeekRow(row, rank, view);
-      if (previousRow) {
-        summaryRow.classList.add("has-previous-week");
-        fragment.append(summaryRow, previousRow);
-      } else {
-        fragment.append(summaryRow);
-      }
+      fragment.append(buildSummaryRow(row, rank, max));
     });
     elements["summary-rows"].replaceChildren(fragment);
     showState("summary");
   }
 
   function buildSummaryRow(row, rank, globalMax) {
+    const previous = state.period === "Weekly" ? resolvePreviousWeekStats(row) : null;
     const tr = document.createElement("tr");
     tr.className = "job-row";
     tr.dataset.rank = String(rank);
@@ -4767,11 +4764,20 @@
         count: formatInteger(row.sampleCount),
       });
     }
+    appendPreviousWeekValue(sampleCell, previous, value => formatInteger(value.sampleCount));
     tr.append(sampleCell);
-    tr.append(numericCell(formatSummaryDps(summaryP90Dps(row)), "summary-p90", t("top10Threshold")));
-    tr.append(numericCell(formatDps(row.p75Dps), "accent summary-p75", t("top25")));
-    tr.append(numericCell(formatDps(row.medianDps), "median summary-median", t("median")));
-    tr.append(numericCell(formatDps(row.maxDps), "max summary-max", t("max")));
+    const p90Cell = numericCell(formatSummaryDps(summaryP90Dps(row)), "summary-p90", t("top10Threshold"));
+    appendPreviousWeekValue(p90Cell, previous, value => formatPreviousWeekDps(value.p90));
+    tr.append(p90Cell);
+    const p75Cell = numericCell(formatDps(row.p75Dps), "accent summary-p75", t("top25"));
+    appendPreviousWeekValue(p75Cell, previous, value => formatPreviousWeekDps(value.p75));
+    tr.append(p75Cell);
+    const medianCell = numericCell(formatDps(row.medianDps), "median summary-median", t("median"));
+    appendPreviousWeekValue(medianCell, previous, value => formatPreviousWeekDps(value.median));
+    tr.append(medianCell);
+    const maxCell = numericCell(formatDps(row.maxDps), "max summary-max", t("max"));
+    appendPreviousWeekValue(maxCell, previous, value => formatPreviousWeekDps(value.max));
+    tr.append(maxCell);
 
     const distributionCell = document.createElement("td");
     distributionCell.className = "summary-distribution";
@@ -4797,71 +4803,18 @@
     return tr;
   }
 
-  function buildPreviousWeekRow(row, rank, view) {
-    if (state.period !== "Weekly") {
-      return null;
-    }
-    const previous = resolvePreviousWeekStats(row);
-    const range = previousWeeklyRange(view?.periodLabel);
-    const tr = document.createElement("tr");
-    tr.className = "weekly-previous-row";
-    tr.dataset.rank = String(rank);
-    const cell = document.createElement("td");
-    cell.colSpan = 9;
-    const panel = document.createElement("div");
-    panel.className = `weekly-previous-panel${previous ? "" : " is-empty"}`;
-
-    const heading = document.createElement("div");
-    heading.className = "weekly-previous-heading";
-    const title = document.createElement("strong");
-    title.textContent = t("weeklyPreviousTitle");
-    const caption = document.createElement("span");
-    caption.textContent = range
-      ? t("weeklyPreviousRange", { range: formatWeeklyRange(range) })
-      : t("weeklyTooltip");
-    heading.append(title, caption);
-
+  function appendPreviousWeekValue(cell, previous, formatter) {
     if (!previous) {
-      const empty = document.createElement("span");
-      empty.className = "weekly-previous-empty";
-      empty.textContent = t("weeklyPreviousNoData");
-      panel.append(heading, empty);
-      cell.append(panel);
-      tr.append(cell);
-      return tr;
+      return;
     }
-
-    const change = weeklyP75Change(row, previous);
-    if (change) {
-      const changeLabel = document.createElement("span");
-      changeLabel.className = `weekly-previous-change ${change.direction}`;
-      changeLabel.textContent = t("weeklyPreviousChange", { value: change.label });
-      heading.append(changeLabel);
-    }
-
-    const stats = document.createElement("div");
-    stats.className = "weekly-previous-stats";
-    const values = [
-      [t("sample"), formatInteger(previous.sampleCount), "sample"],
-      [t("top10Threshold"), formatPreviousWeekDps(previous.p90), "p90"],
-      [t("top25"), formatPreviousWeekDps(previous.p75), "p75"],
-      [t("median"), formatPreviousWeekDps(previous.median), "median"],
-      [t("max"), formatPreviousWeekDps(previous.max), "max"],
-    ];
-    for (const [label, value, modifier] of values) {
-      const stat = document.createElement("span");
-      stat.className = `weekly-previous-stat ${modifier}`;
-      const statLabel = document.createElement("small");
-      statLabel.textContent = label;
-      const statValue = document.createElement("b");
-      statValue.textContent = value;
-      stat.append(statLabel, statValue);
-      stats.append(stat);
-    }
-    panel.append(heading, stats);
-    cell.append(panel);
-    tr.append(cell);
-    return tr;
+    const current = document.createElement("span");
+    current.className = "weekly-current-value";
+    current.textContent = cell.textContent;
+    const previousValue = document.createElement("small");
+    previousValue.className = "weekly-previous-inline";
+    previousValue.textContent = `${t("weeklyPreviousShort")} ${formatter(previous)}`;
+    cell.classList.add("has-weekly-previous");
+    cell.replaceChildren(current, previousValue);
   }
 
   function resolvePreviousWeekStats(row) {
