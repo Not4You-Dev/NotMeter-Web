@@ -5462,7 +5462,8 @@
     expectedDungeonKey) {
     const failures = [];
     const statuses = [];
-    for (const endpoint of DETAIL_ENDPOINTS) {
+    const endpoints = await resolveRankingDetailEndpoints();
+    for (const endpoint of endpoints) {
       for (let attempt = 0; attempt < 2; attempt += 1) {
         if (attempt > 0) {
           await new Promise(resolve => window.setTimeout(resolve, DETAIL_RETRY_DELAY_MS));
@@ -5502,6 +5503,20 @@
       ? 404
       : 0;
     throw error;
+  }
+
+  async function resolveRankingDetailEndpoints() {
+    try {
+      const controlEndpoints = await globalThis.NotMeterControlEndpoint?.getEndpoints?.();
+      if (Array.isArray(controlEndpoints) && controlEndpoints.length > 0) {
+        return [...new Set(controlEndpoints
+          .map(endpoint => String(endpoint || "").trim().replace(/\/$/, ""))
+          .filter(Boolean)
+          .map(endpoint => `${endpoint}/ranking/v1/details/`))];
+      }
+    } catch {
+    }
+    return DETAIL_ENDPOINTS;
   }
 
   async function parseRankingCombatDetail(
