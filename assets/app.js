@@ -1230,7 +1230,7 @@
       "summary-view", "summary-rows", "class-view", "class-rows", "cache-age",
       "combat-detail-modal", "detail-close", "detail-job-icon", "detail-title",
       "detail-character", "detail-duration", "detail-cp", "detail-total-damage",
-      "detail-dps", "detail-share", "detail-summary-duration", "detail-death-count", "detail-hits",
+      "detail-dps", "detail-ndps-row", "detail-ndps", "detail-share", "detail-summary-duration", "detail-death-count", "detail-hits",
       "detail-parry-rate", "detail-critical-rate", "detail-front-rate", "detail-back-rate",
       "detail-perfect-rate", "detail-double-rate", "detail-evade-rate", "detail-block-row",
       "detail-block-rate", "detail-cp-row",
@@ -5694,6 +5694,12 @@
       : formatInteger(detail.totalDamage);
     elements["detail-dps"].textContent = formatCompact(
       Number(detail.dps || player.dps) || 0);
+    const normalizedDps = Math.max(0, Number(detail.normalizedDps) || 0);
+    const showNormalizedDps = !unavailableReason && normalizedDps > 0;
+    elements["detail-ndps-row"].hidden = !showNormalizedDps;
+    elements["detail-ndps"].textContent = showNormalizedDps
+      ? formatCompact(normalizedDps)
+      : "—";
     elements["detail-share"].textContent = unavailableReason
       ? "—"
       : formatPercent(detail.sharePercent);

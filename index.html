@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260831-4">
+  <link rel="stylesheet" href="./assets/app.css?v=20260831-5">
   <link rel="stylesheet" href="./assets/character.css?v=20260826-4">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <script>
@@ -194,11 +194,11 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260831-4" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260831-5" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260827-4" defer></script>
   <script src="./assets/character.js?v=20260828-4" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260831-4" defer></script>
+  <script src="./assets/app.js?v=20260831-5" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -1336,9 +1336,10 @@
 
       <div class="detail-content">
         <aside class="detail-summary">
-          <div class="detail-summary-metric"><span data-i18n="totalDamage">총 데미지</span><strong id="detail-total-damage">—</strong></div>
-          <div class="detail-summary-metric"><span>DPS</span><strong id="detail-dps">—</strong></div>
-          <div class="detail-summary-metric"><span data-i18n="contribution">기여도</span><strong id="detail-share">—</strong></div>
+          <div class="detail-summary-metric detail-damage-metric"><span data-i18n="totalDamage">총 데미지</span><strong id="detail-total-damage">—</strong></div>
+          <div class="detail-summary-metric detail-dps-metric"><span>DPS</span><strong id="detail-dps">—</strong></div>
+          <div class="detail-summary-metric detail-ndps-metric" id="detail-ndps-row" hidden><span>nDPS</span><strong id="detail-ndps">—</strong></div>
+          <div class="detail-summary-metric detail-contribution-metric"><span data-i18n="contribution">기여도</span><strong id="detail-share">—</strong></div>
           <div class="detail-summary-metric"><span data-i18n="duration">전투 시간</span><strong id="detail-summary-duration">—</strong></div>
           <div class="detail-summary-metric detail-death-metric"><span data-i18n="deathCount">사망 횟수</span><strong id="detail-death-count">—</strong></div>
           <div class="detail-summary-metric" data-detail-metric="hits"><span data-i18n="hits">타수</span><strong id="detail-hits">—</strong></div>

@@ -5033,15 +5033,19 @@ tr:nth-child(3) .rank-badge {
   white-space: nowrap;
 }
 
-.detail-summary-metric:nth-child(1) strong {
+.detail-damage-metric strong {
   color: #2ddcc4;
 }
 
-.detail-summary-metric:nth-child(2) strong {
+.detail-dps-metric strong {
   color: #4ade80;
 }
 
-.detail-summary-metric:nth-child(3) strong {
+.detail-ndps-metric strong {
+  color: #4ce1d4;
+}
+
+.detail-contribution-metric strong {
   color: #4ce1d4;
 }
 
