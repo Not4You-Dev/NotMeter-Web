@@ -4835,17 +4835,44 @@
     const current = document.createElement("span");
     current.className = "weekly-current-value";
     current.textContent = cell.textContent;
-    const previousValue = document.createElement("small");
-    previousValue.className = "weekly-previous-inline";
-    previousValue.textContent = `${t("weeklyPreviousShort")} ${formatter(previous)}`;
     const currentNumber = Number(currentMetric) || 0;
     const previousNumber = Number(previousMetricSelector(previous)) || 0;
-    if (currentNumber > 0 && previousNumber > 0) {
-      previousValue.classList.add(
-        currentNumber > previousNumber ? "up" : currentNumber < previousNumber ? "down" : "flat");
+    const previousText = formatter(previous);
+    const comparison = weeklyMetricChange(currentNumber, previousNumber);
+    const previousValue = document.createElement("small");
+    previousValue.className = "weekly-previous-inline";
+    const previousLabel = document.createElement("span");
+    previousLabel.className = "weekly-previous-label";
+    previousLabel.textContent = t("weeklyPreviousShort");
+    const previousMetric = document.createElement("span");
+    previousMetric.className = "weekly-previous-value";
+    previousMetric.textContent = previousText;
+    previousValue.append(previousLabel, previousMetric);
+    if (comparison) {
+      const delta = document.createElement("span");
+      delta.className = `weekly-metric-delta ${comparison.direction}`;
+      delta.textContent = comparison.label;
+      previousValue.append(delta);
     }
+    previousValue.title = `${t("weeklyPreviousShort")} ${previousText} · ${t("thisWeek")} ${current.textContent}` +
+      (comparison ? ` · ${comparison.label}` : "");
     cell.classList.add("has-weekly-previous");
     cell.replaceChildren(current, previousValue);
+  }
+
+  function weeklyMetricChange(currentMetric, previousMetric) {
+    const current = Number(currentMetric);
+    const previous = Number(previousMetric);
+    if (!(current > 0) || !(previous > 0)) {
+      return null;
+    }
+    const value = (current - previous) / previous * 100;
+    const direction = value > 0.05 ? "up" : value < -0.05 ? "down" : "flat";
+    return {
+      direction,
+      value,
+      label: `${direction === "up" ? "▲" : direction === "down" ? "▼" : "–"}${Math.abs(value).toFixed(1)}%`,
+    };
   }
 
   function resolvePreviousWeekStats(row) {
@@ -4883,18 +4910,10 @@
   }
 
   function weeklyP75Change(row, previous = resolvePreviousWeekStats(row)) {
-    const currentP75 = Number(row?.p75Dps);
-    const previousP75 = Number(previous?.p75);
-    if (!(currentP75 > 0) || !(previousP75 > 0)) {
-      return null;
-    }
-    const value = (currentP75 - previousP75) / previousP75 * 100;
-    const direction = value > 0.05 ? "up" : value < -0.05 ? "down" : "flat";
-    return {
-      direction,
-      value,
-      label: `${direction === "up" ? "▲" : direction === "down" ? "▼" : "–"} ${Math.abs(value).toFixed(1)}%`,
-    };
+    const comparison = weeklyMetricChange(row?.p75Dps, previous?.p75);
+    return comparison
+      ? { ...comparison, label: comparison.label.replace(/^([▲▼–])/, "$1 ") }
+      : null;
   }
 
   function formatPreviousWeekDps(value) {

@@ -4208,8 +4208,7 @@ tr:nth-child(3) .rank-badge {
   text-align: right;
 }
 
-.weekly-current-value,
-.weekly-previous-inline {
+.weekly-current-value {
   display: block;
   overflow: hidden;
   max-width: 100%;
@@ -4218,18 +4217,58 @@ tr:nth-child(3) .rank-badge {
 }
 
 .weekly-previous-inline {
+  display: flex;
+  max-width: 100%;
   margin-top: 2px;
-  color: #6f8d9e;
-  font-size: 8.5px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  overflow: hidden;
+  color: #88a3b2;
+  font-size: 9px;
   font-weight: 800;
   line-height: 10px;
+  white-space: nowrap;
 }
 
-.weekly-previous-inline.up {
+.weekly-previous-label {
+  flex: 0 0 auto;
+  padding: 0 3px;
+  border: 1px solid rgba(111, 141, 158, 0.34);
+  border-radius: 3px;
+  background: rgba(111, 141, 158, 0.1);
+  color: #9bb4c2;
+  font-size: 8px;
+  line-height: 9px;
+}
+
+.weekly-previous-value {
+  overflow: hidden;
+  min-width: 0;
+  color: #a0b6c2;
+  text-overflow: ellipsis;
+}
+
+.weekly-metric-delta {
+  flex: 0 0 auto;
+  padding: 0 3px;
+  border: 1px solid rgba(111, 141, 158, 0.3);
+  border-radius: 3px;
+  background: rgba(111, 141, 158, 0.1);
+  color: #91a8b6;
+  font-size: 8px;
+  line-height: 9px;
+}
+
+.weekly-metric-delta.up {
+  border-color: rgba(67, 219, 162, 0.38);
+  background: rgba(67, 219, 162, 0.1);
   color: #5ee3ae;
 }
 
-.weekly-previous-inline.down {
+.weekly-metric-delta.down {
+  border-color: rgba(255, 112, 125, 0.38);
+  background: rgba(255, 112, 125, 0.1);
   color: #ff8792;
 }
 
@@ -6400,8 +6439,15 @@ tr:nth-child(3) .rank-badge {
 
   .summary-table .numeric.has-weekly-previous .weekly-previous-inline {
     grid-row: 2;
-    font-size: 7.5px;
+    gap: 2px;
+    font-size: 7px;
     line-height: 10px;
+  }
+
+  .summary-table .numeric.has-weekly-previous .weekly-previous-label,
+  .summary-table .numeric.has-weekly-previous .weekly-metric-delta {
+    padding-inline: 2px;
+    font-size: 6.5px;
   }
 
   .class-table tbody tr {
