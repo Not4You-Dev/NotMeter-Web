@@ -4,23 +4,30 @@
   const VPS_RANKING_CACHE_ROOT = "https://notmeter.112-168-140-142.sslip.io/ranking/v1";
   const GITHUB_RANKING_REPOSITORY_ROOT =
     "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web";
-  const GITHUB_RANKING_MANIFEST_URL =
-    `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data/client/notmeter-ranking-latest.json`;
+  const SAME_ORIGIN_RANKING_CACHE_ROOT = "./data";
+  const GITHUB_RANKING_MANIFEST_URLS = [
+    `${SAME_ORIGIN_RANKING_CACHE_ROOT}/client/notmeter-ranking-latest.json`,
+    `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data/client/notmeter-ranking-latest.json`,
+  ];
   const GITHUB_RANKING_RELEASE_ROOT =
     "https://github.com/Not4You-Dev/NotMeter-Web/releases/download";
   let GITHUB_RANKING_CACHE_ROOT = `${GITHUB_RANKING_REPOSITORY_ROOT}/main/data`;
   let githubRankingReleaseTag = "";
   let githubRankingReleaseGeneration = "";
+  let githubRankingManifestPublishedAt = 0;
   let githubRankingManifestLoad = null;
   const CACHE_URLS = [
+    `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`,
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/web/main?layout=view-shards-v2`,
   ];
   const CLASS_OVERALL_CACHE_URLS = [
+    `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`,
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/web/class-overall`,
   ];
   const CONTRIBUTION_CACHE_URLS = [
+    `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`,
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/web/contribution`,
   ];
@@ -29,6 +36,7 @@
   let GITHUB_CLASS_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/classes`;
   let GITHUB_VIEW_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/views`;
   const CUSTOM_CP_CACHE_URLS = [
+    `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`,
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`,
     `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`,
   ];
@@ -62,6 +70,8 @@
   const CACHE_MAX_COMPRESSED_BYTES = 64 * 1024 * 1024;
   const CACHE_SYNC_INTERVAL_MS = 5 * 60 * 1000;
   const CACHE_SYNC_JITTER_MS = 3 * 60 * 1000;
+  const CACHE_MAX_VISIBLE_AGE_MS = 24 * 60 * 60 * 1000;
+  const CACHE_MANIFEST_DRIFT_ALLOWANCE_MS = 12 * 60 * 60 * 1000;
   const VPS_FALLBACK_MINIMUM_DELAY_MS = 5_000;
   const VPS_FALLBACK_MAXIMUM_DELAY_MS = 45_000;
   let vpsFallbackQueue = Promise.resolve();
@@ -1179,8 +1189,14 @@
         void syncLatestFieldBossCache();
       }
     });
-    window.addEventListener("pageshow", () => void syncLatestFieldBossCache());
-    window.addEventListener("online", () => void syncLatestFieldBossCache(true));
+    window.addEventListener("pageshow", event => {
+      void syncLatestCache(Boolean(event.persisted));
+      void syncLatestFieldBossCache();
+    });
+    window.addEventListener("online", () => {
+      void syncLatestCache(true);
+      void syncLatestFieldBossCache(true);
+    });
   });
 
   function bindElements() {
@@ -1452,7 +1468,7 @@
       leaveClassView();
       render();
     });
-    elements["refresh-button"].addEventListener("click", () => void loadCache(false, true));
+    elements["refresh-button"].addEventListener("click", () => void loadCache(true, true));
     elements["retry-button"].addEventListener("click", () => void loadCache(true));
     elements["back-button"].addEventListener("click", event => {
       if (isRepeatedPointerActivation(event)) {
@@ -1739,24 +1755,36 @@
     return releaseUrl ? [releaseUrl, rawUrl] : [rawUrl];
   }
 
+  function sameOriginRankingCacheUrl(path) {
+    const normalized = String(path || "").replace(/\\/g, "/").replace(/^\/+/, "");
+    return `./${normalized}`;
+  }
+
+  function rankingCacheCandidates(path, rawUrl) {
+    return [
+      sameOriginRankingCacheUrl(path),
+      ...githubCacheCandidates(path, rawUrl),
+    ];
+  }
+
   function refreshRankingCacheCandidateUrls() {
     CACHE_URLS.splice(0, CACHE_URLS.length,
-      ...githubCacheCandidates(
+      ...rankingCacheCandidates(
         "data/notmeter-ranking.json.gz",
         `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`),
       `${VPS_RANKING_CACHE_ROOT}/web/main?layout=view-shards-v2`);
     CLASS_OVERALL_CACHE_URLS.splice(0, CLASS_OVERALL_CACHE_URLS.length,
-      ...githubCacheCandidates(
+      ...rankingCacheCandidates(
         "data/notmeter-ranking-class-overall.json.gz",
         `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`),
       `${VPS_RANKING_CACHE_ROOT}/web/class-overall`);
     CONTRIBUTION_CACHE_URLS.splice(0, CONTRIBUTION_CACHE_URLS.length,
-      ...githubCacheCandidates(
+      ...rankingCacheCandidates(
         "data/notmeter-ranking-contribution.json.gz",
         `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`),
       `${VPS_RANKING_CACHE_ROOT}/web/contribution`);
     CUSTOM_CP_CACHE_URLS.splice(0, CUSTOM_CP_CACHE_URLS.length,
-      ...githubCacheCandidates(
+      ...rankingCacheCandidates(
         "data/notmeter-ranking-custom-cp.json.gz",
         `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`),
       `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`);
@@ -1767,36 +1795,49 @@
       return githubRankingManifestLoad;
     }
     const load = (async () => {
-      const controller = typeof AbortController === "function" ? new AbortController() : null;
-      const timeoutId = controller
-        ? window.setTimeout(() => controller.abort(), 10_000)
-        : 0;
-      try {
-        const separator = GITHUB_RANKING_MANIFEST_URL.includes("?") ? "&" : "?";
-        const response = await fetch(
-          `${GITHUB_RANKING_MANIFEST_URL}${separator}v=${Date.now()}`,
-          {
-            cache: force ? "reload" : "no-cache",
-            headers: { Accept: "application/json" },
-            signal: controller?.signal,
-          });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const manifest = await response.json();
-        if (manifest?.schema !== "notmeter-cache-generation-v1" ||
-            Number(manifest?.version) !== 1) {
-          throw new Error("invalid GitHub cache manifest");
-        }
-        applyGitHubRankingRevision(manifest.revision);
-        applyGitHubRankingRelease(manifest.release);
-        refreshRankingCacheCandidateUrls();
-        return String(manifest.revision).toLowerCase();
-      } finally {
-        if (timeoutId) {
-          window.clearTimeout(timeoutId);
+      const errors = [];
+      let manifest = null;
+      for (const baseUrl of GITHUB_RANKING_MANIFEST_URLS) {
+        const controller = typeof AbortController === "function" ? new AbortController() : null;
+        const timeoutId = controller
+          ? window.setTimeout(() => controller.abort(), 10_000)
+          : 0;
+        try {
+          const separator = baseUrl.includes("?") ? "&" : "?";
+          const response = await fetch(
+            `${baseUrl}${separator}v=${Date.now()}`,
+            {
+              cache: force ? "reload" : "no-cache",
+              headers: { Accept: "application/json" },
+              signal: controller?.signal,
+            });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const candidate = await response.json();
+          if (candidate?.schema !== "notmeter-cache-generation-v1" ||
+              Number(candidate?.version) !== 1 ||
+              !/^[0-9a-f]{40}$/i.test(String(candidate?.revision || ""))) {
+            throw new Error("invalid GitHub cache manifest");
+          }
+          manifest = candidate;
+          break;
+        } catch (error) {
+          errors.push(`${baseUrl}: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+          if (timeoutId) {
+            window.clearTimeout(timeoutId);
+          }
         }
       }
+      if (!manifest) {
+        throw new Error(errors.join(" / "));
+      }
+      applyGitHubRankingRevision(manifest.revision);
+      applyGitHubRankingRelease(manifest.release);
+      githubRankingManifestPublishedAt = Date.parse(String(manifest.publishedAt || "")) || 0;
+      refreshRankingCacheCandidateUrls();
+      return String(manifest.revision).toLowerCase();
     })();
     githubRankingManifestLoad = load;
     try {
@@ -1974,13 +2015,13 @@
     }
   }
 
-  async function syncLatestCache() {
+  async function syncLatestCache(force = false) {
     if (state.loading ||
       !state.data ||
-      Date.now() - state.lastCacheSyncAt < CACHE_SYNC_THROTTLE_MS) {
+      (!force && Date.now() - state.lastCacheSyncAt < CACHE_SYNC_THROTTLE_MS)) {
       return;
     }
-    await loadCache(false, true);
+    await loadCache(force, true);
   }
 
   function scheduleRankingCacheSync() {
@@ -2974,7 +3015,10 @@
   }
 
   async function fetchRankingCache(force) {
-    return fetchCompressedJson(CACHE_URLS, force);
+    return fetchCompressedJson(
+      CACHE_URLS,
+      force,
+      candidate => isAcceptableRankingCache(candidate));
   }
 
   function rankingCacheGeneration(cache) {
@@ -2993,6 +3037,24 @@
     return !Number.isFinite(currentGeneration) || nextGeneration >= currentGeneration;
   }
 
+  function isAcceptableRankingCache(
+      cache,
+      manifestPublishedAt = githubRankingManifestPublishedAt,
+      now = Date.now()) {
+    try {
+      validateCache(cache);
+    } catch {
+      return false;
+    }
+    const generatedAt = rankingCacheGeneration(cache);
+    if (!Number.isFinite(generatedAt) || generatedAt > now + 10 * 60 * 1000 ||
+        now - generatedAt > CACHE_MAX_VISIBLE_AGE_MS) {
+      return false;
+    }
+    return !Number.isFinite(manifestPublishedAt) || manifestPublishedAt <= 0 ||
+      generatedAt >= manifestPublishedAt - CACHE_MANIFEST_DRIFT_ALLOWANCE_MS;
+  }
+
   function normalizeClassRankingDungeonKey(dungeonKey) {
     const normalized = String(dungeonKey || "").trim().toLowerCase();
     if (!/^[a-z0-9_-]{1,64}$/.test(normalized)) {
@@ -3009,7 +3071,7 @@
     }
     const cache = await fetchCompressedJson(
       [
-        ...githubCacheCandidates(
+        ...rankingCacheCandidates(
           `data/classes/${normalizedDungeonKey}.json.gz`,
           `${GITHUB_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`),
         `${VPS_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
@@ -3032,7 +3094,7 @@
     }
     const cache = await fetchCompressedJson(
       [
-        ...githubCacheCandidates(
+        ...rankingCacheCandidates(
           `data/views/${normalizedDungeonKey}.json.gz`,
           `${GITHUB_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`),
         `${VPS_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
