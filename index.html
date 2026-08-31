@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260831-2">
+  <link rel="stylesheet" href="./assets/app.css?v=20260831-3">
   <link rel="stylesheet" href="./assets/character.css?v=20260826-4">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <script>
@@ -194,11 +194,11 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260831-2" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260831-3" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260827-4" defer></script>
   <script src="./assets/character.js?v=20260828-4" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260831-2" defer></script>
+  <script src="./assets/app.js?v=20260831-3" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -1007,6 +1007,18 @@
       </div>
     </section>
 
+    <section class="sample-basis-notice weekly-guide" aria-labelledby="sample-basis-title">
+      <span class="sample-basis-icon" aria-hidden="true">1</span>
+      <div class="sample-basis-copy">
+        <strong id="sample-basis-title" data-i18n="sampleBasisTitle">표본 수가 줄어든 이유</strong>
+        <p data-i18n="sampleBasisDescription">같은 던전·보스·직업·CP 구간·기간에서는 캐릭터별 대표 기록 1개만 표본으로 집계합니다. 반복 플레이가 많아도 한 캐릭터는 1명으로 표시되며, 기록 삭제나 누락이 아닙니다.</p>
+      </div>
+      <div class="sample-basis-chips" aria-label="표본 집계 핵심" data-i18n-aria-label="sampleBasisChipsAria">
+        <span data-i18n="sampleBasisUniqueChip">표본 = 고유 캐릭터 수</span>
+        <span data-i18n="sampleBasisBestChip">DPS·nDPS별 최고 기록 1개</span>
+      </div>
+    </section>
+
     <section class="weekly-guide ranking-entry-guide" id="ranking-entry-guide">
       <details>
         <summary>
@@ -1242,7 +1254,7 @@
             <tr>
               <th class="rank-column" data-i18n="rank">순위</th>
               <th data-i18n="job">직업</th>
-              <th class="number-column" id="sample-column-heading" data-i18n="sample">표본</th>
+              <th class="number-column" id="sample-column-heading" data-i18n="sample" data-i18n-title="sampleBasisColumnTooltip">표본</th>
               <th class="number-column" data-i18n="top10Threshold">상위 10%</th>
               <th class="number-column" data-i18n="top25">상위 25%</th>
               <th class="number-column" data-i18n="median">중앙값</th>
