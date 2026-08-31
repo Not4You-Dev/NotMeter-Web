@@ -2446,10 +2446,32 @@ button:focus-visible,
   gap: 3px;
 }
 
-.sample-basis-copy strong {
+.sample-basis-title-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.sample-basis-title-line strong {
   color: #effdfc;
   font-size: 12px;
   font-weight: 950;
+}
+
+.sample-basis-new {
+  display: inline-flex;
+  min-height: 18px;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 1px 6px;
+  border: 1px solid rgba(255, 213, 93, 0.72);
+  border-radius: 999px;
+  background: rgba(113, 77, 7, 0.72);
+  color: #ffe383;
+  font: 950 8px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 12px rgba(255, 208, 80, 0.13);
 }
 
 .sample-basis-copy p {
