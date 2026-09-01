@@ -1,0 +1,385 @@
+:root {
+  --bg: #041019;
+  --surface: #071923;
+  --surface-2: #0a202b;
+  --surface-3: #0d2934;
+  --line: #1a4655;
+  --line-soft: #14313e;
+  --text: #edf8fb;
+  --muted: #8aa9b9;
+  --muted-2: #678899;
+  --accent: #49ddd3;
+  --accent-strong: #2bc7bf;
+  --cyan: #58d7ef;
+}
+
+html {
+  background-color: #041019;
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% -16%, rgba(24, 82, 103, 0.34), transparent 42rem),
+    linear-gradient(180deg, #06141e 0%, #041019 38rem);
+}
+
+.ambient-one {
+  background: #30bfd6;
+}
+
+.ambient-two {
+  background: #31cbbc;
+}
+
+.brand-icon,
+.legal-header img {
+  border-color: #245061;
+  background: linear-gradient(145deg, #0a202a, #06131c);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035), 0 8px 30px rgba(0, 0, 0, 0.24);
+}
+
+.service-links {
+  border-top-color: #163746;
+}
+
+.service-link {
+  border-color: #294b5a;
+  background: linear-gradient(180deg, rgba(14, 34, 46, 0.98), rgba(7, 23, 33, 0.98));
+  color: #c9dde6;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.live-pill,
+.ghost-button {
+  border-color: #286b73;
+  background-color: rgba(10, 43, 51, 0.92);
+  color: #e9fffd;
+}
+
+.global-character-search {
+  border-color: #28777b;
+  background:
+    linear-gradient(100deg, rgba(18, 68, 73, 0.14), transparent 42%),
+    #071721;
+  box-shadow: inset 3px 0 #42d7cd, 0 12px 34px rgba(0, 0, 0, 0.14);
+}
+
+.character-search-intro-mark,
+.character-search-form,
+.character-search-popover,
+.character-search-popover-head {
+  border-color: #28606c;
+  background-color: #071923;
+}
+
+.character-search-form:focus-within {
+  border-color: #49dcd2;
+  box-shadow: 0 0 0 2px rgba(73, 220, 210, 0.12);
+}
+
+.character-search-row,
+.character-search-race-filters button,
+.character-search-action {
+  border-color: #244958;
+  background-color: #091c26;
+}
+
+.filter-panel,
+.character-surface,
+.field-boss-surface,
+.class-top10-surface,
+.class-performance-surface,
+.boss-resistance-surface,
+.contribution-surface,
+.stat-efficiency-surface {
+  border-color: #1c4654;
+  background:
+    linear-gradient(145deg, rgba(72, 224, 211, 0.045), transparent 32rem),
+    rgba(6, 18, 27, 0.97);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025), 0 16px 46px rgba(0, 0, 0, 0.18);
+}
+
+.ranking-metric-choice {
+  border-color: #2b7778;
+  background:
+    radial-gradient(circle at 86% 30%, rgba(67, 221, 209, 0.1), transparent 34%),
+    linear-gradient(100deg, #0a242e, #0c3438 70%, #0a242e);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035), 0 8px 22px rgba(0, 0, 0, 0.16);
+}
+
+.ranking-metric-button {
+  border-color: #315b69;
+  background: linear-gradient(180deg, #0c2631, #081c27);
+  color: #a9c2cd;
+}
+
+.ranking-metric-button.is-active {
+  border-color: #6eebe2;
+  background: linear-gradient(180deg, #35bdb5, #218e8c);
+  color: #ffffff;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.16), 0 0 14px rgba(77, 225, 213, 0.28);
+}
+
+.filter-button,
+.filter-expand-button,
+.filter-native-select,
+.cp-filter-toggle,
+.cp-filter-option,
+.field-boss-tab,
+.class-top10-tab,
+.class-performance-tab,
+.boss-resistance-tab,
+.contribution-tab {
+  border-color: #294b59;
+  background-color: #0a1c26;
+  color: #a8bfca;
+}
+
+.filter-button.active,
+.filter-button[aria-checked="true"],
+.cp-filter-option.active,
+.field-boss-tab.active,
+.class-top10-tab.active,
+.class-performance-tab.active,
+.boss-resistance-tab.active,
+.contribution-tab.active {
+  border-color: #3bc9c1;
+  background-color: #0d3538;
+  color: #dcfffb;
+  box-shadow: inset 0 -2px #47d9d0;
+}
+
+.custom-cp-panel,
+.snapshot-bar,
+.field-boss-snapshot,
+.class-performance-composition {
+  border-color: #245d67;
+  background: linear-gradient(110deg, rgba(14, 49, 58, 0.96), rgba(7, 23, 33, 0.97));
+  box-shadow: inset 3px 0 #46d7cd;
+}
+
+.weekly-guide,
+.sample-basis-notice,
+.class-top10-guide article,
+.class-performance-method article,
+.boss-resistance-guide,
+.contribution-method,
+.class-performance-proof-card,
+.class-performance-toolbar,
+.class-performance-notice {
+  border-color: #1f4e59;
+  background-color: rgba(7, 24, 33, 0.92);
+}
+
+.ranking-panel {
+  border-top-color: #173746;
+  background-color: rgba(4, 13, 19, 0.58);
+}
+
+.ranking-table th {
+  border-bottom-color: #183642;
+  background-color: #081923;
+  color: #91acba;
+}
+
+.ranking-table td {
+  background-color: #0a1d28;
+  color: #e7f2f6;
+}
+
+.ranking-table tbody tr {
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.12));
+}
+
+.ranking-table tbody tr:nth-child(1) td {
+  background-color: #171c1d;
+}
+
+.ranking-table tbody tr:nth-child(2) td {
+  background-color: #102936;
+}
+
+.ranking-table tbody tr:nth-child(3) td {
+  background-color: #191d1e;
+}
+
+.class-top10-heading,
+.class-performance-heading,
+.boss-resistance-page-heading,
+.contribution-heading,
+.field-boss-heading,
+.stat-efficiency-heading,
+.character-page-heading,
+.optimization-surface-heading {
+  border-color: #23515d;
+  background:
+    linear-gradient(90deg, rgba(32, 106, 109, 0.15), transparent 58%),
+    rgba(7, 23, 33, 0.94);
+}
+
+.character-hero {
+  border-color: #28616b;
+  background: linear-gradient(120deg, rgba(54, 190, 180, 0.12), rgba(7, 24, 34, 0.94) 44%, rgba(19, 55, 70, 0.42));
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.character-section-nav,
+.equipment-sticky-controls {
+  border-color: #1d4654;
+  background-color: rgba(5, 18, 27, 0.97);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+.character-section,
+.character-ranking-body,
+.character-ranking-period,
+.character-summary-card,
+.character-stat-card,
+.character-collect-card,
+.character-title-card,
+.character-skill-card,
+.character-arcana-card,
+.equipment-card,
+.equipment-soul-skill-summary,
+.equipment-stone-summary {
+  border-color: #1e4553;
+  background-color: rgba(8, 25, 35, 0.92);
+}
+
+.character-ranking-header,
+.equipment-tabs,
+.equipment-loadout-tabs,
+.skill-group-heading,
+.equipment-summary-heading {
+  border-color: #245462;
+  background-color: #0a2530;
+}
+
+.equipment-tab,
+.equipment-loadout-tab,
+.character-profile-refresh-button,
+.equipment-snapshot-button {
+  border-color: #2a6069;
+  background: linear-gradient(180deg, #123a42, #0a2832);
+  color: #d8f8f5;
+}
+
+.equipment-tab[aria-selected="true"],
+.equipment-loadout-tab[aria-selected="true"] {
+  border-color: #50ddd3;
+  background: linear-gradient(180deg, #1f817c, #14575c);
+  color: #ffffff;
+  box-shadow: inset 0 -2px #6af3e8;
+}
+
+.stat-import-card,
+.calculation-guide,
+.efficiency-hero,
+.result-job-picker,
+.test-notice {
+  border-color: #2b706f;
+  background: linear-gradient(105deg, rgba(27, 105, 104, 0.18), rgba(6, 22, 31, 0.94));
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.03), 0 10px 28px rgba(0, 0, 0, 0.1);
+}
+
+.efficiency-card,
+.result-card,
+.quality-card,
+.current-stats-details,
+.result-summary-card,
+.result-directional-card,
+.damage-gain-card,
+.calculation-method {
+  border-color: #204654;
+  background-color: rgba(7, 23, 33, 0.95);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.12);
+}
+
+.field-grid input,
+.field-grid select,
+.stat-import-control textarea,
+.option-grid input,
+.option-direction select,
+.stat-step-button,
+.option-step-button {
+  border-color: #2d5864;
+  background-color: #071b25;
+  color: #ecf9fa;
+}
+
+.optimization-shell,
+.optimizer-page {
+  background-color: transparent;
+}
+
+.optimizer-title,
+.quick-setup,
+.builder-panel,
+.result-panel,
+.profile-panel,
+.code-card,
+.problem-guide,
+.advanced-settings,
+.engine-location-card,
+.policy-note {
+  border-color: #204b58;
+  background-color: rgba(7, 23, 33, 0.94);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025), 0 14px 40px rgba(0, 0, 0, 0.14);
+}
+
+.quick-setup,
+.policy-note {
+  background: linear-gradient(110deg, rgba(24, 90, 90, 0.17), rgba(7, 23, 33, 0.95));
+}
+
+.goal-button,
+.issue-button,
+.profile-button,
+.select-control,
+.range-control,
+.compatibility-control,
+.reset-button,
+.quick-advanced-button {
+  border-color: #294f5d;
+  background-color: #0a1e29;
+  color: #b9cfd8;
+}
+
+.goal-button.active,
+.issue-button.active,
+.profile-button.active {
+  border-color: #43d2c8;
+  background-color: #0f3d3e;
+  color: #e2fffc;
+  box-shadow: inset 0 -2px #49ddd3;
+}
+
+.copy-primary {
+  border-color: #46d8ce;
+  background: linear-gradient(180deg, #35bdb5, #218e8c);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(42, 199, 190, 0.2);
+}
+
+.legal-card {
+  border-color: #1f4a58;
+  background:
+    linear-gradient(145deg, rgba(72, 224, 211, 0.045), transparent 26rem),
+    rgba(6, 20, 29, 0.97);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025), 0 18px 48px rgba(0, 0, 0, 0.18);
+}
+
+.legal-card h2 {
+  color: #e8f7f9;
+}
+
+.legal-card p,
+.legal-card li {
+  color: #95b1bf;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ranking-metric-button.is-active {
+    animation: none;
+  }
+}
