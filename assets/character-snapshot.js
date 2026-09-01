@@ -1,11 +1,13 @@
 (() => {
   "use strict";
 
-  const WIDTH = 1440;
+  const WIDTH = 1920;
   const SIDE = 48;
-  const COLUMN_GAP = 22;
-  const ITEM_GAP = 8;
-  const ITEM_HEIGHT = 92;
+  const COLUMN_GAP = 16;
+  const ITEM_GAP = 6;
+  const ITEM_HEIGHT = 82;
+  const SUMMARY_CELL_COLUMNS = 3;
+  const EQUIPMENT_COLUMN_COUNT = 4;
   const FONT_FAMILY = '"Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif';
   const GRADE_COLORS = Object.freeze({
     Common: "#d8e0e4", Rare: "#67ca70", Legend: "#59a9e8",
@@ -17,13 +19,16 @@
       throw new Error("Invalid equipment snapshot model");
     }
 
-    const summaryColumns = 2;
-    const soulRows = Math.max(1, Math.ceil((model.soulSkills?.length || 0) / summaryColumns));
-    const stoneRows = Math.max(1, Math.ceil((model.stones?.length || 0) / summaryColumns));
-    const summaryHeight = 76 + Math.max(soulRows, stoneRows) * 40;
-    const itemRows = Math.max(model.gear.length, model.accessories.length, 1);
-    const itemAreaHeight = 56 + itemRows * ITEM_HEIGHT + Math.max(0, itemRows - 1) * ITEM_GAP;
-    const height = 194 + summaryHeight + 28 + itemAreaHeight + 72;
+    const soulRows = Math.max(1, Math.ceil((model.soulSkills?.length || 0) / SUMMARY_CELL_COLUMNS));
+    const stoneRows = Math.max(1, Math.ceil((model.stones?.length || 0) / SUMMARY_CELL_COLUMNS));
+    const summaryHeight = 68 + Math.max(soulRows, stoneRows) * 36;
+    const itemRows = Math.max(
+      Math.ceil(model.gear.length / 2),
+      Math.ceil(model.accessories.length / 2),
+      1,
+    );
+    const itemAreaHeight = 50 + itemRows * ITEM_HEIGHT + Math.max(0, itemRows - 1) * ITEM_GAP;
+    const height = 194 + summaryHeight + 22 + itemAreaHeight + 64;
     const canvas = document.createElement("canvas");
     canvas.width = WIDTH;
     canvas.height = height;
@@ -125,85 +130,96 @@
     }
 
     const cellGap = 8;
-    const cellWidth = (width - 40 - cellGap) / 2;
+    const cellWidth = (width - 40 - cellGap * (SUMMARY_CELL_COLUMNS - 1)) / SUMMARY_CELL_COLUMNS;
     for (const [index, row] of rows.entries()) {
-      const column = index % 2;
-      const line = Math.floor(index / 2);
+      const column = index % SUMMARY_CELL_COLUMNS;
+      const line = Math.floor(index / SUMMARY_CELL_COLUMNS);
       const cellX = x + 20 + column * (cellWidth + cellGap);
-      const cellY = y + 64 + line * 40;
-      roundedRect(context, cellX, cellY, cellWidth, 32, 8,
+      const cellY = y + 60 + line * 36;
+      roundedRect(context, cellX, cellY, cellWidth, 30, 8,
         row.highlight ? "#302b18" : "#0d2632", row.highlight ? "#7b682b" : "#1c4657");
       let textX = cellX + 10;
       if (withIcon) {
         const image = images.get(row.icon);
-        if (image) drawImageCover(context, image, cellX + 5, cellY + 4, 24, 24, 5);
-        else drawImagePlaceholder(context, cellX + 5, cellY + 4, 24, "");
-        textX = cellX + 36;
+        if (image) drawImageCover(context, image, cellX + 5, cellY + 3, 24, 24, 5);
+        else drawImagePlaceholder(context, cellX + 5, cellY + 3, 24, "");
+        textX = cellX + 35;
       }
-      context.font = `700 12px ${FONT_FAMILY}`;
+      context.font = `700 13px ${FONT_FAMILY}`;
       context.fillStyle = "#cde0e6";
-      drawEllipsized(context, row.name || "—", textX, cellY + 21,
-        cellWidth - (textX - cellX) - 66);
-      context.font = `900 13px ${FONT_FAMILY}`;
+      drawEllipsized(context, row.name || "—", textX, cellY + 20,
+        cellWidth - (textX - cellX) - 62);
+      context.font = `900 14px ${FONT_FAMILY}`;
       context.fillStyle = row.highlight ? "#f5d36d" : "#62e7df";
       context.textAlign = "right";
-      context.fillText(row.valueText || "—", cellX + cellWidth - 9, cellY + 21);
+      context.fillText(row.valueText || "—", cellX + cellWidth - 9, cellY + 20);
       context.textAlign = "left";
     }
   }
 
   function drawEquipmentColumns(context, model, summaryHeight, images) {
-    const y = 194 + summaryHeight + 28;
-    const width = (WIDTH - SIDE * 2 - COLUMN_GAP) / 2;
-    drawEquipmentColumn(context, SIDE, y, width, model.labels.gear,
-      model.gear, images, model.labels);
-    drawEquipmentColumn(context, SIDE + width + COLUMN_GAP, y, width,
-      model.labels.accessories, model.accessories, images, model.labels);
+    const y = 194 + summaryHeight + 22;
+    const width = (WIDTH - SIDE * 2 - COLUMN_GAP * (EQUIPMENT_COLUMN_COUNT - 1)) /
+      EQUIPMENT_COLUMN_COUNT;
+    const sectionWidth = width * 2 + COLUMN_GAP;
+    const gearColumns = splitItemsIntoColumns(model.gear, 2);
+    const accessoryColumns = splitItemsIntoColumns(model.accessories, 2);
+
+    drawEquipmentSectionHeader(context, SIDE, y, sectionWidth,
+      model.labels.gear, model.gear.length, model.labels);
+    drawEquipmentSectionHeader(context, SIDE + sectionWidth + COLUMN_GAP, y, sectionWidth,
+      model.labels.accessories, model.accessories.length, model.labels);
+
+    const columns = [...gearColumns, ...accessoryColumns];
+    for (const [columnIndex, items] of columns.entries()) {
+      const x = SIDE + columnIndex * (width + COLUMN_GAP);
+      for (const [index, item] of items.entries()) {
+        drawEquipmentItem(context, x, y + 50 + index * (ITEM_HEIGHT + ITEM_GAP),
+          width, item, images, model.labels);
+      }
+    }
   }
 
-  function drawEquipmentColumn(context, x, y, width, title, items, images, labels) {
+  function splitItemsIntoColumns(items, count) {
+    const rows = Math.max(1, Math.ceil(items.length / count));
+    return Array.from({ length: count }, (_, index) =>
+      items.slice(index * rows, (index + 1) * rows));
+  }
+
+  function drawEquipmentSectionHeader(context, x, y, width, title, itemCount, labels) {
     context.font = `900 19px ${FONT_FAMILY}`;
     context.fillStyle = "#effbfd";
     context.fillText(title, x, y + 25);
     context.font = `800 12px ${FONT_FAMILY}`;
     context.fillStyle = "#54ddd6";
     context.textAlign = "right";
-    context.fillText(labels.itemCount.replace("{value}", String(items.length)), x + width, y + 24);
+    context.fillText(labels.itemCount.replace("{value}", String(itemCount)), x + width, y + 24);
     context.textAlign = "left";
     context.fillStyle = "#2e6575";
     context.fillRect(x, y + 42, width, 1);
-
-    for (const [index, item] of items.entries()) {
-      drawEquipmentItem(context, x, y + 56 + index * (ITEM_HEIGHT + ITEM_GAP), width, item, images, labels);
-    }
-    if (!items.length) {
-      context.font = `700 14px ${FONT_FAMILY}`;
-      context.fillStyle = "#668592";
-      context.fillText(labels.none, x + 4, y + 82);
-    }
   }
 
   function drawEquipmentItem(context, x, y, width, item, images, labels) {
     roundedRect(context, x, y, width, ITEM_HEIGHT, 12, "#081a24", "#1d4050");
     context.fillStyle = GRADE_COLORS[item.grade] || GRADE_COLORS.Common;
-    context.fillRect(x, y + 14, 3, ITEM_HEIGHT - 28);
+    context.fillRect(x, y + 12, 3, ITEM_HEIGHT - 24);
     const icon = images.get(item.icon);
-    if (icon) drawImageCover(context, icon, x + 14, y + 15, 56, 56, 5);
-    else drawImagePlaceholder(context, x + 14, y + 15, 56, "?");
+    if (icon) drawImageCover(context, icon, x + 12, y + 14, 52, 52, 5);
+    else drawImagePlaceholder(context, x + 12, y + 14, 52, "?");
 
-    const textX = x + 84;
-    const textWidth = width - 100;
-    context.font = `900 14px ${FONT_FAMILY}`;
+    const textX = x + 76;
+    const textWidth = width - 90;
+    context.font = `900 16px ${FONT_FAMILY}`;
     context.fillStyle = GRADE_COLORS[item.grade] || GRADE_COLORS.Common;
     drawEllipsized(context, `${item.enhanceText || ""} ${item.name || "—"}`.trim(), textX, y + 24, textWidth);
-    context.font = `700 10px ${FONT_FAMILY}`;
-    context.fillStyle = "#7596a5";
-    drawEllipsized(context, item.slotName || "", textX, y + 42, textWidth);
     context.font = `700 11px ${FONT_FAMILY}`;
+    context.fillStyle = "#7596a5";
+    drawEllipsized(context, item.slotName || "", textX, y + 40, textWidth);
+    context.font = `700 12px ${FONT_FAMILY}`;
     context.fillStyle = "#a9c6d0";
-    drawEllipsized(context, `${labels.itemSoul}  ${item.soulText || labels.none}`, textX, y + 62, textWidth);
+    drawEllipsized(context, `${labels.itemSoul}  ${item.soulText || labels.none}`, textX, y + 59, textWidth);
     context.fillStyle = "#68ddd6";
-    drawEllipsized(context, `${labels.itemStones}  ${item.stoneText || labels.none}`, textX, y + 80, textWidth);
+    drawEllipsized(context, `${labels.itemStones}  ${item.stoneText || labels.none}`, textX, y + 76, textWidth);
   }
 
   function drawFooter(context, model, height) {
