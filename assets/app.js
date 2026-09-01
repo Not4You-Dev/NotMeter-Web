@@ -409,11 +409,11 @@
       recordSampleTooltip: "전투 기록 {count}회이며 동일 캐릭터의 반복 기록이 포함될 수 있습니다",
       recordSampleColumnTooltip: "선택한 직접 CP 범위의 전투 기록 수이며 동일 캐릭터의 반복 기록이 포함될 수 있습니다",
       sampleBasisTitle: "표본 수가 줄어든 이유",
-      sampleBasisDescription: "같은 던전·보스·직업·CP 구간·기간에서는 캐릭터별 대표 기록 1개만 표본으로 집계합니다. 반복 플레이가 많아도 한 캐릭터는 1명으로 표시되며, 기록 삭제나 누락이 아닙니다.",
+      sampleBasisDescription: "같은 던전·보스·직업·25K CP 구간·기간에서 캐릭터별 최근 기록을 최대 5판까지 모아 중앙값 1개만 표본으로 집계합니다. 한 캐릭터는 1명으로 표시되며, 30명 미만인 구간은 가까운 25K 구간 표본으로 보정합니다. 기록 삭제나 누락이 아닙니다.",
       sampleBasisChipsAria: "표본 집계 핵심",
       sampleBasisUniqueChip: "표본 = 고유 캐릭터 수",
-      sampleBasisBestChip: "DPS·nDPS별 최고 기록 1개",
-      sampleBasisColumnTooltip: "같은 조건에서 캐릭터별 최고 기록 1개만 반영한 고유 캐릭터 수입니다",
+      sampleBasisBestChip: "DPS·nDPS별 최근 최대 5판 중앙값",
+      sampleBasisColumnTooltip: "같은 조건에서 캐릭터별 최근 최대 5판의 중앙값 1개를 반영한 고유 캐릭터 수입니다",
       top25: "상위 25%",
       top10Threshold: "상위 10%",
       median: "중앙값",
@@ -807,11 +807,11 @@
       recordSampleTooltip: "{count} combat records; repeated runs by the same character may be included",
       recordSampleColumnTooltip: "Combat-record count for the custom CP range; repeated runs by the same character may be included",
       sampleBasisTitle: "Why the sample count is lower",
-      sampleBasisDescription: "Under the same dungeon, boss, class, CP bracket, and period, only one representative record per character is counted. Repeated runs still appear as one character; no records were deleted or lost.",
+      sampleBasisDescription: "For the same dungeon, boss, class, 25K CP bracket, and period, up to five recent runs are combined into one median sample per character. A character is counted once, and brackets below 30 characters are adjusted with the nearest 25K brackets. No records were deleted or lost.",
       sampleBasisChipsAria: "Sample-count essentials",
       sampleBasisUniqueChip: "Sample = unique characters",
-      sampleBasisBestChip: "Best DPS and nDPS kept separately",
-      sampleBasisColumnTooltip: "Unique characters after keeping one best record per character under the same filters",
+      sampleBasisBestChip: "Median of up to 5 recent DPS and nDPS runs",
+      sampleBasisColumnTooltip: "Unique characters represented by the median of up to five recent runs under the same filters",
       top25: "Top 25%",
       top10Threshold: "Top 10%",
       median: "Median",
@@ -1036,11 +1036,11 @@
     uniqueNormalizedRankers: "顯示 {count} 名角色 · 僅顯示每名角色最高的已驗證 nDPS 紀錄",
     totalDpsShort: "DPS",
     sampleBasisTitle: "為什麼樣本數變少",
-    sampleBasisDescription: "在相同副本、首領、職業、CP 區間與期間下，每名角色只計入一筆代表紀錄。即使重複挑戰多次仍只顯示為一名角色，並非紀錄遭刪除或遺失。",
+    sampleBasisDescription: "在相同副本、首領、職業、25K CP 區間與期間下，每名角色最多取最近 5 場並以中位數作為一筆代表樣本。每名角色只計一次，少於 30 名角色的區間會以最接近的 25K 區間樣本校正；並非紀錄遭刪除或遺失。",
     sampleBasisChipsAria: "樣本統計重點",
     sampleBasisUniqueChip: "樣本＝不重複角色數",
-    sampleBasisBestChip: "DPS、nDPS 各保留最高一筆",
-    sampleBasisColumnTooltip: "相同條件下每名角色只保留最高一筆後的不重複角色數",
+    sampleBasisBestChip: "DPS、nDPS 最近最多 5 場中位數",
+    sampleBasisColumnTooltip: "相同條件下，每名角色以最近最多 5 場中位數代表後的不重複角色數",
     recordSampleColumnTooltip: "自訂 CP 範圍內的戰鬥紀錄數；可能包含同一角色的重複挑戰",
     weeklyCompareNdps: "▲▼ 顯示相同條件下各職業前 25% nDPS 與上週的變化",
     weeklyPreviousShort: "上週",
@@ -4784,10 +4784,12 @@
       return;
     }
     const view = findSummaryView();
+    const usesDirectCustomRange =
+      state.cpFilterMode === "custom" && state.customCpPresetTierIndex === 0;
     elements["sample-column-heading"].textContent =
-      t(state.cpFilterMode === "custom" ? "recordSample" : "sample");
+      t(usesDirectCustomRange ? "recordSample" : "sample");
     elements["sample-column-heading"].title = t(
-      state.cpFilterMode === "custom" ? "recordSampleColumnTooltip" : "sampleBasisColumnTooltip");
+      usesDirectCustomRange ? "recordSampleColumnTooltip" : "sampleBasisColumnTooltip");
     elements["empty-message"].textContent = t(usesNormalizedRanking() ? "ndpsEmpty" : "empty");
     elements["class-heading"].hidden = true;
     elements["class-view"].hidden = true;
@@ -4817,6 +4819,8 @@
   }
 
   function buildSummaryRow(row, rank, globalMax) {
+    const usesDirectCustomRange =
+      state.cpFilterMode === "custom" && state.customCpPresetTierIndex === 0;
     const previous = state.period === "Weekly" ? resolvePreviousWeekStats(row) : null;
     const tr = document.createElement("tr");
     tr.className = "job-row";
@@ -4869,12 +4873,12 @@
     tr.append(jobCell);
 
     const sampleCell = numericCell(
-      state.cpFilterMode === "custom"
+      usesDirectCustomRange
         ? t("recordSampleValue", { count: formatInteger(row.sampleCount) })
         : formatInteger(row.sampleCount),
       "summary-sample",
-      t(state.cpFilterMode === "custom" ? "recordSample" : "sample"));
-    if (state.cpFilterMode === "custom") {
+      t(usesDirectCustomRange ? "recordSample" : "sample"));
+    if (usesDirectCustomRange) {
       sampleCell.title = t("recordSampleTooltip", {
         count: formatInteger(row.sampleCount),
       });
@@ -6374,6 +6378,20 @@
 
   function findSummaryView() {
     if (state.cpFilterMode === "custom") {
+      if (state.customCpPresetTierIndex > 0) {
+        const presetViews = (state.customCpData?.views || []).filter(view =>
+          view.dungeonKey === state.dungeonKey &&
+          Number(view.bossIndex) === state.bossIndex &&
+          Number(view.cpTierIndex) === state.customCpPresetTierIndex);
+        const presetView = state.period === "Weekly"
+          ? presetViews.find(view => parseWeeklyRange(view.periodLabel))
+          : presetViews.find(view =>
+              normalizePeriod(view.period) === state.period &&
+              (state.period !== "All" || !parseWeeklyRange(view.periodLabel)));
+        if (presetView) {
+          return presetView;
+        }
+      }
       return buildCustomExactSummaryView();
     }
     const views = (state.data?.views || []).filter(view =>
