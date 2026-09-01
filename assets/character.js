@@ -572,7 +572,7 @@
     const requestId = ++state.profileRequest;
     state.profileLoad = fetchJson(
       `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&lang=${officialLanguage()}${refreshSuffix}${fastSuffix}`,
-      { cache: refreshOfficial ? "no-store" : "default" },
+      { cache: "no-store" },
     ).then(data => {
       writeProfileSessionPayload(sessionKey, data);
       applyProfilePayload(data, params, serverId, characterId);
