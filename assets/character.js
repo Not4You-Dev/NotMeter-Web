@@ -1404,14 +1404,14 @@
       .map(stone => stone.text);
     const godStones = (Array.isArray(detail?.godStoneStat) ? detail.godStoneStat : [])
       .map(stone => `${localizeOfficialText(stone.name) || "—"} ${String(stone.value || "")}`.trim());
-    const slotDetails = [equipmentSnapshotSlotLabel(item.slotPosName)];
-    if (number(item.exceedLevel)) slotDetails.push(formatCopy("exceedStage", { value: number(item.exceedLevel) }));
+    const exceedLevel = Math.max(0, Math.trunc(number(item.exceedLevel)));
     return {
       name: localizeOfficialText(item.name) || "—",
       icon: safeImageUrl(item.icon),
       grade: String(item.grade || "Common"),
       enhanceText: `+${number(item.enchantLevel)}`,
-      slotName: slotDetails.filter(Boolean).join(" · "),
+      exceedLevel,
+      slotName: equipmentSnapshotSlotLabel(item.slotPosName),
       soulText: [...soulSkills, ...soulStats].join(" · "),
       stoneText: [...magicStones, ...godStones].join(" · "),
     };

@@ -425,9 +425,15 @@
 
     const textX = x + 82;
     const textWidth = width - 96;
+    const exceedLevel = Math.max(0, Math.trunc(Number(item.exceedLevel) || 0));
+    const titleOffset = exceedLevel > 0 ? 29 : 0;
+    if (exceedLevel > 0) {
+      drawEquipmentExceedMark(context, textX + 1, y + 12, exceedLevel);
+    }
     context.font = `900 17px ${FONT_FAMILY}`;
     context.fillStyle = GRADE_COLORS[item.grade] || GRADE_COLORS.Common;
-    drawEllipsized(context, `${item.enhanceText || ""} ${item.name || "—"}`.trim(), textX, y + 26, textWidth);
+    drawEllipsized(context, `${item.enhanceText || ""} ${item.name || "—"}`.trim(),
+      textX + titleOffset, y + 26, textWidth - titleOffset);
     context.font = `700 12px ${FONT_FAMILY}`;
     context.fillStyle = "#7596a5";
     drawEllipsized(context, item.slotName || "", textX, y + 44, textWidth);
@@ -438,6 +444,23 @@
     context.fillStyle = "#68ddd6";
     drawWrappedEllipsized(context, `${labels.itemStones}  ${item.stoneText || labels.none}`,
       textX, y + 94, textWidth, 2, 15);
+  }
+
+  function drawEquipmentExceedMark(context, x, y, level) {
+    const size = 17;
+    context.save();
+    context.translate(x + size / 2, y + size / 2);
+    context.rotate(Math.PI / 4);
+    roundedRect(context, -size / 2, -size / 2, size, size, 2, "#1ab6d6");
+    context.restore();
+
+    context.save();
+    context.fillStyle = "#fff";
+    context.font = `800 10px ${FONT_FAMILY}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(String(level), x + size / 2, y + size / 2 + 0.5);
+    context.restore();
   }
 
   function drawFooter(context, model, height) {
