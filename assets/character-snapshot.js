@@ -5,7 +5,7 @@
   const SIDE = 48;
   const COLUMN_GAP = 16;
   const ITEM_GAP = 6;
-  const ITEM_HEIGHT = 82;
+  const ITEM_HEIGHT = 112;
   const SUMMARY_CELL_COLUMNS = 3;
   const EQUIPMENT_COLUMN_COUNT = 4;
   const FONT_FAMILY = '"Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif';
@@ -22,11 +22,8 @@
     const soulRows = Math.max(1, Math.ceil((model.soulSkills?.length || 0) / SUMMARY_CELL_COLUMNS));
     const stoneRows = Math.max(1, Math.ceil((model.stones?.length || 0) / SUMMARY_CELL_COLUMNS));
     const summaryHeight = 68 + Math.max(soulRows, stoneRows) * 36;
-    const itemRows = Math.max(
-      Math.ceil(model.gear.length / 2),
-      Math.ceil(model.accessories.length / 2),
-      1,
-    );
+    const itemRows = Math.max(1,
+      Math.ceil((model.gear.length + model.accessories.length) / EQUIPMENT_COLUMN_COUNT));
     const itemAreaHeight = 50 + itemRows * ITEM_HEIGHT + Math.max(0, itemRows - 1) * ITEM_GAP;
     const height = 194 + summaryHeight + 22 + itemAreaHeight + 64;
     const canvas = document.createElement("canvas");
@@ -161,16 +158,15 @@
     const y = 194 + summaryHeight + 22;
     const width = (WIDTH - SIDE * 2 - COLUMN_GAP * (EQUIPMENT_COLUMN_COUNT - 1)) /
       EQUIPMENT_COLUMN_COUNT;
-    const sectionWidth = width * 2 + COLUMN_GAP;
-    const gearColumns = splitItemsIntoColumns(model.gear, 2);
-    const accessoryColumns = splitItemsIntoColumns(model.accessories, 2);
+    const items = [...model.gear, ...model.accessories];
+    const columns = splitItemsIntoColumns(items, EQUIPMENT_COLUMN_COUNT);
+    const title = `${model.labels.gear} · ${model.labels.accessories}`;
+    const itemCount = [
+      `${model.labels.gear} ${model.labels.itemCount.replace("{value}", String(model.gear.length))}`,
+      `${model.labels.accessories} ${model.labels.itemCount.replace("{value}", String(model.accessories.length))}`,
+    ].join(" · ");
 
-    drawEquipmentSectionHeader(context, SIDE, y, sectionWidth,
-      model.labels.gear, model.gear.length, model.labels);
-    drawEquipmentSectionHeader(context, SIDE + sectionWidth + COLUMN_GAP, y, sectionWidth,
-      model.labels.accessories, model.accessories.length, model.labels);
-
-    const columns = [...gearColumns, ...accessoryColumns];
+    drawEquipmentSectionHeader(context, SIDE, y, WIDTH - SIDE * 2, title, itemCount);
     for (const [columnIndex, items] of columns.entries()) {
       const x = SIDE + columnIndex * (width + COLUMN_GAP);
       for (const [index, item] of items.entries()) {
@@ -186,14 +182,14 @@
       items.slice(index * rows, (index + 1) * rows));
   }
 
-  function drawEquipmentSectionHeader(context, x, y, width, title, itemCount, labels) {
+  function drawEquipmentSectionHeader(context, x, y, width, title, itemCount) {
     context.font = `900 19px ${FONT_FAMILY}`;
     context.fillStyle = "#effbfd";
     context.fillText(title, x, y + 25);
     context.font = `800 12px ${FONT_FAMILY}`;
     context.fillStyle = "#54ddd6";
     context.textAlign = "right";
-    context.fillText(labels.itemCount.replace("{value}", String(itemCount)), x + width, y + 24);
+    context.fillText(itemCount, x + width, y + 24);
     context.textAlign = "left";
     context.fillStyle = "#2e6575";
     context.fillRect(x, y + 42, width, 1);
@@ -202,24 +198,26 @@
   function drawEquipmentItem(context, x, y, width, item, images, labels) {
     roundedRect(context, x, y, width, ITEM_HEIGHT, 12, "#081a24", "#1d4050");
     context.fillStyle = GRADE_COLORS[item.grade] || GRADE_COLORS.Common;
-    context.fillRect(x, y + 12, 3, ITEM_HEIGHT - 24);
+    context.fillRect(x, y + 14, 3, ITEM_HEIGHT - 28);
     const icon = images.get(item.icon);
-    if (icon) drawImageCover(context, icon, x + 12, y + 14, 52, 52, 5);
-    else drawImagePlaceholder(context, x + 12, y + 14, 52, "?");
+    if (icon) drawImageCover(context, icon, x + 12, y + 18, 58, 58, 5);
+    else drawImagePlaceholder(context, x + 12, y + 18, 58, "?");
 
-    const textX = x + 76;
-    const textWidth = width - 90;
-    context.font = `900 16px ${FONT_FAMILY}`;
+    const textX = x + 82;
+    const textWidth = width - 96;
+    context.font = `900 17px ${FONT_FAMILY}`;
     context.fillStyle = GRADE_COLORS[item.grade] || GRADE_COLORS.Common;
-    drawEllipsized(context, `${item.enhanceText || ""} ${item.name || "—"}`.trim(), textX, y + 24, textWidth);
-    context.font = `700 11px ${FONT_FAMILY}`;
-    context.fillStyle = "#7596a5";
-    drawEllipsized(context, item.slotName || "", textX, y + 40, textWidth);
+    drawEllipsized(context, `${item.enhanceText || ""} ${item.name || "—"}`.trim(), textX, y + 26, textWidth);
     context.font = `700 12px ${FONT_FAMILY}`;
+    context.fillStyle = "#7596a5";
+    drawEllipsized(context, item.slotName || "", textX, y + 44, textWidth);
+    context.font = `700 13px ${FONT_FAMILY}`;
     context.fillStyle = "#a9c6d0";
-    drawEllipsized(context, `${labels.itemSoul}  ${item.soulText || labels.none}`, textX, y + 59, textWidth);
+    drawWrappedEllipsized(context, `${labels.itemSoul}  ${item.soulText || labels.none}`,
+      textX, y + 63, textWidth, 2, 15);
     context.fillStyle = "#68ddd6";
-    drawEllipsized(context, `${labels.itemStones}  ${item.stoneText || labels.none}`, textX, y + 76, textWidth);
+    drawWrappedEllipsized(context, `${labels.itemStones}  ${item.stoneText || labels.none}`,
+      textX, y + 94, textWidth, 2, 15);
   }
 
   function drawFooter(context, model, height) {
@@ -319,6 +317,30 @@
       else high = middle - 1;
     }
     context.fillText(`${value.slice(0, low)}…`, x, y);
+  }
+
+  function drawWrappedEllipsized(context, text, x, y, maxWidth, maxLines, lineHeight) {
+    const segments = String(text || "").split(/\s*·\s*/).filter(Boolean);
+    const lines = [];
+    let current = "";
+    for (const segment of segments) {
+      const candidate = current ? `${current} · ${segment}` : segment;
+      if (!current || context.measureText(candidate).width <= maxWidth) {
+        current = candidate;
+      } else {
+        lines.push(current);
+        current = segment;
+      }
+    }
+    if (current) lines.push(current);
+    if (!lines.length) lines.push("—");
+
+    const visible = lines.slice(0, maxLines);
+    if (lines.length > maxLines) {
+      visible[maxLines - 1] = `${visible[maxLines - 1]} · ${lines.slice(maxLines).join(" · ")}`;
+    }
+    visible.forEach((line, index) =>
+      drawEllipsized(context, line, x, y + index * lineHeight, maxWidth));
   }
 
   function canvasBlob(canvas) {

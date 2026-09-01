@@ -1236,8 +1236,16 @@
         totals.set(key, current);
       }
     }
-    return [...totals.values()].sort((left, right) =>
-      stoneEffectPriority(left) - stoneEffectPriority(right) || left.name.localeCompare(right.name, "ko"))
+    return [...totals.values()].sort((left, right) => {
+      const priority = stoneEffectPriority(left) - stoneEffectPriority(right);
+      if (priority) return priority;
+      if (stoneEffectPriority(left) === 0) {
+        const leftPercent = left.unit === "%" ? left.value : left.value / 100;
+        const rightPercent = right.unit === "%" ? right.value : right.value / 100;
+        if (leftPercent !== rightPercent) return rightPercent - leftPercent;
+      }
+      return left.name.localeCompare(right.name, "ko");
+    })
       .map(row => {
         const isAmplification = stoneEffectPriority(row) === 0;
         const shouldConvert = isAmplification && row.unit !== "%";
@@ -1358,10 +1366,14 @@
       .map(statParts)
       .filter(stat => stat.name || stat.value)
       .map(stat => `${stat.name} ${stat.value}`.trim());
-    const stones = [
-      ...(Array.isArray(detail?.magicStoneStat) ? detail.magicStoneStat : []),
-      ...(Array.isArray(detail?.godStoneStat) ? detail.godStoneStat : []),
-    ].map(stone => `${localizeOfficialText(stone.name) || "—"} ${String(stone.value || "")}`.trim());
+    const magicStones = (Array.isArray(detail?.magicStoneStat) ? detail.magicStoneStat : [])
+      .map((stone, index) => equipmentSnapshotStone(stone, index))
+      .sort((left, right) => left.priority - right.priority ||
+        (left.priority === 0 ? right.percentValue - left.percentValue : 0) ||
+        left.index - right.index)
+      .map(stone => stone.text);
+    const godStones = (Array.isArray(detail?.godStoneStat) ? detail.godStoneStat : [])
+      .map(stone => `${localizeOfficialText(stone.name) || "—"} ${String(stone.value || "")}`.trim());
     const slotDetails = [equipmentSnapshotSlotLabel(item.slotPosName)];
     if (number(item.exceedLevel)) slotDetails.push(formatCopy("exceedStage", { value: number(item.exceedLevel) }));
     return {
@@ -1371,7 +1383,32 @@
       enhanceText: `+${number(item.enchantLevel)}`,
       slotName: slotDetails.filter(Boolean).join(" · "),
       soulText: [...soulSkills, ...soulStats].join(" · "),
-      stoneText: stones.join(" · "),
+      stoneText: [...magicStones, ...godStones].join(" · "),
+    };
+  }
+
+  function equipmentSnapshotStone(stone, index) {
+    const name = localizeOfficialText(stone?.name) || "—";
+    const rawValue = String(stone?.value || "").replace(/,/g, "").trim();
+    const match = rawValue.match(/[+-]?\d+(?:\.\d+)?/);
+    const priority = stoneEffectPriority({ name });
+    let valueText = rawValue;
+    let percentValue = 0;
+    if (match) {
+      const numericValue = Number(match[0]);
+      percentValue = rawValue.includes("%") ? numericValue : numericValue / 100;
+      if (priority === 0 && !rawValue.includes("%")) {
+        const converted = Number.isInteger(percentValue)
+          ? String(percentValue)
+          : percentValue.toFixed(2).replace(/\.?0+$/, "");
+        valueText = `${percentValue > 0 ? "+" : ""}${converted}%`;
+      }
+    }
+    return {
+      index,
+      priority,
+      percentValue,
+      text: `${name} ${valueText}`.trim(),
     };
   }
 
