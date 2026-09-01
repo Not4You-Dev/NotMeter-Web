@@ -96,6 +96,16 @@
       loadoutTitle: "장비 세팅", loadoutNote: "마지막으로 확인된 PVE·PVP 장비를 비교합니다.",
       pveLoadout: "PVE", pvpLoadout: "PVP", currentLoadout: "현재", unavailableLoadout: "미수집",
       loadoutCapturedAt: "마지막 확인 {value}", unknownLoadout: "현재 장비의 PVE/PVP 구분을 확인할 수 없습니다.",
+      equipmentSnapshot: "장비 스냅샷", equipmentSnapshotBusy: "이미지 만드는 중",
+      equipmentSnapshotCopied: "이미지를 클립보드에 복사했습니다.",
+      equipmentSnapshotDownloaded: "클립보드를 사용할 수 없어 PNG로 저장했습니다.",
+      equipmentSnapshotFailed: "장비 스냅샷을 만들지 못했습니다.",
+      equipmentSnapshotWaiting: "장비 상세 정보를 모두 불러온 뒤 사용할 수 있습니다.",
+      snapshotKicker: "NOTMETER · EQUIPMENT SNAPSHOT", snapshotSoulSkills: "영혼 각인 스킬",
+      snapshotSoulSkillsNote: "장착 장비 전체의 동일 스킬 증가 레벨 합계",
+      snapshotManastones: "장착 마석 총수치", snapshotManastonesNote: "현재 세팅에 장착된 마석 합계",
+      snapshotItemSoul: "각인", snapshotItemStones: "마석",
+      snapshotFooter: "현재 선택한 {loadout} 세팅 · 아이온2 공식 공개 정보 기준",
       officialNote: "캐릭터 정보는 아이온2 공식 공개 정보 기준이며, 게임 내 정보 공개 상태와 갱신 시점에 따라 일부 항목이 비어 있을 수 있습니다.",
     },
     en: {
@@ -151,6 +161,16 @@
       loadoutTitle: "Gear loadouts", loadoutNote: "Compare the latest detected PVE and PVP equipment.",
       pveLoadout: "PVE", pvpLoadout: "PVP", currentLoadout: "Current", unavailableLoadout: "Not captured",
       loadoutCapturedAt: "Last detected {value}", unknownLoadout: "The current equipment could not be classified as PVE or PVP.",
+      equipmentSnapshot: "Gear snapshot", equipmentSnapshotBusy: "Creating image",
+      equipmentSnapshotCopied: "Image copied to the clipboard.",
+      equipmentSnapshotDownloaded: "Clipboard unavailable. The PNG was downloaded instead.",
+      equipmentSnapshotFailed: "Could not create the gear snapshot.",
+      equipmentSnapshotWaiting: "Available after all equipment details finish loading.",
+      snapshotKicker: "NOTMETER · EQUIPMENT SNAPSHOT", snapshotSoulSkills: "Soul engraving skills",
+      snapshotSoulSkillsNote: "Combined skill levels across all equipped items",
+      snapshotManastones: "Equipped manastone totals", snapshotManastonesNote: "Totals for the selected loadout",
+      snapshotItemSoul: "Engraving", snapshotItemStones: "Stones",
+      snapshotFooter: "Selected {loadout} loadout · AION2 official public profile",
       officialNote: "Character data comes from AION2's official public profile. Some fields can be empty depending on visibility and refresh time.",
     },
     "zh-TW": {
@@ -201,6 +221,16 @@
       loadoutTitle: "裝備配置", loadoutNote: "比較最後確認的 PVE 與 PVP 裝備。",
       pveLoadout: "PVE", pvpLoadout: "PVP", currentLoadout: "目前", unavailableLoadout: "尚未收集",
       loadoutCapturedAt: "最後確認 {value}", unknownLoadout: "目前裝備無法判定為 PVE 或 PVP。",
+      equipmentSnapshot: "裝備快照", equipmentSnapshotBusy: "正在建立圖片",
+      equipmentSnapshotCopied: "圖片已複製到剪貼簿。",
+      equipmentSnapshotDownloaded: "無法使用剪貼簿，已改為下載 PNG。",
+      equipmentSnapshotFailed: "無法建立裝備快照。",
+      equipmentSnapshotWaiting: "裝備詳細資料全部載入後即可使用。",
+      snapshotKicker: "NOTMETER · EQUIPMENT SNAPSHOT", snapshotSoulSkills: "靈魂刻印技能",
+      snapshotSoulSkillsNote: "合計所有已裝備道具的相同技能等級",
+      snapshotManastones: "已裝備魔石總數值", snapshotManastonesNote: "目前配置的已鑲嵌魔石合計",
+      snapshotItemSoul: "刻印", snapshotItemStones: "魔石",
+      snapshotFooter: "目前選擇的 {loadout} 配置 · AION2 官方公開資料",
       officialNote: "角色資料以 AION2 官方公開資料為準；依公開設定與更新時間，部分項目可能為空白。",
     },
   };
@@ -1104,6 +1134,25 @@
       tabs.append(button);
       panels.append(list);
     }
+    const sectionHead = section.querySelector(".character-section-head");
+    const headActions = node("div", "character-section-actions");
+    const itemCount = sectionHead?.querySelector(".character-section-count");
+    if (itemCount) headActions.append(itemCount);
+    const snapshotStatus = node("span", "equipment-snapshot-status");
+    snapshotStatus.setAttribute("role", "status");
+    snapshotStatus.setAttribute("aria-live", "polite");
+    const snapshotButton = node("button", "equipment-snapshot-button");
+    snapshotButton.type = "button";
+    const snapshotIcon = node("span", "equipment-snapshot-button-icon");
+    snapshotIcon.setAttribute("aria-hidden", "true");
+    snapshotButton.append(snapshotIcon, textNode("span", copy.equipmentSnapshot));
+    const currentType = normalizeLoadoutType(loadoutData?.currentLoadoutType);
+    const waitingForDetails = selectedLoadoutType === currentType && loadoutData?.complete === false;
+    snapshotButton.disabled = waitingForDetails;
+    if (waitingForDetails) snapshotButton.title = copy.equipmentSnapshotWaiting;
+    snapshotButton.addEventListener("click", () => void copyEquipmentSnapshot(snapshotButton, snapshotStatus));
+    headActions.append(snapshotStatus, snapshotButton);
+    sectionHead?.append(headActions);
     stickyControls.append(renderCompactLoadoutSelector(loadoutData, selectedLoadoutType), tabs);
     section.append(stickyControls,
       renderSoulSkillSummary(items, details), renderMagicStoneSummary(items, details), panels);
@@ -1112,22 +1161,7 @@
 
   function renderSoulSkillSummary(items, details) {
     const copy = currentCopy();
-    const totals = new Map();
-    for (const item of items) {
-      const detail = details[String(item.slotPos)] || {};
-      for (const skill of Array.isArray(detail.subSkills) ? detail.subSkills : []) {
-        const name = localizeOfficialText(skill?.name);
-        if (!name) continue;
-        const key = String(skill.id || name);
-        const current = totals.get(key) || { name, icon: skill.icon || "", level: 0, count: 0 };
-        current.level += number(skill.level);
-        current.count += 1;
-        if (!current.icon && skill.icon) current.icon = skill.icon;
-        totals.set(key, current);
-      }
-    }
-    const rows = [...totals.values()].sort((left, right) =>
-      right.level - left.level || left.name.localeCompare(right.name, "ko"));
+    const rows = collectSoulSkillTotals(items, details);
     const summary = node("section", "equipment-soul-skill-summary");
     const heading = node("div", "equipment-summary-heading");
     heading.append(textNode("strong", copy.soulSkillTotal), textNode("span", copy.soulSkillTotalNote));
@@ -1150,6 +1184,42 @@
     const summary = node("section", "equipment-stone-summary");
     const heading = node("div", "equipment-summary-heading");
     heading.append(textNode("strong", copy.stoneTotal), textNode("span", copy.stoneTotalNote));
+    const rows = collectMagicStoneTotals(items, details);
+    const grid = node("div", "equipment-stone-summary-grid");
+    for (const row of rows) {
+      const item = node("div", `equipment-stone-summary-item${row.isAmplification ? " amplification" : ""}`);
+      item.append(
+        textNode("span", row.name),
+        textNode("strong", row.valueText),
+        textNode("small", row.detailText),
+      );
+      grid.append(item);
+    }
+    if (!rows.length) grid.append(textNode("span", copy.emptyOption, "empty-detail"));
+    summary.append(heading, grid);
+    return summary;
+  }
+
+  function collectSoulSkillTotals(items, details) {
+    const totals = new Map();
+    for (const item of items) {
+      const detail = details[String(item.slotPos)] || {};
+      for (const skill of Array.isArray(detail.subSkills) ? detail.subSkills : []) {
+        const name = localizeOfficialText(skill?.name);
+        if (!name) continue;
+        const key = String(skill.id || name);
+        const current = totals.get(key) || { name, icon: skill.icon || "", level: 0, count: 0 };
+        current.level += number(skill.level);
+        current.count += 1;
+        if (!current.icon && skill.icon) current.icon = skill.icon;
+        totals.set(key, current);
+      }
+    }
+    return [...totals.values()].sort((left, right) =>
+      right.level - left.level || left.name.localeCompare(right.name, "ko"));
+  }
+
+  function collectMagicStoneTotals(items, details) {
     const totals = new Map();
     for (const item of items) {
       const detail = details[String(item.slotPos)] || {};
@@ -1166,29 +1236,168 @@
         totals.set(key, current);
       }
     }
-    const grid = node("div", "equipment-stone-summary-grid");
-    const rows = [...totals.values()].sort((left, right) =>
-      stoneEffectPriority(left) - stoneEffectPriority(right) || left.name.localeCompare(right.name, "ko"));
-    for (const row of rows) {
-      const isAmplification = stoneEffectPriority(row) === 0;
-      const shouldConvert = isAmplification && row.unit !== "%";
-      const displayedValue = shouldConvert ? row.value / 100 : row.value;
-      const value = Number.isInteger(displayedValue)
-        ? String(displayedValue)
-        : displayedValue.toFixed(2).replace(/\.?0+$/, "");
-      const item = node("div", `equipment-stone-summary-item${isAmplification ? " amplification" : ""}`);
-      item.append(
-        textNode("span", row.name),
-        textNode("strong", `+${value}${shouldConvert ? "%" : row.unit}`),
-        textNode("small", shouldConvert
-          ? formatCopy("stoneOriginal", { count: row.count, value: row.value })
-          : formatCopy("stoneCount", { count: row.count })),
-      );
-      grid.append(item);
+    return [...totals.values()].sort((left, right) =>
+      stoneEffectPriority(left) - stoneEffectPriority(right) || left.name.localeCompare(right.name, "ko"))
+      .map(row => {
+        const isAmplification = stoneEffectPriority(row) === 0;
+        const shouldConvert = isAmplification && row.unit !== "%";
+        const displayedValue = shouldConvert ? row.value / 100 : row.value;
+        const value = Number.isInteger(displayedValue)
+          ? String(displayedValue)
+          : displayedValue.toFixed(2).replace(/\.?0+$/, "");
+        return {
+          ...row,
+          isAmplification,
+          valueText: `+${value}${shouldConvert ? "%" : row.unit}`,
+          detailText: shouldConvert
+            ? formatCopy("stoneOriginal", { count: row.count, value: row.value })
+            : formatCopy("stoneCount", { count: row.count }),
+        };
+      });
+  }
+
+  async function copyEquipmentSnapshot(button, status) {
+    const copy = currentCopy();
+    const originalLabel = copy.equipmentSnapshot;
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    const label = button.querySelector("span:last-child");
+    if (label) label.textContent = copy.equipmentSnapshotBusy;
+    status.textContent = "";
+    status.className = "equipment-snapshot-status";
+
+    let blobPromise;
+    try {
+      if (!globalThis.NotMeterEquipmentSnapshot?.createBlob) throw new Error("Snapshot renderer unavailable");
+      blobPromise = globalThis.NotMeterEquipmentSnapshot.createBlob(buildEquipmentSnapshotModel());
+      if (!navigator.clipboard?.write || typeof globalThis.ClipboardItem !== "function") {
+        throw new Error("Image clipboard unavailable");
+      }
+      await navigator.clipboard.write([
+        new globalThis.ClipboardItem({ "image/png": blobPromise }),
+      ]);
+      showEquipmentSnapshotStatus(status, copy.equipmentSnapshotCopied, "success");
+    } catch {
+      try {
+        const blob = await (blobPromise || globalThis.NotMeterEquipmentSnapshot.createBlob(buildEquipmentSnapshotModel()));
+        downloadEquipmentSnapshot(blob);
+        showEquipmentSnapshotStatus(status, copy.equipmentSnapshotDownloaded, "fallback");
+      } catch {
+        showEquipmentSnapshotStatus(status, copy.equipmentSnapshotFailed, "error");
+      }
+    } finally {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      if (label) label.textContent = originalLabel;
     }
-    if (!rows.length) grid.append(textNode("span", copy.emptyOption, "empty-detail"));
-    summary.append(heading, grid);
-    return summary;
+  }
+
+  function buildEquipmentSnapshotModel() {
+    const copy = currentCopy();
+    const loadoutView = resolveLoadoutView(state.profile);
+    const visibleData = loadoutView.data;
+    const info = visibleData?.info || {};
+    const profile = info.profile || {};
+    const statList = Array.isArray(info.stat?.statList) ? info.stat.statList : [];
+    const itemLevel = statList.find(item => item.type === "ItemLevel")?.value || 0;
+    const allEquipment = Array.isArray(visibleData?.equipment?.equipment?.equipmentList)
+      ? visibleData.equipment.equipment.equipmentList : [];
+    const items = allEquipment.filter(item => !String(item.slotPosName).startsWith("Arcana"))
+      .sort((left, right) => Number(left.slotPos) - Number(right.slotPos));
+    const details = visibleData?.itemDetails || {};
+    const gear = items.filter(item => !ACCESSORY_SLOT_TYPES.has(String(item.slotPosName)));
+    const accessories = items.filter(item => ACCESSORY_SLOT_TYPES.has(String(item.slotPosName)))
+      .sort((left, right) => equipmentDetailPriority(right, details) - equipmentDetailPriority(left, details) ||
+        Number(left.slotPos) - Number(right.slotPos));
+    const loadoutType = loadoutView.type || copy.currentLoadout;
+    return {
+      locale: state.locale,
+      brandIcon: safeImageUrl("./assets/notmeter-icon.png"),
+      jobIcon: safeImageUrl(jobIcon(profile.className)),
+      characterName: profile.characterName || "—",
+      serverName: localizeOfficialText(profile.serverName) || "—",
+      className: localizeOfficialText(profile.className) || "—",
+      combatPowerText: `${formatNumber(profile.combatPower)} CP`,
+      itemLevelText: formatNumber(itemLevel),
+      loadoutType,
+      updatedAtText: `${copy.updatedAt} ${formatDateTime(visibleData?.fetchedAt)}`,
+      soulSkills: collectSoulSkillTotals(items, details).map(row => ({
+        ...row,
+        icon: safeImageUrl(row.icon),
+        valueText: copy.soulSkillLevel.replace("{value}", row.level),
+      })),
+      stones: collectMagicStoneTotals(items, details).map(row => ({
+        ...row,
+        highlight: row.isAmplification,
+      })),
+      gear: gear.map(item => buildEquipmentSnapshotItem(item, details[String(item.slotPos)] || {})),
+      accessories: accessories.map(item => buildEquipmentSnapshotItem(item, details[String(item.slotPos)] || {})),
+      labels: {
+        snapshotKicker: copy.snapshotKicker,
+        combatPower: copy.combatPower,
+        itemLevel: copy.itemLevel,
+        soulSkills: copy.snapshotSoulSkills,
+        soulSkillsNote: copy.snapshotSoulSkillsNote,
+        manastoneTotals: copy.snapshotManastones,
+        manastoneTotalsNote: copy.snapshotManastonesNote,
+        gear: copy.gearTab,
+        accessories: copy.accessoryTab,
+        itemSoul: copy.snapshotItemSoul,
+        itemStones: copy.snapshotItemStones,
+        itemCount: copy.itemCount,
+        none: copy.none,
+        footer: copy.snapshotFooter.replace("{loadout}", loadoutType),
+      },
+    };
+  }
+
+  function buildEquipmentSnapshotItem(item, detail) {
+    const soulSkills = (Array.isArray(detail?.subSkills) ? detail.subSkills : [])
+      .map(skill => `${localizeOfficialText(skill.name) || "—"} +${number(skill.level)}`);
+    const soulStats = (Array.isArray(detail?.subStats) ? detail.subStats : [])
+      .map(statParts)
+      .filter(stat => stat.name || stat.value)
+      .map(stat => `${stat.name} ${stat.value}`.trim());
+    const stones = [
+      ...(Array.isArray(detail?.magicStoneStat) ? detail.magicStoneStat : []),
+      ...(Array.isArray(detail?.godStoneStat) ? detail.godStoneStat : []),
+    ].map(stone => `${localizeOfficialText(stone.name) || "—"} ${String(stone.value || "")}`.trim());
+    const slotDetails = [localizeOfficialText(item.slotPosName)];
+    if (number(item.exceedLevel)) slotDetails.push(formatCopy("exceedStage", { value: number(item.exceedLevel) }));
+    return {
+      name: localizeOfficialText(item.name) || "—",
+      icon: safeImageUrl(item.icon),
+      grade: String(item.grade || "Common"),
+      enhanceText: `+${number(item.enchantLevel)}`,
+      slotName: slotDetails.filter(Boolean).join(" · "),
+      soulText: [...soulSkills, ...soulStats].join(" · "),
+      stoneText: stones.join(" · "),
+    };
+  }
+
+  function downloadEquipmentSnapshot(blob) {
+    const profile = state.profile?.info?.profile || {};
+    const fileName = `${String(profile.characterName || "NotMeter").replace(/[\\/:*?"<>|]/g, "-")}-장비-스냅샷.png`;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    link.hidden = true;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function showEquipmentSnapshotStatus(status, message, kind) {
+    status.textContent = message;
+    status.className = `equipment-snapshot-status ${kind}`;
+    window.setTimeout(() => {
+      if (status.textContent === message) {
+        status.textContent = "";
+        status.className = "equipment-snapshot-status";
+      }
+    }, 5000);
   }
 
   function equipmentDetailPriority(item, details) {
