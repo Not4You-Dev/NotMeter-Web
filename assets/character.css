@@ -1136,8 +1136,12 @@ body.character-view .ranking-panel { display: none !important; }
   .character-page-heading { align-items: flex-start; padding: 16px; }
   .character-page-heading p { display: none; }
   .character-profile-content { padding: 10px; }
-  #character-equipment .character-section-head { align-items: flex-start; flex-wrap: wrap; }
-  #character-equipment .character-section-actions { width: 100%; justify-content: flex-start; }
+  #character-equipment .character-section-head,
+  #character-skills .character-section-head,
+  #character-arcana .character-section-head { align-items: flex-start; flex-wrap: wrap; }
+  #character-equipment .character-section-actions,
+  #character-skills .character-section-actions,
+  #character-arcana .character-section-actions { width: 100%; justify-content: flex-start; }
   .equipment-snapshot-status { order: 3; max-width: none; text-align: left; }
   .character-hero { grid-template-columns: 82px minmax(0, 1fr); gap: 13px; padding: 14px; }
   .character-profile-avatar { width: 82px; height: 82px; }
@@ -1186,7 +1190,9 @@ body.character-view .ranking-panel { display: none !important; }
   .character-ranking-rank strong { font-size: 13px; }
   .equipment-summary-heading { display: grid; }
   .equipment-summary-heading span { text-align: left; }
-  #character-equipment .character-section-actions { display: grid; grid-template-columns: auto 1fr; }
+  #character-equipment .character-section-actions,
+  #character-skills .character-section-actions,
+  #character-arcana .character-section-actions { display: grid; grid-template-columns: auto 1fr; }
   .equipment-snapshot-button { width: max-content; }
   .equipment-snapshot-status { grid-column: 1 / -1; }
   .equipment-stone-summary-grid,

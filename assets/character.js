@@ -101,10 +101,20 @@
       equipmentSnapshotDownloaded: "클립보드를 사용할 수 없어 PNG로 저장했습니다.",
       equipmentSnapshotFailed: "장비 스냅샷을 만들지 못했습니다.",
       equipmentSnapshotWaiting: "장비 상세 정보를 모두 불러온 뒤 사용할 수 있습니다.",
+      skillSnapshot: "스킬 스냅샷", skillSnapshotFailed: "스킬 스냅샷을 만들지 못했습니다.",
+      arcanaSnapshot: "아르카나 스냅샷", arcanaSnapshotFailed: "아르카나 스냅샷을 만들지 못했습니다.",
+      characterSnapshotBusy: "이미지 만드는 중", characterSnapshotCopied: "이미지를 클립보드에 복사했습니다.",
+      characterSnapshotDownloaded: "클립보드를 사용할 수 없어 PNG로 저장했습니다.",
       snapshotKicker: "NOTMETER · EQUIPMENT SNAPSHOT", snapshotSoulSkills: "영혼 각인 스킬",
       snapshotSoulSkillsNote: "장착 장비 전체의 동일 스킬 증가 레벨 합계",
       snapshotManastones: "장착 마석 총수치", snapshotManastonesNote: "현재 세팅에 장착된 마석 합계",
       snapshotItemSoul: "각인", snapshotItemStones: "마석",
+      snapshotSkillKicker: "NOTMETER · SKILL SNAPSHOT", snapshotSkillTotal: "총 레벨 {value}",
+      snapshotSkillCount: "{value}개 스킬", snapshotSkillGrandTotal: "전체 스킬 총레벨",
+      snapshotArcanaKicker: "NOTMETER · ARCANA SNAPSHOT", snapshotArcanaGrandTotal: "아르카나 스킬 총레벨",
+      snapshotArcanaSkills: "아르카나 스킬 총레벨", snapshotArcanaSkillsNote: "같은 스킬의 증가 레벨을 모든 장착 카드에서 합산",
+      snapshotArcanaStats: "아르카나 스탯 총합", snapshotArcanaStatsNote: "모든 장착 카드의 기본 수치와 강화 수치를 합산",
+      snapshotArcanaStatBreakdown: "기본 {base} + 강화 {extra}", snapshotArcanaStatCards: "{value}개 카드",
       snapshotFooter: "현재 선택한 {loadout} 세팅 · 아이온2 공식 공개 정보 기준",
       officialNote: "캐릭터 정보는 아이온2 공식 공개 정보 기준이며, 게임 내 정보 공개 상태와 갱신 시점에 따라 일부 항목이 비어 있을 수 있습니다.",
     },
@@ -166,10 +176,20 @@
       equipmentSnapshotDownloaded: "Clipboard unavailable. The PNG was downloaded instead.",
       equipmentSnapshotFailed: "Could not create the gear snapshot.",
       equipmentSnapshotWaiting: "Available after all equipment details finish loading.",
+      skillSnapshot: "Skill snapshot", skillSnapshotFailed: "Could not create the skill snapshot.",
+      arcanaSnapshot: "Arcana snapshot", arcanaSnapshotFailed: "Could not create the Arcana snapshot.",
+      characterSnapshotBusy: "Creating image", characterSnapshotCopied: "Image copied to the clipboard.",
+      characterSnapshotDownloaded: "Clipboard unavailable. The PNG was downloaded instead.",
       snapshotKicker: "NOTMETER · EQUIPMENT SNAPSHOT", snapshotSoulSkills: "Soul engraving skills",
       snapshotSoulSkillsNote: "Combined skill levels across all equipped items",
       snapshotManastones: "Equipped manastone totals", snapshotManastonesNote: "Totals for the selected loadout",
       snapshotItemSoul: "Engraving", snapshotItemStones: "Stones",
+      snapshotSkillKicker: "NOTMETER · SKILL SNAPSHOT", snapshotSkillTotal: "Total levels {value}",
+      snapshotSkillCount: "{value} skills", snapshotSkillGrandTotal: "Total skill levels",
+      snapshotArcanaKicker: "NOTMETER · ARCANA SNAPSHOT", snapshotArcanaGrandTotal: "Total Arcana skill levels",
+      snapshotArcanaSkills: "Arcana skill level totals", snapshotArcanaSkillsNote: "Combined increases for matching skills across equipped cards",
+      snapshotArcanaStats: "Arcana stat totals", snapshotArcanaStatsNote: "Combined base and enhancement values across equipped cards",
+      snapshotArcanaStatBreakdown: "Base {base} + Enhance {extra}", snapshotArcanaStatCards: "{value} cards",
       snapshotFooter: "Selected {loadout} loadout · AION2 official public profile",
       officialNote: "Character data comes from AION2's official public profile. Some fields can be empty depending on visibility and refresh time.",
     },
@@ -226,10 +246,20 @@
       equipmentSnapshotDownloaded: "無法使用剪貼簿，已改為下載 PNG。",
       equipmentSnapshotFailed: "無法建立裝備快照。",
       equipmentSnapshotWaiting: "裝備詳細資料全部載入後即可使用。",
+      skillSnapshot: "技能快照", skillSnapshotFailed: "無法建立技能快照。",
+      arcanaSnapshot: "阿爾卡納快照", arcanaSnapshotFailed: "無法建立阿爾卡納快照。",
+      characterSnapshotBusy: "正在建立圖片", characterSnapshotCopied: "圖片已複製到剪貼簿。",
+      characterSnapshotDownloaded: "無法使用剪貼簿，已改為下載 PNG。",
       snapshotKicker: "NOTMETER · EQUIPMENT SNAPSHOT", snapshotSoulSkills: "靈魂刻印技能",
       snapshotSoulSkillsNote: "合計所有已裝備道具的相同技能等級",
       snapshotManastones: "已裝備魔石總數值", snapshotManastonesNote: "目前配置的已鑲嵌魔石合計",
       snapshotItemSoul: "刻印", snapshotItemStones: "魔石",
+      snapshotSkillKicker: "NOTMETER · SKILL SNAPSHOT", snapshotSkillTotal: "總等級 {value}",
+      snapshotSkillCount: "{value}個技能", snapshotSkillGrandTotal: "全部技能總等級",
+      snapshotArcanaKicker: "NOTMETER · ARCANA SNAPSHOT", snapshotArcanaGrandTotal: "阿爾卡納技能總等級",
+      snapshotArcanaSkills: "阿爾卡納技能總等級", snapshotArcanaSkillsNote: "合計所有已裝備卡片的相同技能提升等級",
+      snapshotArcanaStats: "阿爾卡納屬性總合", snapshotArcanaStatsNote: "合計所有已裝備卡片的基本與強化數值",
+      snapshotArcanaStatBreakdown: "基本 {base} + 強化 {extra}", snapshotArcanaStatCards: "{value}張卡片",
       snapshotFooter: "目前選擇的 {loadout} 配置 · AION2 官方公開資料",
       officialNote: "角色資料以 AION2 官方公開資料為準；依公開設定與更新時間，部分項目可能為空白。",
     },
@@ -1469,6 +1499,284 @@
     }, 5000);
   }
 
+  function appendCharacterSnapshotAction(section, label, waiting, waitingMessage, handler, extraClass) {
+    const head = section.querySelector(".character-section-head");
+    if (!head) return;
+    let actions = head.querySelector(".character-section-actions");
+    if (!actions) {
+      actions = node("div", "character-section-actions");
+      const count = head.querySelector(".character-section-count");
+      if (count) actions.append(count);
+      head.append(actions);
+    }
+    const status = node("span", "equipment-snapshot-status");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    const button = node("button", `equipment-snapshot-button ${extraClass}`);
+    button.type = "button";
+    const icon = node("span", "equipment-snapshot-button-icon");
+    icon.setAttribute("aria-hidden", "true");
+    button.append(icon, textNode("span", label));
+    button.disabled = waiting;
+    if (waiting && waitingMessage) button.title = waitingMessage;
+    button.addEventListener("click", () => void handler(button, status));
+    actions.append(status, button);
+  }
+
+  async function copySkillSnapshot(button, status) {
+    const copy = currentCopy();
+    await copyCharacterSnapshot(button, status, {
+      label: copy.skillSnapshot,
+      failed: copy.skillSnapshotFailed,
+      renderer: "createSkillBlob",
+      model: buildSkillSnapshotModel,
+      suffix: "스킬-스냅샷",
+    });
+  }
+
+  async function copyArcanaSnapshot(button, status) {
+    const copy = currentCopy();
+    await copyCharacterSnapshot(button, status, {
+      label: copy.arcanaSnapshot,
+      failed: copy.arcanaSnapshotFailed,
+      renderer: "createArcanaBlob",
+      model: buildArcanaSnapshotModel,
+      suffix: "아르카나-스냅샷",
+    });
+  }
+
+  async function copyCharacterSnapshot(button, status, options) {
+    const copy = currentCopy();
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    const label = button.querySelector("span:last-child");
+    if (label) label.textContent = copy.characterSnapshotBusy;
+    status.textContent = "";
+    status.className = "equipment-snapshot-status";
+
+    let blobPromise;
+    try {
+      const createBlob = globalThis.NotMeterEquipmentSnapshot?.[options.renderer];
+      if (typeof createBlob !== "function") throw new Error("Snapshot renderer unavailable");
+      blobPromise = createBlob(options.model());
+      if (!navigator.clipboard?.write || typeof globalThis.ClipboardItem !== "function") {
+        throw new Error("Image clipboard unavailable");
+      }
+      await navigator.clipboard.write([
+        new globalThis.ClipboardItem({ "image/png": blobPromise }),
+      ]);
+      showEquipmentSnapshotStatus(status, copy.characterSnapshotCopied, "success");
+    } catch {
+      try {
+        const createBlob = globalThis.NotMeterEquipmentSnapshot?.[options.renderer];
+        if (typeof createBlob !== "function") throw new Error("Snapshot renderer unavailable");
+        const blob = await (blobPromise || createBlob(options.model()));
+        downloadCharacterSnapshot(blob, options.suffix);
+        showEquipmentSnapshotStatus(status, copy.characterSnapshotDownloaded, "fallback");
+      } catch {
+        showEquipmentSnapshotStatus(status, options.failed, "error");
+      }
+    } finally {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      if (label) label.textContent = options.label;
+    }
+  }
+
+  function buildSkillSnapshotModel() {
+    const copy = currentCopy();
+    const loadoutView = resolveLoadoutView(state.profile);
+    const visibleData = loadoutView.data;
+    const skills = Array.isArray(visibleData?.equipment?.skill?.skillList)
+      ? visibleData.equipment.skill.skillList.slice() : [];
+    const groups = [
+      [copy.activeSkills, skills.filter(skill => !["dp", "passive"].includes(String(skill.category).toLowerCase()))],
+      [copy.stigmaSkills, skills.filter(skill => String(skill.category).toLowerCase() === "dp")],
+      [copy.passiveSkills, skills.filter(skill => String(skill.category).toLowerCase() === "passive")],
+    ].map(([name, rows]) => {
+      rows.sort((left, right) => Number(right.skillLevel) - Number(left.skillLevel) ||
+        String(left.name).localeCompare(String(right.name), "ko"));
+      const totalLevel = rows.reduce((sum, skill) => sum + number(skill.skillLevel), 0);
+      return {
+        name,
+        totalLevel,
+        totalText: copy.snapshotSkillTotal.replace("{value}", formatNumber(totalLevel)),
+        countText: copy.snapshotSkillCount.replace("{value}", rows.length),
+        skills: rows.map(skill => ({
+          name: localizeOfficialText(skill.name) || "—",
+          icon: safeImageUrl(skill.icon),
+          levelText: `Lv.${number(skill.skillLevel)}`,
+        })),
+      };
+    });
+    return {
+      ...buildCharacterSnapshotHeader(visibleData, loadoutView.type, copy.snapshotSkillKicker),
+      headerMetric: {
+        label: copy.snapshotSkillGrandTotal,
+        valueText: `Lv.${formatNumber(groups.reduce((sum, group) => sum + group.totalLevel, 0))}`,
+      },
+      groups,
+      labels: {
+        snapshotKicker: copy.snapshotSkillKicker,
+        combatPower: copy.combatPower,
+        itemLevel: copy.itemLevel,
+        none: copy.none,
+        footer: copy.snapshotFooter.replace("{loadout}", loadoutView.type || copy.currentLoadout),
+      },
+    };
+  }
+
+  function buildArcanaSnapshotModel() {
+    const copy = currentCopy();
+    const loadoutView = resolveLoadoutView(state.profile);
+    const visibleData = loadoutView.data;
+    const allEquipment = Array.isArray(visibleData?.equipment?.equipment?.equipmentList)
+      ? visibleData.equipment.equipment.equipmentList : [];
+    const arcana = allEquipment.filter(item => String(item.slotPosName).startsWith("Arcana"))
+      .sort((left, right) => Number(left.slotPos) - Number(right.slotPos));
+    const details = visibleData?.itemDetails || {};
+    const skillTotals = collectArcanaSkillTotals(arcana, details);
+    return {
+      ...buildCharacterSnapshotHeader(visibleData, loadoutView.type, copy.snapshotArcanaKicker),
+      headerMetric: {
+        label: copy.snapshotArcanaGrandTotal,
+        valueText: `+${formatNumber(skillTotals.reduce((sum, row) => sum + row.level, 0))}`,
+      },
+      skillTotals: skillTotals.map(row => ({
+        ...row,
+        icon: safeImageUrl(row.icon),
+        valueText: copy.soulSkillLevel.replace("{value}", row.level),
+      })),
+      statTotals: collectArcanaStatTotals(arcana, details),
+      cards: arcana.map(item => buildArcanaSnapshotItem(item, details[String(item.slotPos)] || {})),
+      labels: {
+        snapshotKicker: copy.snapshotArcanaKicker,
+        combatPower: copy.combatPower,
+        itemLevel: copy.itemLevel,
+        skillTotals: copy.snapshotArcanaSkills,
+        skillTotalsNote: copy.snapshotArcanaSkillsNote,
+        statTotals: copy.snapshotArcanaStats,
+        statTotalsNote: copy.snapshotArcanaStatsNote,
+        cards: copy.arcana,
+        cardCount: copy.arcanaCards.replace("{value}", arcana.length),
+        none: copy.none,
+        footer: copy.snapshotFooter.replace("{loadout}", loadoutView.type || copy.currentLoadout),
+      },
+    };
+  }
+
+  function buildCharacterSnapshotHeader(visibleData, loadoutType, snapshotKicker) {
+    const copy = currentCopy();
+    const info = visibleData?.info || {};
+    const profile = info.profile || {};
+    const statList = Array.isArray(info.stat?.statList) ? info.stat.statList : [];
+    const itemLevel = statList.find(item => item.type === "ItemLevel")?.value || 0;
+    return {
+      locale: state.locale,
+      brandIcon: safeImageUrl("./assets/notmeter-icon.png"),
+      jobIcon: safeImageUrl(jobIcon(profile.className)),
+      characterName: profile.characterName || "—",
+      serverName: localizeOfficialText(profile.serverName) || "—",
+      className: localizeOfficialText(profile.className) || "—",
+      combatPowerText: `${formatNumber(profile.combatPower)} CP`,
+      itemLevelText: formatNumber(itemLevel),
+      loadoutType: loadoutType || copy.currentLoadout,
+      updatedAtText: `${copy.updatedAt} ${formatDateTime(visibleData?.fetchedAt)}`,
+      snapshotKicker,
+    };
+  }
+
+  function collectArcanaStatTotals(items, details) {
+    const copy = currentCopy();
+    const totals = new Map();
+    for (const item of items) {
+      const detail = details[String(item.slotPos)] || {};
+      const stats = [
+        ...(Array.isArray(detail.mainStats) ? detail.mainStats : []),
+        ...(Array.isArray(detail.subStats) ? detail.subStats : []),
+      ];
+      for (const stat of stats) {
+        const name = localizeOfficialText(stat?.name);
+        const base = snapshotNumericValue(stat?.value);
+        const extra = snapshotNumericValue(stat?.extra);
+        const unit = `${stat?.value ?? ""}${stat?.extra ?? ""}`.includes("%") ? "%" : "";
+        if (!name || (!base && !extra)) continue;
+        const key = `${stat?.id || name}|${unit}`;
+        const current = totals.get(key) || { name, unit, base: 0, extra: 0, count: 0 };
+        current.base += base;
+        current.extra += extra;
+        current.count += 1;
+        totals.set(key, current);
+      }
+    }
+    return [...totals.values()]
+      .map(row => {
+        const total = row.base + row.extra;
+        return {
+          ...row,
+          valueText: snapshotSignedValue(total, row.unit),
+          detailText: row.extra
+            ? formatCopy("snapshotArcanaStatBreakdown", {
+              base: snapshotPlainValue(row.base, row.unit),
+              extra: snapshotPlainValue(row.extra, row.unit),
+            })
+            : copy.snapshotArcanaStatCards.replace("{value}", row.count),
+        };
+      })
+      .sort((left, right) => right.base + right.extra - left.base - left.extra ||
+        left.name.localeCompare(right.name, "ko"));
+  }
+
+  function buildArcanaSnapshotItem(item, detail) {
+    const stats = [
+      ...(Array.isArray(detail.mainStats) ? detail.mainStats : []),
+      ...(Array.isArray(detail.subStats) ? detail.subStats : []),
+    ].map(statParts).filter(stat => stat.name || stat.value)
+      .map(stat => `${stat.name} ${stat.value}`.trim());
+    const skills = (Array.isArray(detail.subSkills) ? detail.subSkills : []).map(skill => ({
+      name: localizeOfficialText(skill.name) || "—",
+      icon: safeImageUrl(skill.icon),
+      levelText: `+${number(skill.level)}`,
+    }));
+    return {
+      name: localizeOfficialText(item.name) || "—",
+      icon: safeImageUrl(item.icon),
+      grade: String(item.grade || "Common"),
+      enhanceText: `+${number(item.enchantLevel)}`,
+      slotText: String(item.slotPosName || "").replace(/^Arcana/i, `${currentCopy().arcana} `),
+      stats,
+      skills,
+    };
+  }
+
+  function snapshotNumericValue(value) {
+    const match = String(value ?? "").replace(/,/g, "").match(/[+-]?\d+(?:\.\d+)?/);
+    return match ? Number(match[0]) : 0;
+  }
+
+  function snapshotPlainValue(value, unit) {
+    const text = Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, "");
+    return `${text}${unit}`;
+  }
+
+  function snapshotSignedValue(value, unit) {
+    return `${value > 0 ? "+" : ""}${snapshotPlainValue(value, unit)}`;
+  }
+
+  function downloadCharacterSnapshot(blob, suffix) {
+    const profile = state.profile?.info?.profile || {};
+    const safeName = String(profile.characterName || "NotMeter").replace(/[\\/:*?"<>|]/g, "-");
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${safeName}-${suffix}.png`;
+    link.hidden = true;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   function equipmentDetailPriority(item, details) {
     const detail = details[String(item.slotPos)] || {};
     const hasSoulEngraving = (Array.isArray(detail.subStats) && detail.subStats.length > 0) ||
@@ -1601,6 +1909,13 @@
     const copy = currentCopy();
     const section = createSection("character-arcana", "ARCANA SET", copy.arcana,
       copy.arcanaDescription, formatCopy("itemCount", { value: items.length }));
+    appendCharacterSnapshotAction(
+      section,
+      copy.arcanaSnapshot,
+      resolveLoadoutView(state.profile).data?.complete === false,
+      copy.equipmentSnapshotWaiting,
+      copyArcanaSnapshot,
+      "arcana-snapshot-button");
     const grid = node("div", "character-arcana-grid");
     for (const item of items.slice().sort((a, b) => Number(a.slotPos) - Number(b.slotPos))) {
       const card = node("article", "character-arcana-card");
@@ -1626,8 +1941,7 @@
     return section;
   }
 
-  function renderArcanaSkillSummary(items, details) {
-    const copy = currentCopy();
+  function collectArcanaSkillTotals(items, details) {
     const totals = new Map();
     for (const item of items) {
       const detail = details[String(item.slotPos)] || {};
@@ -1642,9 +1956,13 @@
         totals.set(key, current);
       }
     }
-
-    const rows = [...totals.values()].sort((left, right) =>
+    return [...totals.values()].sort((left, right) =>
       right.level - left.level || left.name.localeCompare(right.name, "ko"));
+  }
+
+  function renderArcanaSkillSummary(items, details) {
+    const copy = currentCopy();
+    const rows = collectArcanaSkillTotals(items, details);
     const summary = node("section", "arcana-skill-summary");
     const heading = node("div", "equipment-summary-heading");
     heading.append(textNode("strong", copy.arcanaSkillTotal), textNode("span", copy.arcanaSkillTotalNote));
@@ -1669,6 +1987,13 @@
     skills.sort((a, b) => Number(b.skillLevel) - Number(a.skillLevel) || String(a.name).localeCompare(String(b.name)));
     const section = createSection("character-skills", "SKILL LIBRARY", copy.skills,
       copy.skillsDescription, formatCopy("itemCount", { value: skills.length }));
+    appendCharacterSnapshotAction(
+      section,
+      copy.skillSnapshot,
+      false,
+      "",
+      copySkillSnapshot,
+      "skill-snapshot-button");
     const groups = [
       ["active", copy.activeSkills, skills.filter(skill => !["dp", "passive"].includes(String(skill.category).toLowerCase()))],
       ["stigma", copy.stigmaSkills, skills.filter(skill => String(skill.category).toLowerCase() === "dp")],
