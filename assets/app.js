@@ -1959,12 +1959,15 @@
           preparedCustomCp = prepared.summary;
           preparedCustomCpRank = prepared.rank;
         } catch (error) {
-          console.warn("compatible custom CP cache unavailable; keeping the current cache", error);
+          console.warn("matching custom CP cache unavailable", error);
+          if (generationChanged) {
+            throw error;
+          }
         }
       }
       state.lastCacheSyncAt = Date.now();
       closeCombatDetail();
-      if (preparedCustomCp || (generationChanged && state.cpFilterMode !== "custom")) {
+      if (preparedCustomCp || generationChanged) {
         state.customCpData = null;
         state.customCpLoad = null;
         state.customCpRankData.clear();
@@ -1997,7 +2000,8 @@
       }
       updateDailyUsers();
       populateFilters();
-      if (state.cpFilterMode === "custom" && !state.customCpData) {
+      if (state.cpFilterMode === "custom" &&
+          !isMatchingCustomCpCache(state.customCpData, cache.generatedAt)) {
         await ensureCustomCpCache(force);
       }
       render();
@@ -3564,11 +3568,16 @@
       Number(cache.version) === 1;
   }
 
-  async function fetchCustomCpCacheForGeneration(_expectedGeneratedAt, force = false) {
+  async function fetchCustomCpCacheForGeneration(expectedGeneratedAt, force = false) {
+    const normalizedExpected = String(expectedGeneratedAt || "");
+    if (!normalizedExpected) {
+      throw new Error(t("cacheUnavailable"));
+    }
     const cache = await fetchCompressedJson(
       CUSTOM_CP_CACHE_URLS,
       force,
-      isValidCustomCpCache);
+      candidate => isMatchingCustomCpCache(candidate, normalizedExpected),
+      normalizedExpected);
     validateCustomCpCache(cache);
     return cache;
   }
@@ -3593,11 +3602,23 @@
     return cache;
   }
 
-  async function fetchCompatibleCustomCpPair(dungeonKey, bossIndex, force = false) {
+  async function fetchCompatibleCustomCpPair(
+      dungeonKey,
+      bossIndex,
+      expectedGeneratedAt,
+      force = false) {
+    const normalizedExpected = String(expectedGeneratedAt || "");
+    if (!normalizedExpected) {
+      throw new Error(t("cacheUnavailable"));
+    }
     const errors = [];
     for (const summaryUrl of CUSTOM_CP_CACHE_URLS) {
       try {
-        const summary = await fetchCompressedJson([summaryUrl], force, isValidCustomCpCache);
+        const summary = await fetchCompressedJson(
+          [summaryUrl],
+          force,
+          candidate => isMatchingCustomCpCache(candidate, normalizedExpected),
+          normalizedExpected);
         const rank = await fetchCustomCpRankCacheForGeneration(
           dungeonKey,
           bossIndex,
@@ -3618,20 +3639,24 @@
       force,
       includeRank) {
     if (includeRank) {
-      return fetchCompatibleCustomCpPair(dungeonKey, bossIndex, force);
+      return fetchCompatibleCustomCpPair(
+        dungeonKey,
+        bossIndex,
+        expectedGeneratedAt,
+        force);
     }
     const summary = await fetchCustomCpCacheForGeneration(expectedGeneratedAt, force);
     return { summary, rank: null };
   }
 
   async function ensureCustomCpCache(force = false) {
-    if (isValidCustomCpCache(state.customCpData) && !force) {
+    const expectedGeneratedAt = String(state.data?.generatedAt || "");
+    if (isMatchingCustomCpCache(state.customCpData, expectedGeneratedAt) && !force) {
       return state.customCpData;
     }
     if (state.customCpLoad && !force) {
       return state.customCpLoad;
     }
-    const expectedGeneratedAt = String(state.data?.generatedAt || "");
     let load;
     load = fetchCustomCpCacheForGeneration(expectedGeneratedAt, force)
       .then(cache => {
@@ -3672,9 +3697,16 @@
       .then(cache => ({ summary, rank: cache }))
       .catch(error => {
         console.warn("custom CP generation mismatch; retrying a compatible cache pair", error);
-        return fetchCompatibleCustomCpPair(dungeonKey, bossIndex, true);
+        return fetchCompatibleCustomCpPair(
+          dungeonKey,
+          bossIndex,
+          String(state.data?.generatedAt || ""),
+          true);
       })
       .then(pair => {
+        if (!isMatchingCustomCpCache(pair.summary, state.data?.generatedAt)) {
+          throw new Error(t("cacheUnavailable"));
+        }
         if (String(state.customCpData?.generatedAt || "") !== String(pair.summary.generatedAt)) {
           state.customCpData = pair.summary;
           state.customCpSummaryIndexes.clear();
