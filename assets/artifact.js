@@ -3,8 +3,7 @@
 
   const localCacheOverride = ["localhost", "127.0.0.1"].includes(window.location.hostname)
     ? new URLSearchParams(window.location.search).get("artifactApi") : "";
-  const GITHUB_CACHE_URL =
-    "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web/main/presence/notmeter-artifact-occupation-public.json";
+  const PUBLIC_CACHE_PATH = "./presence/notmeter-artifact-occupation-public.json";
   const EXPECTED_SCHEMA = "notmeter-artifact-occupation-public-v1";
   const EXPECTED_REVISION = "kr-2026-08-26";
   const MATCH_DURATION_DAYS = 14;
@@ -71,7 +70,7 @@
       westLead: "서부 진영 우세", eastLead: "동부 진영 우세", draw: "양 진영 동률",
       next: "다음 아티팩트 점령전", lower: "어비스 하층", middle: "어비스 중층",
       lowerCaption: "하층 아티팩트 3곳", middleCaption: "중층 아티팩트 3곳",
-      neutral: "미확인", confirmed: "확인됨", updated: "최근 확인 {time}",
+      neutral: "미확인", confirmed: "확인됨", updated: "캐시 갱신 {time}",
       noData: "새 회차 정보 확인 중", source: "한국 서버에서 확인된 현황을 약 5분마다 반영합니다.",
       favoriteServer: "{server} 즐겨찾기", unfavoriteServer: "{server} 즐겨찾기 해제",
       copied: "이미지를 클립보드에 복사했습니다.", downloaded: "이미지 파일로 저장했습니다.",
@@ -98,7 +97,7 @@
       westLead: "West leads", eastLead: "East leads", draw: "Tied",
       next: "Next artifact battle", lower: "Lower Abyss", middle: "Middle Abyss",
       lowerCaption: "3 lower artifacts", middleCaption: "3 middle artifacts",
-      neutral: "Unknown", confirmed: "Confirmed", updated: "Checked {time}",
+      neutral: "Unknown", confirmed: "Confirmed", updated: "Cache updated {time}",
       noData: "Waiting for the new round", source: "Verified Korean server status is updated about every 5 minutes.",
       favoriteServer: "Favorite {server}", unfavoriteServer: "Remove {server} from favorites",
       copied: "Image copied to the clipboard.", downloaded: "Image downloaded.",
@@ -125,7 +124,7 @@
       westLead: "西部陣營領先", eastLead: "東部陣營領先", draw: "雙方平手",
       next: "下一場神器佔領戰", lower: "深淵下層", middle: "深淵中層",
       lowerCaption: "下層神器 3 處", middleCaption: "中層神器 3 處",
-      neutral: "未確認", confirmed: "已確認", updated: "最近確認 {time}",
+      neutral: "未確認", confirmed: "已確認", updated: "快取更新 {time}",
       noData: "等待新回合資訊", source: "僅顯示韓國伺服器資料，約每 5 分鐘更新。",
       favoriteServer: "將 {server} 加入最愛", unfavoriteServer: "取消 {server} 的最愛",
       copied: "圖片已複製到剪貼簿。", downloaded: "圖片已下載。",
@@ -164,7 +163,7 @@
 
   function cacheUrl() {
     if (localCacheOverride) return localCacheOverride;
-    const url = new URL(GITHUB_CACHE_URL);
+    const url = new URL(PUBLIC_CACHE_PATH, window.location.href);
     url.searchParams.set("v", String(Date.now()));
     return url.toString();
   }
@@ -415,9 +414,9 @@
       elements["artifact-source-note"].textContent = text("historySource");
     }
     elements["artifact-overview-grid"].replaceChildren(...presentations.map(renderPairCard));
-    const observedAt = Math.max(0, ...presentations.flatMap(item => item.layers.map(layer => layer.observedAt)));
-    elements["artifact-updated-at"].textContent = observedAt > 0
-      ? text("updated", { time: formatObservedAt(observedAt) }) : text("noData");
+    const generatedAt = Number(state.data.generatedAt) || 0;
+    elements["artifact-updated-at"].textContent = generatedAt > 0
+      ? text("updated", { time: formatObservedAt(generatedAt) }) : text("noData");
     elements["artifact-loading-state"].hidden = true;
     elements["artifact-error-state"].hidden = true;
     elements["artifact-dashboard"].hidden = false;
