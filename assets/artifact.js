@@ -9,7 +9,11 @@
   const EXPECTED_REVISION = "kr-2026-08-26";
   const POLL_INTERVAL_MS = 10 * 60_000;
   const REQUEST_TIMEOUT_MS = 8_000;
-  const ICON_URL = "./assets/artifact-neutral.png";
+  const ICON_URLS = Object.freeze({
+    neutral: "./assets/artifact-neutral.png",
+    west: "./assets/artifact-west.png",
+    east: "./assets/artifact-east.png",
+  });
   const PAIRS = [
     [1, 1001, "시엘", 2001, "이스라펠"], [2, 2002, "지켈", 2006, "아스펠"],
     [3, 1003, "바이젤", 2007, "에레슈키갈"], [4, 1004, "카이시넬", 1002, "네자칸"],
@@ -396,7 +400,7 @@
       item.className = `artifact-overview-artifact ${side}`;
       item.title = entry.name;
       item.innerHTML = `
-        <img src="${ICON_URL}" alt="">
+        <img src="${artifactIconUrl(entry.ownerSide)}" alt="">
         <span><b>${escapeHtml(shortArtifactName(entry.name))}</b><small>${escapeHtml(layer.confirmed ? ownerName(entry.ownerSide) : text("waiting"))}</small></span>`;
       return item;
     }));
@@ -409,6 +413,14 @@
 
   function ownerName(side) {
     return side === 1 ? text("west") : side === 2 ? text("east") : text("neutral");
+  }
+
+  function artifactIconKey(side) {
+    return side === 1 ? "west" : side === 2 ? "east" : "neutral";
+  }
+
+  function artifactIconUrl(side) {
+    return ICON_URLS[artifactIconKey(side)];
   }
 
   function showLoading(visible) {
@@ -527,8 +539,13 @@
     context.fillStyle = gradient; context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = "rgba(36,219,229,.12)"; context.beginPath(); context.arc(115, 220, 320, 0, Math.PI * 2); context.fill();
     context.fillStyle = "rgba(214,76,235,.11)"; context.beginPath(); context.arc(2280, 250, 430, 0, Math.PI * 2); context.fill();
-    const icon = await loadImage(ICON_URL);
-    context.drawImage(icon, 64, 45, 86, 86);
+    const [neutralIcon, westIcon, eastIcon] = await Promise.all([
+      loadImage(ICON_URLS.neutral),
+      loadImage(ICON_URLS.west),
+      loadImage(ICON_URLS.east),
+    ]);
+    const icons = { neutral: neutralIcon, west: westIcon, east: eastIcon };
+    context.drawImage(icons.neutral, 64, 45, 86, 86);
     context.fillStyle = "#f3f9fb"; context.font = "900 48px Pretendard, sans-serif"; context.fillText("아티팩트 현황", 176, 88);
     const historical = state.selectedRoundKey !== "current";
     const snapshotRound = historical ? `${formatRoundDate(state.selectedRoundKey)} 점령 결과` : "한국 서버 전체 21개 대진";
@@ -539,7 +556,7 @@
     presentations.forEach((presentation, index) => {
       const column = index % 3;
       const row = Math.floor(index / 3);
-      drawSnapshotPair(context, presentation, 60 + column * 770, 175 + row * 424, icon);
+      drawSnapshotPair(context, presentation, 60 + column * 770, 175 + row * 424, icons);
     });
     context.textAlign = "left"; context.fillStyle = "#7994a3"; context.font = "650 18px Pretendard, sans-serif";
     context.fillText(text("source"), 64, 3212);
@@ -548,7 +565,7 @@
     return canvas;
   }
 
-  function drawSnapshotPair(context, presentation, x, y, icon) {
+  function drawSnapshotPair(context, presentation, x, y, icons) {
     const { pair, layers, west, east, lead, historical } = presentation;
     roundedRect(context, x, y, 740, 398, 20, "rgba(7,22,32,.94)", "#294554");
     context.textAlign = "left"; context.fillStyle = "#7896a6"; context.font = "800 17px Pretendard, sans-serif";
@@ -575,7 +592,7 @@
         const fill = entry.ownerSide === 1 ? "rgba(29,199,219,.17)" : entry.ownerSide === 2 ? "rgba(197,69,225,.17)" : "rgba(117,143,154,.09)";
         const border = entry.ownerSide === 1 ? "#267e8d" : entry.ownerSide === 2 ? "#7e348c" : "#294452";
         roundedRect(context, itemX, itemY, 224, 72, 11, fill, border);
-        context.drawImage(icon, itemX + 10, itemY + 18, 36, 36);
+        context.drawImage(icons[artifactIconKey(entry.ownerSide)], itemX + 10, itemY + 18, 36, 36);
         context.textAlign = "left"; context.fillStyle = "#ecf4f6"; context.font = "850 15px Pretendard, sans-serif";
         context.fillText(shortArtifactName(entry.name), itemX + 54, itemY + 29, 158);
         context.fillStyle = entry.ownerSide === 1 ? "#71e8f3" : entry.ownerSide === 2 ? "#e893f7" : "#98adb6";
