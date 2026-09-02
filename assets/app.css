@@ -6091,6 +6091,14 @@ tr:nth-child(3) .rank-badge {
 .artifact-overview-card.west { border-top-color: rgba(54, 218, 232, 0.56); }
 .artifact-overview-card.east { border-top-color: rgba(219, 103, 238, 0.56); }
 
+.artifact-overview-card.is-favorite {
+  border-color: rgba(235, 199, 96, 0.62);
+  box-shadow:
+    inset 0 1px rgba(255, 241, 185, 0.07),
+    0 0 0 1px rgba(235, 199, 96, 0.08),
+    0 10px 26px rgba(0, 0, 0, 0.2);
+}
+
 .artifact-overview-card-head {
   display: flex;
   min-height: 30px;
@@ -6124,7 +6132,18 @@ tr:nth-child(3) .rank-badge {
   padding: 7px 9px 5px;
 }
 
-.artifact-overview-versus > strong {
+.artifact-overview-server {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.artifact-overview-server.east {
+  justify-content: flex-end;
+}
+
+.artifact-overview-server > strong {
   min-width: 0;
   overflow: hidden;
   font-size: 13px;
@@ -6134,8 +6153,39 @@ tr:nth-child(3) .rank-badge {
   white-space: nowrap;
 }
 
-.artifact-overview-versus > strong.west { color: #84edfa; text-align: left; }
-.artifact-overview-versus > strong.east { color: #ed9bfb; text-align: right; }
+.artifact-overview-server.west > strong { color: #84edfa; text-align: left; }
+.artifact-overview-server.east > strong { color: #ed9bfb; text-align: right; }
+
+.artifact-favorite-button {
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(84, 113, 126, 0.5);
+  border-radius: 6px;
+  background: rgba(4, 15, 23, 0.72);
+  color: #607c89;
+  cursor: pointer;
+  font: 900 12px/1 Arial, sans-serif;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.artifact-favorite-button:hover,
+.artifact-favorite-button:focus-visible {
+  border-color: rgba(238, 205, 106, 0.72);
+  color: #eed77e;
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.artifact-favorite-button.is-active {
+  border-color: rgba(255, 218, 104, 0.82);
+  background: linear-gradient(145deg, rgba(126, 94, 18, 0.58), rgba(59, 44, 10, 0.78));
+  color: #ffe17b;
+  text-shadow: 0 0 8px rgba(255, 218, 104, 0.72);
+}
 
 .artifact-overview-score-block {
   display: grid;
@@ -7256,7 +7306,7 @@ tr:nth-child(3) .rank-badge {
     font-size: 8.5px;
   }
 
-  .artifact-overview-versus > strong {
+  .artifact-overview-server > strong {
     font-size: 14px;
   }
 

@@ -13,6 +13,7 @@
   const KOREA_OFFSET_MS = 9 * 60 * 60_000;
   const POLL_INTERVAL_MS = 5 * 60_000;
   const REQUEST_TIMEOUT_MS = 8_000;
+  const FAVORITE_STORAGE_KEY = "notmeter-artifact-favorite-servers-v1";
   const ICON_URLS = Object.freeze({
     neutral: "./assets/artifact-neutral.png",
     west: "./assets/artifact-west.png?v=20260902-2",
@@ -48,7 +49,7 @@
   const COPY = {
     ko: {
       description: "한국 서버 21개 대진의 점령 현황을 한눈에 확인하세요.",
-      overviewTitle: "전체 21개 서버 대진", overviewCaption: "하층·중층 점령 현황을 한 화면에서 비교합니다.",
+      overviewTitle: "전체 21개 서버 대진", overviewCaption: "별을 누른 서버는 항상 위에 표시됩니다.",
       roundLabel: "점령전 회차", currentRound: "현재 현황", historyOption: "{date} 점령전",
       historyTitle: "{date} 점령 결과", historyCaption: "종료된 회차의 하층·중층 점령 결과입니다.",
       historyRecord: "점령전 종료 기록", historySource: "완료된 점령전 결과를 회차별로 보관합니다.",
@@ -69,12 +70,13 @@
       lowerCaption: "하층 아티팩트 3곳", middleCaption: "중층 아티팩트 3곳",
       neutral: "미확인", confirmed: "확인됨", updated: "최근 확인 {time}",
       noData: "새 회차 정보 확인 중", source: "한국 서버에서 확인된 현황을 약 5분마다 반영합니다.",
+      favoriteServer: "{server} 즐겨찾기", unfavoriteServer: "{server} 즐겨찾기 해제",
       copied: "이미지를 클립보드에 복사했습니다.", downloaded: "이미지 파일로 저장했습니다.",
       snapshotFailed: "이미지를 만들지 못했습니다.", koreaOnly: "한국 서버 전용",
     },
     en: {
       description: "See all 21 Korean server matchups and their artifact control at once.",
-      overviewTitle: "All 21 server matchups", overviewCaption: "Compare Lower and Middle Abyss control on one page.",
+      overviewTitle: "All 21 server matchups", overviewCaption: "Star a server to keep its matchup at the top.",
       roundLabel: "Battle round", currentRound: "Current status", historyOption: "{date} battle",
       historyTitle: "Results for {date}", historyCaption: "Final Lower and Middle Abyss control for this round.",
       historyRecord: "Final battle result", historySource: "Completed artifact battles are saved by round.",
@@ -95,12 +97,13 @@
       lowerCaption: "3 lower artifacts", middleCaption: "3 middle artifacts",
       neutral: "Unknown", confirmed: "Confirmed", updated: "Checked {time}",
       noData: "Waiting for the new round", source: "Verified Korean server status is updated about every 5 minutes.",
+      favoriteServer: "Favorite {server}", unfavoriteServer: "Remove {server} from favorites",
       copied: "Image copied to the clipboard.", downloaded: "Image downloaded.",
       snapshotFailed: "Could not create the image.", koreaOnly: "Korean servers only",
     },
     "zh-TW": {
       description: "一次查看韓國伺服器全部 21 組對戰的神器佔領狀態。",
-      overviewTitle: "全部 21 組伺服器對戰", overviewCaption: "在同一頁比較深淵下層與中層佔領狀態。",
+      overviewTitle: "全部 21 組伺服器對戰", overviewCaption: "點選星號後，該伺服器的對戰會固定顯示在最上方。",
       roundLabel: "佔領戰場次", currentRound: "目前狀態", historyOption: "{date} 佔領戰",
       historyTitle: "{date} 佔領結果", historyCaption: "此場次結束時的深淵下層與中層佔領結果。",
       historyRecord: "佔領戰最終記錄", historySource: "已結束的神器佔領戰會依場次保存。",
@@ -121,6 +124,7 @@
       lowerCaption: "下層神器 3 處", middleCaption: "中層神器 3 處",
       neutral: "未確認", confirmed: "已確認", updated: "最近確認 {time}",
       noData: "等待新回合資訊", source: "僅顯示韓國伺服器資料，約每 5 分鐘更新。",
+      favoriteServer: "將 {server} 加入最愛", unfavoriteServer: "取消 {server} 的最愛",
       copied: "圖片已複製到剪貼簿。", downloaded: "圖片已下載。",
       snapshotFailed: "無法建立圖片。", koreaOnly: "僅限韓國伺服器",
     },
@@ -137,6 +141,7 @@
     clockTimer: 0,
     snapshotFeedbackTimer: 0,
     selectedRoundKey: "current",
+    favoriteServerIds: readFavoriteServerIds(),
     presentations: [],
   };
   const elements = {};
@@ -182,6 +187,18 @@
     elements["artifact-round-select"].addEventListener("change", event => {
       state.selectedRoundKey = event.target.value || "current";
       render();
+    });
+    elements["artifact-overview-grid"].addEventListener("click", event => {
+      const button = event.target instanceof Element
+        ? event.target.closest("[data-artifact-favorite-server]")
+        : null;
+      if (!button) return;
+      toggleFavoriteServer(Number(button.dataset.artifactFavoriteServer));
+    });
+    window.addEventListener("storage", event => {
+      if (event.key !== FAVORITE_STORAGE_KEY) return;
+      state.favoriteServerIds = readFavoriteServerIds();
+      if (state.active) render();
     });
     state.bound = true;
   }
@@ -340,9 +357,9 @@
     }
     populateRoundSelect();
     const historical = state.selectedRoundKey !== "current";
-    const presentations = PAIRS.map(pair => historical
+    const presentations = sortPresentationsByFavorites(PAIRS.map(pair => historical
       ? buildPairPresentation(historyPair(pair, state.selectedRoundKey), true)
-      : buildPairPresentation(payloadPair(pair.pairId), false));
+      : buildPairPresentation(payloadPair(pair.pairId), false)));
     state.presentations = presentations;
     if (historical) {
       const date = formatRoundDate(state.selectedRoundKey);
@@ -469,14 +486,73 @@
     const cumulative = buildCumulativeScore(
       pair?.pairId,
       historical ? Number(pair?.nextBattleAt) || 0 : Number.POSITIVE_INFINITY);
-    return { pair, layers, west, east, confirmedLayers, lead, cumulative, historical };
+    return {
+      pair,
+      layers,
+      west,
+      east,
+      confirmedLayers,
+      lead,
+      cumulative,
+      historical,
+      favoriteCount: favoriteCount(pair),
+    };
+  }
+
+  function readFavoriteServerIds() {
+    try {
+      const validIds = new Set(PAIRS.flatMap(pair => [pair.west.serverId, pair.east.serverId]));
+      const stored = JSON.parse(localStorage.getItem(FAVORITE_STORAGE_KEY) || "[]");
+      return new Set(Array.isArray(stored)
+        ? stored.map(Number).filter(serverId => validIds.has(serverId))
+        : []);
+    } catch {
+      return new Set();
+    }
+  }
+
+  function saveFavoriteServerIds() {
+    try {
+      localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify([...state.favoriteServerIds]));
+    } catch {
+    }
+  }
+
+  function favoriteCount(pair) {
+    return [pair?.west?.serverId, pair?.east?.serverId]
+      .filter(serverId => state.favoriteServerIds.has(Number(serverId))).length;
+  }
+
+  function sortPresentationsByFavorites(presentations) {
+    return [...presentations].sort((left, right) =>
+      right.favoriteCount - left.favoriteCount ||
+      Number(left.pair?.pairId) - Number(right.pair?.pairId));
+  }
+
+  function toggleFavoriteServer(serverId) {
+    if (!PAIRS.some(pair => pair.west.serverId === serverId || pair.east.serverId === serverId)) return;
+    if (state.favoriteServerIds.has(serverId)) {
+      state.favoriteServerIds.delete(serverId);
+    } else {
+      state.favoriteServerIds.add(serverId);
+    }
+    saveFavoriteServerIds();
+    render();
+  }
+
+  function favoriteButton(server) {
+    const active = state.favoriteServerIds.has(Number(server.serverId));
+    const label = text(active ? "unfavoriteServer" : "favoriteServer", { server: server.name });
+    return `<button class="artifact-favorite-button${active ? " is-active" : ""}" type="button" ` +
+      `data-artifact-favorite-server="${Number(server.serverId)}" aria-pressed="${active}" ` +
+      `aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"><span aria-hidden="true">★</span></button>`;
   }
 
   function renderPairCard(presentation) {
-    const { pair, layers, west, east, lead, cumulative, historical } = presentation;
+    const { pair, layers, west, east, lead, cumulative, historical, favoriteCount } = presentation;
     const card = document.createElement("article");
     const leadSide = west > east ? "west" : east > west ? "east" : "neutral";
-    card.className = `artifact-overview-card ${leadSide}`;
+    card.className = `artifact-overview-card ${leadSide}${favoriteCount > 0 ? " is-favorite" : ""}`;
     card.dataset.pairId = String(pair.pairId);
     const battleAt = historical ? Number(pair.nextBattleAt) : effectiveNextBattleAt(pair);
     const battleTime = battleAt ? formatBattleTime(battleAt) : text("koreaOnly");
@@ -486,12 +562,18 @@
         <strong class="artifact-overview-lead ${leadSide}">${escapeHtml(lead)}</strong>
       </header>
       <div class="artifact-overview-versus">
-        <strong class="west" title="${escapeHtml(pair.west.name)}">${escapeHtml(pair.west.name)}</strong>
+        <div class="artifact-overview-server west">
+          ${favoriteButton(pair.west)}
+          <strong title="${escapeHtml(pair.west.name)}">${escapeHtml(pair.west.name)}</strong>
+        </div>
         <span class="artifact-overview-score-block">
           <small>${escapeHtml(historical ? text("roundScore") : text("currentScore"))}</small>
           <span class="artifact-overview-score"><b class="west">${west}</b><i>:</i><b class="east">${east}</b></span>
         </span>
-        <strong class="east" title="${escapeHtml(pair.east.name)}">${escapeHtml(pair.east.name)}</strong>
+        <div class="artifact-overview-server east">
+          <strong title="${escapeHtml(pair.east.name)}">${escapeHtml(pair.east.name)}</strong>
+          ${favoriteButton(pair.east)}
+        </div>
       </div>
       <div class="artifact-overview-cumulative">
         <span><b>${escapeHtml(text("cumulativeScore"))}</b><small>${escapeHtml(cumulative.count > 0
@@ -753,7 +835,8 @@
     context.fillText(`${text("matchRounds", { total: period.totalRounds })} · ${text("matchSchedule")}`, 2336, 169);
     const presentations = state.presentations.length === PAIRS.length
       ? state.presentations
-      : PAIRS.map(pair => buildPairPresentation(payloadPair(pair.pairId), false));
+      : sortPresentationsByFavorites(PAIRS.map(pair =>
+          buildPairPresentation(payloadPair(pair.pairId), false)));
     presentations.forEach((presentation, index) => {
       const column = index % 3;
       const row = Math.floor(index / 3);
@@ -767,11 +850,11 @@
   }
 
   function drawSnapshotPair(context, presentation, x, y, icons) {
-    const { pair, layers, west, east, lead, cumulative, historical } = presentation;
-    roundedRect(context, x, y, 740, 428, 20, "rgba(7,22,32,.94)", "#294554");
+    const { pair, layers, west, east, lead, cumulative, historical, favoriteCount } = presentation;
+    roundedRect(context, x, y, 740, 428, 20, "rgba(7,22,32,.94)", favoriteCount > 0 ? "#b89b4b" : "#294554");
     context.textAlign = "left"; context.fillStyle = "#7896a6"; context.font = "800 17px Pretendard, sans-serif";
     const battleAt = historical ? Number(pair.nextBattleAt) : effectiveNextBattleAt(pair);
-    context.fillText(`${String(pair.pairId).padStart(2, "0")} · ${battleAt ? formatBattleTime(battleAt) : "—"}`, x + 22, y + 31);
+    context.fillText(`${favoriteCount > 0 ? "★ " : ""}${String(pair.pairId).padStart(2, "0")} · ${battleAt ? formatBattleTime(battleAt) : "—"}`, x + 22, y + 31);
     context.textAlign = "right"; context.fillStyle = west > east ? "#74e9f4" : east > west ? "#e995f8" : "#a8bbc4";
     context.font = "900 17px Pretendard, sans-serif"; context.fillText(lead, x + 718, y + 31);
     context.textAlign = "left"; context.fillStyle = "#7fe9f6"; context.font = "900 28px Pretendard, sans-serif";
