@@ -3393,11 +3393,18 @@
           const text = await decodeCacheBytes(bytes);
           const cache = JSON.parse(text);
           if (accept && !accept(cache)) {
-            throw new Error("cache generation mismatch");
+            const mismatch = new Error("cache generation mismatch");
+            mismatch.name = "CacheGenerationMismatch";
+            throw mismatch;
           }
           return cache;
         } catch (error) {
           errors.push(`${baseUrl}#${attempt}: ${error instanceof Error ? error.message : String(error)}`);
+          // 동일 URL에서 받은 완전한 JSON의 세대가 다르면 재요청해도 같은 대용량
+          // 파일을 다시 내려받을 가능성이 높다. 즉시 다음 동일 세대 후보로 넘어간다.
+          if (error instanceof Error && error.name === "CacheGenerationMismatch") {
+            break;
+          }
         } finally {
           if (timeoutId) {
             window.clearTimeout(timeoutId);
