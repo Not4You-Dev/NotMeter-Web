@@ -9,7 +9,6 @@
   const EXPECTED_REVISION = "kr-2026-08-26";
   const POLL_INTERVAL_MS = 10 * 60_000;
   const REQUEST_TIMEOUT_MS = 8_000;
-  const STORAGE_KEY = "notmeter-artifact-pair-id";
   const ICON_URL = "./assets/artifact-neutral.png";
   const PAIRS = [
     [1, 1001, "시엘", 2001, "이스라펠"], [2, 2002, "지켈", 2006, "아스펠"],
@@ -40,7 +39,8 @@
   };
   const COPY = {
     ko: {
-      description: "한국 서버 대진별 점령 현황을 한눈에 확인하세요.", pair: "서버 대진",
+      description: "한국 서버 21개 대진의 점령 현황을 한눈에 확인하세요.",
+      overviewTitle: "전체 21개 서버 대진", overviewCaption: "하층·중층 점령 현황을 한 화면에서 비교합니다.",
       snapshot: "이미지 복사", loading: "아티팩트 현황을 불러오는 중입니다",
       errorTitle: "현황을 불러오지 못했습니다", error: "잠시 후 다시 확인해 주세요.",
       west: "서부 진영", east: "동부 진영", occupied: "현재 점령", waiting: "현황 확인 중",
@@ -54,7 +54,8 @@
       snapshotFailed: "이미지를 만들지 못했습니다.", koreaOnly: "한국 서버 전용",
     },
     en: {
-      description: "See the latest artifact control for every Korean server matchup.", pair: "Server matchup",
+      description: "See all 21 Korean server matchups and their artifact control at once.",
+      overviewTitle: "All 21 server matchups", overviewCaption: "Compare Lower and Middle Abyss control on one page.",
       snapshot: "Copy image", loading: "Loading artifact status",
       errorTitle: "Artifact status is unavailable", error: "Please try again shortly.",
       west: "West", east: "East", occupied: "Current control", waiting: "Checking status",
@@ -68,7 +69,8 @@
       snapshotFailed: "Could not create the image.", koreaOnly: "Korean servers only",
     },
     "zh-TW": {
-      description: "此功能僅顯示韓國伺服器的神器佔領狀態。", pair: "伺服器對戰",
+      description: "一次查看韓國伺服器全部 21 組對戰的神器佔領狀態。",
+      overviewTitle: "全部 21 組伺服器對戰", overviewCaption: "在同一頁比較深淵下層與中層佔領狀態。",
       snapshot: "複製圖片", loading: "正在載入神器佔領狀態",
       errorTitle: "無法載入佔領狀態", error: "請稍後再試。",
       west: "西部陣營", east: "東部陣營", occupied: "目前佔領", waiting: "確認中",
@@ -88,7 +90,6 @@
     bound: false,
     locale: "ko",
     data: null,
-    pairId: Number(localStorage.getItem(STORAGE_KEY)) || 1,
     request: null,
     requestController: null,
     pollTimer: 0,
@@ -118,52 +119,28 @@
   function bind() {
     if (state.bound) return;
     for (const id of [
-      "artifact-description", "artifact-pair-label", "artifact-pair-select",
+      "artifact-description", "artifact-overview-title", "artifact-overview-caption",
       "artifact-snapshot-button", "artifact-snapshot-label", "artifact-refresh-button",
       "artifact-retry-button", "artifact-loading-state", "artifact-loading-text",
       "artifact-error-state", "artifact-error-title", "artifact-error-message",
-      "artifact-dashboard", "artifact-west-caption", "artifact-east-caption",
-      "artifact-west-server", "artifact-east-server", "artifact-round-label",
-      "artifact-west-score", "artifact-east-score", "artifact-advantage",
-      "artifact-next-label", "artifact-countdown", "artifact-next-time",
-      "artifact-layer-grid", "artifact-updated-at", "artifact-source-note", "artifact-copy-status",
+      "artifact-dashboard", "artifact-overview-grid", "artifact-updated-at",
+      "artifact-source-note", "artifact-copy-status",
     ]) {
       elements[id] = document.getElementById(id);
     }
-    elements["artifact-pair-select"].addEventListener("change", event => {
-      state.pairId = Number(event.currentTarget.value) || 1;
-      localStorage.setItem(STORAGE_KEY, String(state.pairId));
-      render();
-    });
     elements["artifact-refresh-button"].addEventListener("click", () => void refresh());
     elements["artifact-retry-button"].addEventListener("click", () => void refresh());
     elements["artifact-snapshot-button"].addEventListener("click", () => void copySnapshot());
-    populatePairSelect();
     state.bound = true;
-  }
-
-  function populatePairSelect() {
-    const select = elements["artifact-pair-select"];
-    select.replaceChildren(...PAIRS.map(pair => {
-      const option = document.createElement("option");
-      option.value = String(pair.pairId);
-      option.textContent = `${pair.west.name}  VS  ${pair.east.name}`;
-      return option;
-    }));
-    if (!PAIRS.some(pair => pair.pairId === state.pairId)) state.pairId = 1;
-    select.value = String(state.pairId);
   }
 
   function setStaticCopy() {
     elements["artifact-description"].textContent = text("description");
-    elements["artifact-pair-label"].textContent = text("pair");
+    elements["artifact-overview-title"].textContent = text("overviewTitle");
+    elements["artifact-overview-caption"].textContent = text("overviewCaption");
     elements["artifact-snapshot-label"].textContent = text("snapshot");
     elements["artifact-loading-text"].textContent = text("loading");
     elements["artifact-error-title"].textContent = text("errorTitle");
-    elements["artifact-west-caption"].textContent = text("west");
-    elements["artifact-east-caption"].textContent = text("east");
-    elements["artifact-round-label"].textContent = text("occupied");
-    elements["artifact-next-label"].textContent = text("next");
     elements["artifact-source-note"].textContent = text("source");
   }
 
@@ -211,9 +188,9 @@
       });
   }
 
-  function selectedPair() {
-    return state.data?.pairs?.find(pair => pair.pairId === state.pairId) ||
-      PAIRS.find(pair => pair.pairId === state.pairId) || PAIRS[0];
+  function payloadPair(pairId) {
+    return state.data?.pairs?.find(pair => Number(pair.pairId) === Number(pairId)) ||
+      PAIRS.find(pair => pair.pairId === Number(pairId));
   }
 
   function normalizedLayer(pair, layerNumber) {
@@ -243,23 +220,10 @@
       updateCountdown();
       return;
     }
-    const pair = selectedPair();
-    const layers = [normalizedLayer(pair, 1), normalizedLayer(pair, 2)];
-    const entries = layers.flatMap(layer => layer.entries);
-    const confirmedLayers = layers.filter(layer => layer.confirmed).length;
-    const west = entries.filter(entry => entry.ownerSide === 1).length;
-    const east = entries.filter(entry => entry.ownerSide === 2).length;
-    elements["artifact-west-server"].textContent = pair.west.name;
-    elements["artifact-east-server"].textContent = pair.east.name;
-    elements["artifact-west-score"].textContent = String(west);
-    elements["artifact-east-score"].textContent = String(east);
-    const advantage = elements["artifact-advantage"];
-    advantage.className = `artifact-advantage ${west > east ? "west" : east > west ? "east" : "neutral"}`;
-    advantage.textContent = confirmedLayers === 0 ? text("waiting")
-      : confirmedLayers < layers.length ? text("partial")
-      : west > east ? text("westLead") : east > west ? text("eastLead") : text("draw");
-    elements["artifact-layer-grid"].replaceChildren(...layers.map(renderLayer));
-    const observedAt = Math.max(...layers.map(layer => layer.observedAt));
+    const pairs = PAIRS.map(pair => payloadPair(pair.pairId));
+    const presentations = pairs.map(buildPairPresentation);
+    elements["artifact-overview-grid"].replaceChildren(...presentations.map(renderPairCard));
+    const observedAt = Math.max(0, ...presentations.flatMap(item => item.layers.map(layer => layer.observedAt)));
     elements["artifact-updated-at"].textContent = observedAt > 0
       ? text("updated", { time: formatObservedAt(observedAt) }) : text("noData");
     elements["artifact-loading-state"].hidden = true;
@@ -268,31 +232,74 @@
     updateCountdown();
   }
 
-  function renderLayer(layer) {
+  function buildPairPresentation(pair) {
+    const layers = [normalizedLayer(pair, 1), normalizedLayer(pair, 2)];
+    const entries = layers.flatMap(layer => layer.entries);
+    const confirmedLayers = layers.filter(layer => layer.confirmed).length;
+    const west = entries.filter(entry => entry.ownerSide === 1).length;
+    const east = entries.filter(entry => entry.ownerSide === 2).length;
+    const lead = confirmedLayers === 0 ? text("waiting")
+      : confirmedLayers < layers.length ? text("partial")
+      : west > east ? text("westLead") : east > west ? text("eastLead") : text("draw");
+    return { pair, layers, west, east, confirmedLayers, lead };
+  }
+
+  function renderPairCard(presentation) {
+    const { pair, layers, west, east, lead } = presentation;
     const card = document.createElement("article");
-    card.className = "artifact-layer-card";
+    const leadSide = west > east ? "west" : east > west ? "east" : "neutral";
+    card.className = `artifact-overview-card ${leadSide}`;
+    card.dataset.pairId = String(pair.pairId);
+    const battleAt = effectiveNextBattleAt(pair);
+    const battleTime = battleAt ? formatBattleTime(battleAt) : text("koreaOnly");
+    card.innerHTML = `
+      <header class="artifact-overview-card-head">
+        <span>${escapeHtml(String(pair.pairId).padStart(2, "0"))} · ${escapeHtml(battleTime)}</span>
+        <strong class="artifact-overview-lead ${leadSide}">${escapeHtml(lead)}</strong>
+      </header>
+      <div class="artifact-overview-versus">
+        <strong class="west" title="${escapeHtml(pair.west.name)}">${escapeHtml(pair.west.name)}</strong>
+        <span class="artifact-overview-score"><b class="west">${west}</b><i>:</i><b class="east">${east}</b></span>
+        <strong class="east" title="${escapeHtml(pair.east.name)}">${escapeHtml(pair.east.name)}</strong>
+      </div>
+      <div class="artifact-overview-layers"></div>
+      <footer class="artifact-overview-next">
+        <span>${escapeHtml(text("next"))}</span>
+        <strong data-artifact-countdown="${pair.pairId}">${battleAt ? escapeHtml(formatCountdown(Math.max(0, battleAt - Date.now()))) : "—"}</strong>
+      </footer>`;
+    card.querySelector(".artifact-overview-layers")
+      .replaceChildren(...layers.map(renderCompactLayer));
+    return card;
+  }
+
+  function renderCompactLayer(layer) {
+    const section = document.createElement("section");
     const west = layer.entries.filter(entry => entry.ownerSide === 1).length;
     const east = layer.entries.filter(entry => entry.ownerSide === 2).length;
     const title = layer.layer === 1 ? text("lower") : text("middle");
-    const caption = layer.layer === 1 ? text("lowerCaption") : text("middleCaption");
-    card.innerHTML = `
-      <header class="artifact-layer-heading">
-        <div><strong>${escapeHtml(title)}</strong><span>${escapeHtml(caption)}</span></div>
-        <span class="artifact-layer-score"><b class="west">${west}</b> : <b class="east">${east}</b></span>
+    section.className = "artifact-overview-layer";
+    section.innerHTML = `
+      <header>
+        <strong>${escapeHtml(title)}</strong>
+        <span><b class="west">${west}</b> : <b class="east">${east}</b></span>
       </header>
-      <div class="artifact-list"></div>`;
-    const list = card.querySelector(".artifact-list");
+      <div class="artifact-overview-artifacts"></div>`;
+    const list = section.querySelector(".artifact-overview-artifacts");
     list.replaceChildren(...layer.entries.map(entry => {
       const side = entry.ownerSide === 1 ? "west" : entry.ownerSide === 2 ? "east" : "neutral";
-      const row = document.createElement("div");
-      row.className = `artifact-row ${side}`;
-      row.innerHTML = `
-        <span class="artifact-row-icon"><img src="${ICON_URL}" alt=""></span>
-        <span class="artifact-row-copy"><strong>${escapeHtml(entry.name)}</strong><small>${layer.confirmed ? escapeHtml(text("confirmed")) : escapeHtml(text("waiting"))}</small></span>
-        <span class="artifact-owner ${side}">${escapeHtml(ownerName(entry.ownerSide))}</span>`;
-      return row;
+      const item = document.createElement("span");
+      item.className = `artifact-overview-artifact ${side}`;
+      item.title = entry.name;
+      item.innerHTML = `
+        <img src="${ICON_URL}" alt="">
+        <span><b>${escapeHtml(shortArtifactName(entry.name))}</b><small>${escapeHtml(layer.confirmed ? ownerName(entry.ownerSide) : text("waiting"))}</small></span>`;
+      return item;
     }));
-    return card;
+    return section;
+  }
+
+  function shortArtifactName(name) {
+    return String(name).replace(/\s*아티팩트$/u, "");
   }
 
   function ownerName(side) {
@@ -314,25 +321,18 @@
 
   function updateCountdown() {
     if (!state.active || !state.bound) return;
-    const pair = selectedPair();
-    const nextBattleAt = effectiveNextBattleAt(pair);
-    if (!nextBattleAt) {
-      elements["artifact-countdown"].textContent = "—";
-      elements["artifact-next-time"].textContent = text("koreaOnly");
-      return;
-    }
-    const remaining = Math.max(0, nextBattleAt - Date.now());
-    elements["artifact-countdown"].textContent = formatCountdown(remaining);
-    elements["artifact-next-time"].textContent = new Intl.DateTimeFormat(state.locale, {
-      timeZone: "Asia/Seoul", month: "short", day: "numeric", weekday: "short",
-      hour: "2-digit", minute: "2-digit", hour12: false,
-    }).format(new Date(nextBattleAt));
+    document.querySelectorAll("[data-artifact-countdown]").forEach(element => {
+      const pair = payloadPair(Number(element.dataset.artifactCountdown));
+      const nextBattleAt = effectiveNextBattleAt(pair);
+      element.textContent = nextBattleAt
+        ? formatCountdown(Math.max(0, nextBattleAt - Date.now())) : "—";
+    });
   }
 
   function effectiveNextBattleAt(pair) {
     const published = Number(pair?.nextBattleAt) || 0;
     if (published > Date.now()) return published;
-    const pairId = Number(pair?.pairId) || state.pairId;
+    const pairId = Number(pair?.pairId) || 1;
     const groupMinute = ((pairId - 1) % 3) * 5;
     const now = Date.now();
     const korea = new Date(now + 9 * 60 * 60_000);
@@ -346,6 +346,12 @@
       if (candidate > now) return candidate;
     }
     return 0;
+  }
+
+  function formatBattleTime(timestamp) {
+    return new Intl.DateTimeFormat(state.locale, {
+      timeZone: "Asia/Seoul", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).format(new Date(timestamp));
   }
 
   function formatCountdown(milliseconds) {
@@ -395,59 +401,70 @@
 
   async function createSnapshotCanvas() {
     const canvas = document.createElement("canvas");
-    canvas.width = 1400;
-    canvas.height = 900;
+    canvas.width = 2400;
+    canvas.height = 3260;
     const context = canvas.getContext("2d");
-    const pair = selectedPair();
-    const layers = [normalizedLayer(pair, 1), normalizedLayer(pair, 2)];
-    const entries = layers.flatMap(layer => layer.entries);
-    const west = entries.filter(entry => entry.ownerSide === 1).length;
-    const east = entries.filter(entry => entry.ownerSide === 2).length;
-    const gradient = context.createLinearGradient(0, 0, 1400, 900);
+    const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
     gradient.addColorStop(0, "#0d2330"); gradient.addColorStop(0.52, "#06121c"); gradient.addColorStop(1, "#180d20");
-    context.fillStyle = gradient; context.fillRect(0, 0, 1400, 900);
+    context.fillStyle = gradient; context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = "rgba(36,219,229,.12)"; context.beginPath(); context.arc(115, 220, 320, 0, Math.PI * 2); context.fill();
-    context.fillStyle = "rgba(214,76,235,.11)"; context.beginPath(); context.arc(1320, 230, 330, 0, Math.PI * 2); context.fill();
+    context.fillStyle = "rgba(214,76,235,.11)"; context.beginPath(); context.arc(2280, 250, 430, 0, Math.PI * 2); context.fill();
     const icon = await loadImage(ICON_URL);
-    context.drawImage(icon, 64, 52, 72, 72);
-    context.fillStyle = "#f3f9fb"; context.font = "900 42px Pretendard, sans-serif"; context.fillText("아티팩트 현황", 158, 91);
-    context.fillStyle = "#7e9dad"; context.font = "700 19px Pretendard, sans-serif"; context.fillText("NotMeter · 한국 서버", 160, 122);
-    context.textAlign = "center";
-    context.fillStyle = "#7fe9f6"; context.font = "900 35px Pretendard, sans-serif"; context.fillText(pair.west.name, 365, 210);
-    context.fillStyle = "#ec9bfa"; context.fillText(pair.east.name, 1035, 210);
-    context.fillStyle = "#35d8e9"; context.font = "950 66px Pretendard, sans-serif"; context.fillText(String(west), 585, 218);
-    context.fillStyle = "#698594"; context.fillText(":", 700, 218);
-    context.fillStyle = "#dc72ef"; context.fillText(String(east), 815, 218);
-    context.fillStyle = "#fff0af"; context.font = "850 24px Pretendard, sans-serif";
-    context.fillText(`${text("next")} · ${formatCountdown(Math.max(0, effectiveNextBattleAt(pair) - Date.now()))}`, 700, 282);
-    layers.forEach((layer, index) => drawSnapshotLayer(context, layer, index === 0 ? 60 : 720, 340, icon));
-    context.textAlign = "left"; context.fillStyle = "#7994a3"; context.font = "650 17px Pretendard, sans-serif";
-    context.fillText(text("source"), 64, 858);
-    context.textAlign = "right"; context.fillStyle = "#c7d8de"; context.font = "850 18px Pretendard, sans-serif";
-    context.fillText(new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date()), 1336, 858);
+    context.drawImage(icon, 64, 45, 86, 86);
+    context.fillStyle = "#f3f9fb"; context.font = "900 48px Pretendard, sans-serif"; context.fillText("아티팩트 현황", 176, 88);
+    context.fillStyle = "#7e9dad"; context.font = "700 22px Pretendard, sans-serif"; context.fillText("NotMeter · 한국 서버 전체 21개 대진", 178, 124);
+    const presentations = PAIRS.map(pair => buildPairPresentation(payloadPair(pair.pairId)));
+    presentations.forEach((presentation, index) => {
+      const column = index % 3;
+      const row = Math.floor(index / 3);
+      drawSnapshotPair(context, presentation, 60 + column * 770, 175 + row * 424, icon);
+    });
+    context.textAlign = "left"; context.fillStyle = "#7994a3"; context.font = "650 18px Pretendard, sans-serif";
+    context.fillText(text("source"), 64, 3212);
+    context.textAlign = "right"; context.fillStyle = "#c7d8de"; context.font = "850 19px Pretendard, sans-serif";
+    context.fillText(new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date()), 2336, 3212);
     return canvas;
   }
 
-  function drawSnapshotLayer(context, layer, x, y, icon) {
-    roundedRect(context, x, y, 620, 440, 22, "rgba(7,22,32,.92)", "#274353");
-    context.textAlign = "left"; context.fillStyle = "#f1f7f9"; context.font = "900 29px Pretendard, sans-serif";
-    context.fillText(layer.layer === 1 ? text("lower") : text("middle"), x + 28, y + 55);
-    context.fillStyle = "#7896a6"; context.font = "700 17px Pretendard, sans-serif";
-    context.fillText(layer.confirmed ? text("confirmed") : text("waiting"), x + 28, y + 83);
-    layer.entries.forEach((entry, index) => {
-      const rowY = y + 110 + index * 101;
-      const sideColor = entry.ownerSide === 1 ? "rgba(29,199,219,.18)" : entry.ownerSide === 2 ? "rgba(197,69,225,.18)" : "rgba(117,143,154,.10)";
-      const border = entry.ownerSide === 1 ? "#267e8d" : entry.ownerSide === 2 ? "#7e348c" : "#294452";
-      roundedRect(context, x + 22, rowY, 576, 82, 14, sideColor, border);
-      context.drawImage(icon, x + 38, rowY + 13, 56, 56);
-      context.fillStyle = "#eaf3f6"; context.font = "850 21px Pretendard, sans-serif"; context.textAlign = "left";
-      context.fillText(entry.name, x + 112, rowY + 36, 340);
-      context.fillStyle = "#7895a4"; context.font = "700 15px Pretendard, sans-serif";
-      context.fillText(layer.confirmed ? text("confirmed") : text("waiting"), x + 112, rowY + 61);
-      context.fillStyle = entry.ownerSide === 1 ? "#6fe8f4" : entry.ownerSide === 2 ? "#e990f8" : "#9bb0b9";
-      context.font = "900 20px Pretendard, sans-serif"; context.textAlign = "right";
-      context.fillText(ownerName(entry.ownerSide), x + 570, rowY + 49);
+  function drawSnapshotPair(context, presentation, x, y, icon) {
+    const { pair, layers, west, east, lead } = presentation;
+    roundedRect(context, x, y, 740, 398, 20, "rgba(7,22,32,.94)", "#294554");
+    context.textAlign = "left"; context.fillStyle = "#7896a6"; context.font = "800 17px Pretendard, sans-serif";
+    context.fillText(`${String(pair.pairId).padStart(2, "0")} · ${formatBattleTime(effectiveNextBattleAt(pair))}`, x + 22, y + 31);
+    context.textAlign = "right"; context.fillStyle = west > east ? "#74e9f4" : east > west ? "#e995f8" : "#a8bbc4";
+    context.font = "900 17px Pretendard, sans-serif"; context.fillText(lead, x + 718, y + 31);
+    context.textAlign = "left"; context.fillStyle = "#7fe9f6"; context.font = "900 28px Pretendard, sans-serif";
+    context.fillText(pair.west.name, x + 22, y + 78, 235);
+    context.textAlign = "right"; context.fillStyle = "#ec9bfa"; context.fillText(pair.east.name, x + 718, y + 78, 235);
+    context.textAlign = "center"; context.font = "950 32px Pretendard, sans-serif";
+    context.fillStyle = "#35d8e9"; context.fillText(String(west), x + 330, y + 79);
+    context.fillStyle = "#718a97"; context.fillText(":", x + 370, y + 79);
+    context.fillStyle = "#dc72ef"; context.fillText(String(east), x + 410, y + 79);
+    layers.forEach((layer, layerIndex) => {
+      const layerY = y + 105 + layerIndex * 118;
+      context.textAlign = "left"; context.fillStyle = "#dfecef"; context.font = "900 18px Pretendard, sans-serif";
+      context.fillText(layer.layer === 1 ? text("lower") : text("middle"), x + 22, layerY + 19);
+      context.textAlign = "right"; context.fillStyle = "#7894a3"; context.font = "800 16px Pretendard, sans-serif";
+      context.fillText(layer.confirmed ? text("confirmed") : text("waiting"), x + 718, layerY + 19);
+      layer.entries.forEach((entry, entryIndex) => {
+        const itemX = x + 20 + entryIndex * 238;
+        const itemY = layerY + 31;
+        const fill = entry.ownerSide === 1 ? "rgba(29,199,219,.17)" : entry.ownerSide === 2 ? "rgba(197,69,225,.17)" : "rgba(117,143,154,.09)";
+        const border = entry.ownerSide === 1 ? "#267e8d" : entry.ownerSide === 2 ? "#7e348c" : "#294452";
+        roundedRect(context, itemX, itemY, 224, 72, 11, fill, border);
+        context.drawImage(icon, itemX + 10, itemY + 18, 36, 36);
+        context.textAlign = "left"; context.fillStyle = "#ecf4f6"; context.font = "850 15px Pretendard, sans-serif";
+        context.fillText(shortArtifactName(entry.name), itemX + 54, itemY + 29, 158);
+        context.fillStyle = entry.ownerSide === 1 ? "#71e8f3" : entry.ownerSide === 2 ? "#e893f7" : "#98adb6";
+        context.font = "900 14px Pretendard, sans-serif";
+        context.fillText(layer.confirmed ? ownerName(entry.ownerSide) : text("waiting"), itemX + 54, itemY + 53, 158);
+      });
     });
+    const nextBattleAt = effectiveNextBattleAt(pair);
+    context.textAlign = "left"; context.fillStyle = "#758f9d"; context.font = "750 15px Pretendard, sans-serif";
+    context.fillText(text("next"), x + 22, y + 378);
+    context.textAlign = "right"; context.fillStyle = "#fff0af"; context.font = "900 17px Pretendard, sans-serif";
+    context.fillText(nextBattleAt ? formatCountdown(Math.max(0, nextBattleAt - Date.now())) : "—", x + 718, y + 378);
   }
 
   function roundedRect(context, x, y, width, height, radius, fill, stroke) {
@@ -468,7 +485,7 @@
   function downloadBlob(blob) {
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `NotMeter-아티팩트-${selectedPair().west.name}-vs-${selectedPair().east.name}.png`;
+    link.download = "NotMeter-아티팩트-전체-서버.png";
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(link.href), 1_000);
   }

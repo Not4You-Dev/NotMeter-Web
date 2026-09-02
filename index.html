@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260902-2">
+  <link rel="stylesheet" href="./assets/app.css?v=20260902-4">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
@@ -207,13 +207,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260902-2" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260902-4" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260827-4" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
   <script src="./assets/character.js?v=20260901-6" defer></script>
-  <script src="./assets/artifact.js?v=20260902-2" defer></script>
+  <script src="./assets/artifact.js?v=20260902-4" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260902-2" defer></script>
+  <script src="./assets/app.js?v=20260902-4" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -738,11 +738,11 @@
         </a>
       </div>
 
-      <div class="artifact-controls">
-        <label class="artifact-pair-field" for="artifact-pair-select">
-          <span id="artifact-pair-label">서버 대진</span>
-          <select id="artifact-pair-select"></select>
-        </label>
+      <div class="artifact-controls artifact-overview-controls">
+        <div class="artifact-overview-summary">
+          <strong id="artifact-overview-title">전체 21개 서버 대진</strong>
+          <span id="artifact-overview-caption">하층·중층 점령 현황을 한 화면에서 비교합니다.</span>
+        </div>
         <div class="artifact-actions">
           <button class="ghost-button artifact-snapshot-button" id="artifact-snapshot-button" type="button">
             <span aria-hidden="true">▣</span>
@@ -767,32 +767,7 @@
       </div>
 
       <div class="artifact-dashboard" id="artifact-dashboard" hidden>
-        <article class="artifact-match-card">
-          <div class="artifact-side artifact-side-west">
-            <span class="artifact-side-caption" id="artifact-west-caption">서부 진영</span>
-            <strong id="artifact-west-server">—</strong>
-          </div>
-          <div class="artifact-scoreboard">
-            <span class="artifact-round-label" id="artifact-round-label">현재 점령</span>
-            <div class="artifact-score-line">
-              <strong class="west" id="artifact-west-score">0</strong>
-              <span>:</span>
-              <strong class="east" id="artifact-east-score">0</strong>
-            </div>
-            <span class="artifact-advantage neutral" id="artifact-advantage">현황 확인 중</span>
-          </div>
-          <div class="artifact-side artifact-side-east">
-            <span class="artifact-side-caption" id="artifact-east-caption">동부 진영</span>
-            <strong id="artifact-east-server">—</strong>
-          </div>
-          <div class="artifact-next-battle">
-            <span id="artifact-next-label">다음 아티팩트 점령전</span>
-            <strong id="artifact-countdown">—</strong>
-            <small id="artifact-next-time">—</small>
-          </div>
-        </article>
-
-        <div class="artifact-layer-grid" id="artifact-layer-grid"></div>
+        <div class="artifact-overview-grid" id="artifact-overview-grid" aria-live="polite"></div>
         <div class="artifact-footer-meta">
           <span id="artifact-updated-at">—</span>
           <span id="artifact-source-note">한국 서버에서 확인된 최신 현황만 반영됩니다.</span>
