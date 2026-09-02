@@ -13,6 +13,7 @@
   const KOREA_OFFSET_MS = 9 * 60 * 60_000;
   const POLL_INTERVAL_MS = 5 * 60_000;
   const REQUEST_TIMEOUT_MS = 8_000;
+  const BATTLE_REVEAL_DELAY_MS = 5 * 60_000;
   const FAVORITE_STORAGE_KEY = "notmeter-artifact-favorite-servers-v1";
   const ICON_URLS = Object.freeze({
     neutral: "./assets/artifact-neutral.png",
@@ -141,6 +142,7 @@
     clockTimer: 0,
     snapshotFeedbackTimer: 0,
     selectedRoundKey: "current",
+    visibilitySignature: "",
     favoriteServerIds: readFavoriteServerIds(),
     presentations: [],
   };
@@ -332,7 +334,7 @@
     const byId = new Map(Array.isArray(source?.entries)
       ? source.entries.map(entry => [Number(entry.artifactId), Number(entry.ownerSide)])
       : []);
-    const confirmed = (historical || Number(pair?.nextBattleAt) > Date.now()) && source?.state === "confirmed";
+    const confirmed = (historical || !isCurrentRoundHeld(pair)) && source?.state === "confirmed";
     return {
       layer: layerNumber,
       confirmed,
@@ -374,6 +376,7 @@
     elements["artifact-loading-state"].hidden = true;
     elements["artifact-error-state"].hidden = true;
     elements["artifact-dashboard"].hidden = false;
+    state.visibilitySignature = historical ? "" : currentVisibilitySignature();
     updateCountdown();
   }
 
@@ -652,6 +655,12 @@
     if (!state.active || !state.bound) return;
     updateCycleCountdown();
     if (state.selectedRoundKey !== "current") return;
+    const signature = currentVisibilitySignature();
+    if (state.visibilitySignature && state.visibilitySignature !== signature) {
+      render();
+      return;
+    }
+    state.visibilitySignature = signature;
     document.querySelectorAll("[data-artifact-countdown]").forEach(element => {
       const pair = payloadPair(Number(element.dataset.artifactCountdown));
       const nextBattleAt = effectiveNextBattleAt(pair);
@@ -684,6 +693,20 @@
       if (candidate > now) return candidate;
     }
     return 0;
+  }
+
+  function isCurrentRoundHeld(pair, now = Date.now()) {
+    const published = Number(pair?.nextBattleAt) || 0;
+    if (published <= now) return true;
+    const startedAt = previousBattleAt(published);
+    return startedAt > 0 && now >= startedAt && now < startedAt + BATTLE_REVEAL_DELAY_MS;
+  }
+
+  function currentVisibilitySignature(now = Date.now()) {
+    return PAIRS.map(pair => {
+      const current = payloadPair(pair.pairId);
+      return `${pair.pairId}:${isCurrentRoundHeld(current, now) ? 1 : 0}`;
+    }).join("|");
   }
 
   function formatBattleTime(timestamp) {
