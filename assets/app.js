@@ -256,6 +256,7 @@
       testBadge: "TEST",
       dpsRankingDescription: "파티 버프를 포함한 기존 총 DPS 순위입니다.",
       ndpsRankingDescription: "외부 파티 버프의 검증된 추가 피해를 제외한 nDPS 순위입니다.",
+      ndpsRankingFallbackDps: "이 콘텐츠는 nDPS 보정 대상이 아니므로 DPS 순위로 표시합니다.",
       ndpsRankingUnavailableCombatTime: "이 콘텐츠는 전투 시간 순위만 제공합니다.",
       ndpsEmpty: "선택한 조건에 검증된 nDPS 기록이 아직 없습니다",
       classNdps: "{job} nDPS 1~{count}위",
@@ -656,6 +657,7 @@
       testBadge: "TEST",
       dpsRankingDescription: "The existing total-DPS ranking, including party buffs.",
       ndpsRankingDescription: "Ranks verified nDPS after removing extra damage from external party buffs.",
+      ndpsRankingFallbackDps: "This content is not adjusted for nDPS, so its DPS ranking is shown.",
       ndpsRankingUnavailableCombatTime: "This content is ranked by combat time only.",
       ndpsEmpty: "No verified nDPS records match the selected filters yet",
       classNdps: "{job} nDPS — Top {count}",
@@ -1036,6 +1038,7 @@
     testBadge: "TEST",
     dpsRankingDescription: "包含隊伍 Buff 的既有總 DPS 排行。",
     ndpsRankingDescription: "扣除外部隊伍 Buff 所產生之已驗證追加傷害後的 nDPS 排行。",
+    ndpsRankingFallbackDps: "此內容不適用 nDPS 校正，因此顯示 DPS 排行。",
     ndpsRankingUnavailableCombatTime: "此內容僅提供戰鬥時間排行。",
     ndpsEmpty: "所選條件目前沒有已驗證的 nDPS 紀錄",
     classNdps: "{job} nDPS 第 1～{count} 名",
@@ -1692,9 +1695,6 @@
   function applyDungeonSelection(dungeonKey) {
     state.dungeonKey = dungeonKey;
     state.bossIndex = 0;
-    if (usesCombatTimeRanking(dungeonKey)) {
-      state.rankingMetric = "dps";
-    }
     resetClassSelection();
   }
 
@@ -5101,26 +5101,31 @@
     return dungeonKey === "nightmare-atheron-10";
   }
 
+  function usesDpsFallbackRanking(dungeonKey = state.dungeonKey) {
+    return dungeonKey === "training-dummy-60s";
+  }
+
   function usesNormalizedRanking() {
-    return state.rankingMetric === "ndps" && !usesCombatTimeRanking();
+    return state.rankingMetric === "ndps" &&
+      !usesCombatTimeRanking() &&
+      !usesDpsFallbackRanking();
   }
 
   function syncRankingMetricControl() {
-    const unavailable = usesCombatTimeRanking();
-    if (unavailable && state.rankingMetric !== "dps") {
-      state.rankingMetric = "dps";
-    }
+    const requestedNormalized = state.rankingMetric === "ndps";
     const normalized = usesNormalizedRanking();
-    elements["ranking-metric-dps"].classList.toggle("is-active", !normalized);
-    elements["ranking-metric-dps"].setAttribute("aria-checked", String(!normalized));
-    elements["ranking-metric-ndps"].classList.toggle("is-active", normalized);
-    elements["ranking-metric-ndps"].setAttribute("aria-checked", String(normalized));
-    elements["ranking-metric-ndps"].disabled = unavailable;
-    elements["ranking-metric-description"].textContent = t(unavailable
+    elements["ranking-metric-dps"].classList.toggle("is-active", !requestedNormalized);
+    elements["ranking-metric-dps"].setAttribute("aria-checked", String(!requestedNormalized));
+    elements["ranking-metric-ndps"].classList.toggle("is-active", requestedNormalized);
+    elements["ranking-metric-ndps"].setAttribute("aria-checked", String(requestedNormalized));
+    elements["ranking-metric-ndps"].disabled = false;
+    elements["ranking-metric-description"].textContent = t(usesCombatTimeRanking()
       ? "ndpsRankingUnavailableCombatTime"
-      : normalized
-        ? "ndpsRankingDescription"
-        : "dpsRankingDescription");
+      : requestedNormalized && usesDpsFallbackRanking()
+        ? "ndpsRankingFallbackDps"
+        : normalized
+          ? "ndpsRankingDescription"
+          : "dpsRankingDescription");
   }
 
   function projectSummaryRowForMetric(row) {
