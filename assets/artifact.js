@@ -242,6 +242,11 @@
       state.favoriteServerIds = readFavoriteServerIds();
       if (state.active) render();
     });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshOnResume();
+    });
+    window.addEventListener("pageshow", refreshOnResume);
+    window.addEventListener("online", refreshOnResume);
     state.bound = true;
   }
 
@@ -1008,10 +1013,15 @@
     state.active = true;
     setStaticCopy();
     render();
+    refreshOnResume();
+    state.clockTimer = window.setInterval(updateCountdown, 1_000);
+  }
+
+  function refreshOnResume() {
+    if (!state.active) return;
     void refresh().finally(() => {
       if (state.active) schedulePoll();
     });
-    state.clockTimer = window.setInterval(updateCountdown, 1_000);
   }
 
   function deactivate() {
