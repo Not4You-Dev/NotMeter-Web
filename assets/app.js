@@ -273,6 +273,8 @@
       sponsorOpenAria: "광고 페이지 열기",
       fieldBossPageTitle: "NotMeter 필드보스 현황",
       fieldBossPageSubtitle: "서버별 필드보스 출현 현황",
+      artifactPageTitle: "NotMeter 아티팩트 현황",
+      artifactPageSubtitle: "한국 서버 대진별 점령 현황과 다음 점령전",
       fieldBossStatus: "필드보스 현황",
       backToRanking: "랭킹으로 돌아가기",
       classPerformancePageTitle: "NotMeter CP 보정 직업 DPS 통계",
@@ -671,6 +673,8 @@
       sponsorOpenAria: "Open advertisement page",
       fieldBossPageTitle: "NotMeter Field Boss Status",
       fieldBossPageSubtitle: "Field-boss spawn status by server",
+      artifactPageTitle: "NotMeter Artifact Status",
+      artifactPageSubtitle: "Korean server matchups, control status, and the next battle",
       fieldBossStatus: "Field Boss Status",
       backToRanking: "Back to rankings",
       classPerformancePageTitle: "NotMeter CP-Normalized Class DPS",
@@ -998,6 +1002,8 @@
   COPY["zh-TW"] = {
     ...(globalThis.NotMeterStatsCopyZhTw || {}),
     peopleValue: "{value} 人",
+    artifactPageTitle: "NotMeter 神器現況",
+    artifactPageSubtitle: "韓國伺服器對戰組合、佔領現況與下一場佔領戰",
     bossResistanceStats: "首領抗性統計",
     statEfficiencyCalculator: "屬性效率計算器",
     statEfficiencyPageTitle: "NotMeter 屬性效率計算器",
@@ -1159,6 +1165,8 @@
       openCharacterView();
     } else if (pageView === "optimization") {
       openOptimizationView();
+    } else if (pageView === "artifact") {
+      openArtifactView();
     } else if (pageView === "field-boss") {
       openFieldBossView();
     } else if (pageView === "class-performance") {
@@ -1225,6 +1233,7 @@
       "class-top10-tabs", "class-top10-pending", "class-top10-empty",
       "class-top10-view", "class-top10-rows",
       "field-boss-button", "field-boss-surface", "field-boss-back-button",
+      "artifact-button", "artifact-surface", "artifact-back-button",
       "field-boss-server", "field-boss-server-results",
       "field-boss-refresh-button", "field-boss-retry-button",
       "field-boss-snapshot", "field-boss-snapshot-title", "field-boss-snapshot-caption",
@@ -1499,6 +1508,7 @@
         return;
       }
       closeFieldBossView();
+      closeArtifactView();
       closeClassTop10View();
       closeClassPerformanceView();
       closeContributionView();
@@ -2055,7 +2065,7 @@
 
   function initialPageView() {
     const view = new URLSearchParams(window.location.search).get("view");
-    return view === "class-top10" || view === "field-boss" || view === "optimization" ||
+    return view === "class-top10" || view === "field-boss" || view === "artifact" || view === "optimization" ||
       view === "class-performance" || view === "contribution" ||
       view === "boss-resistance" || view === "stat-efficiency" ||
       view === "character" ? view : "ranking";
@@ -2063,6 +2073,7 @@
 
   function openCharacterView() {
     closeFieldBossView();
+    closeArtifactView();
     closeOptimizationView();
     closeClassTop10View();
     closeClassPerformanceView();
@@ -2085,6 +2096,7 @@
 
   function openOptimizationView() {
     closeFieldBossView();
+    closeArtifactView();
     closeClassTop10View();
     closeClassPerformanceView();
     closeContributionView();
@@ -2154,6 +2166,7 @@
 
   function openClassTop10View(pushHistory) {
     closeFieldBossView();
+    closeArtifactView();
     closeOptimizationView();
     closeClassPerformanceView();
     closeContributionView();
@@ -2203,6 +2216,7 @@
 
   function openClassPerformanceView(pushHistory) {
     closeFieldBossView();
+    closeArtifactView();
     closeOptimizationView();
     closeClassTop10View();
     closeContributionView();
@@ -2252,6 +2266,7 @@
 
   function openContributionView() {
     closeFieldBossView();
+    closeArtifactView();
     closeOptimizationView();
     closeClassTop10View();
     closeClassPerformanceView();
@@ -2285,6 +2300,7 @@
 
   function openBossResistanceView() {
     closeFieldBossView();
+    closeArtifactView();
     closeOptimizationView();
     closeClassTop10View();
     closeClassPerformanceView();
@@ -2315,6 +2331,7 @@
 
   function openStatEfficiencyView() {
     closeFieldBossView();
+    closeArtifactView();
     closeOptimizationView();
     closeClassTop10View();
     closeClassPerformanceView();
@@ -2342,6 +2359,7 @@
   }
 
   function openFieldBossView() {
+    closeArtifactView();
     closeClassTop10View();
     closeClassPerformanceView();
     closeContributionView();
@@ -2377,6 +2395,39 @@
     elements["field-boss-button"].setAttribute("aria-current", "false");
     closeFieldBossServerSearch(true);
     stopFieldBossClock();
+    updatePageIdentity();
+  }
+
+  function openArtifactView() {
+    closeFieldBossView();
+    closeClassTop10View();
+    closeClassPerformanceView();
+    closeContributionView();
+    closeBossResistanceView();
+    closeStatEfficiencyView();
+    closeOptimizationView();
+    closeCombatDetail();
+    state.surfaceMode = "artifact";
+    document.body.classList.add("artifact-view");
+    elements["artifact-surface"].hidden = false;
+    elements["artifact-button"].classList.add("active");
+    elements["artifact-button"].setAttribute("aria-current", "page");
+    updatePageIdentity();
+    window.NotMeterArtifactOccupation?.setLocale(state.locale);
+    window.NotMeterArtifactOccupation?.activate();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function closeArtifactView() {
+    if (state.surfaceMode !== "artifact") {
+      return;
+    }
+    state.surfaceMode = "ranking";
+    document.body.classList.remove("artifact-view");
+    elements["artifact-surface"].hidden = true;
+    elements["artifact-button"].classList.remove("active");
+    elements["artifact-button"].setAttribute("aria-current", "false");
+    window.NotMeterArtifactOccupation?.deactivate();
     updatePageIdentity();
   }
 
@@ -6999,6 +7050,7 @@
     syncOptimizationFrameLocale();
     window.NotMeterStatEfficiency?.setLocale(state.locale);
     window.NotMeterCharacter?.setLocale(state.locale);
+    window.NotMeterArtifactOccupation?.setLocale(state.locale);
     if (state.surfaceMode === "fieldBoss" && state.fieldBossData) {
       renderFieldBoss();
     }
@@ -7009,6 +7061,7 @@
 
   function updatePageIdentity() {
     const fieldBoss = state.surfaceMode === "fieldBoss";
+    const artifact = state.surfaceMode === "artifact";
     const classTop10 = state.surfaceMode === "classTop10";
     const classPerformance = state.surfaceMode === "classPerformance";
     const optimization = state.surfaceMode === "optimization";
@@ -7026,6 +7079,8 @@
         ? "bossResistancePageTitle"
       : statEfficiency
         ? "statEfficiencyPageTitle"
+      : artifact
+        ? "artifactPageTitle"
       : fieldBoss
         ? "fieldBossPageTitle"
         : classTop10
@@ -7043,6 +7098,8 @@
         ? "bossResistancePageSubtitle"
       : statEfficiency
         ? "statEfficiencyPageSubtitle"
+      : artifact
+        ? "artifactPageSubtitle"
       : fieldBoss
         ? "fieldBossPageSubtitle"
         : classTop10

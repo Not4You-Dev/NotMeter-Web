@@ -18,14 +18,14 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260901-2">
+  <link rel="stylesheet" href="./assets/app.css?v=20260902-2">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
   <script>
     (() => {
       const requestedView = new URLSearchParams(window.location.search).get("view") || "ranking";
-      const pageView = ["ranking", "class-top10", "class-performance", "contribution", "boss-resistance", "stat-efficiency", "field-boss", "optimization", "character"]
+      const pageView = ["ranking", "class-top10", "class-performance", "contribution", "boss-resistance", "stat-efficiency", "field-boss", "artifact", "optimization", "character"]
         .includes(requestedView) ? requestedView : "ranking";
       let savedLocale = "";
       try {
@@ -80,6 +80,10 @@
             title: "NotMeter 필드보스 현황",
             description: "NotMeter가 수집한 서버별 필드보스 출현 시간과 남은 시간을 확인하세요."
           },
+          "artifact": {
+            title: "NotMeter 아티팩트 현황",
+            description: "한국 서버별 아티팩트 점령 현황과 다음 점령전까지 남은 시간을 확인하세요."
+          },
           "optimization": {
             title: "NotMeter 아이온2 그래픽 최적화",
             description: "PC 사양과 증상에 맞는 안전한 아이온2 Unreal Engine 5 설정을 생성합니다."
@@ -118,6 +122,10 @@
             title: "NotMeter Field Boss Status",
             description: "Check field boss spawn times and remaining time collected by NotMeter for each server."
           },
+          "artifact": {
+            title: "NotMeter Artifact Status",
+            description: "Check current artifact ownership and the next battle time for Korean servers."
+          },
           "optimization": {
             title: "NotMeter AION2 Graphics Optimizer",
             description: "Generate safe AION2 Unreal Engine 5 settings for your PC and performance issues."
@@ -155,6 +163,10 @@
           "field-boss": {
             title: "NotMeter 世界首領現況",
             description: "查看 NotMeter 收集的各伺服器世界首領出現時間與剩餘時間。"
+          },
+          "artifact": {
+            title: "NotMeter 神器佔領現況",
+            description: "查看韓國伺服器目前的神器佔領狀態與下次佔領戰時間。"
           },
           "optimization": {
             title: "NotMeter AION2 圖形最佳化",
@@ -195,12 +207,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260901-2" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260902-2" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260827-4" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
   <script src="./assets/character.js?v=20260901-6" defer></script>
+  <script src="./assets/artifact.js?v=20260902-2" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260901-2" defer></script>
+  <script src="./assets/app.js?v=20260902-2" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -264,6 +277,13 @@
               <img src="./assets/boss-icon.png" alt="">
             </span>
             <span class="service-link-label" data-i18n="fieldBoss">필드보스</span>
+          </a>
+          <a class="service-link artifact-link" id="artifact-button" href="./?view=artifact" aria-current="false">
+            <span class="feature-new-badge" data-feature-new-until="2026-09-09T23:59:59+09:00" data-i18n-title="newFeature">NEW</span>
+            <span class="service-link-icon artifact-link-icon" aria-hidden="true">
+              <img src="./assets/artifact-neutral.png" alt="">
+            </span>
+            <span class="service-link-label">아티팩트 현황</span>
           </a>
           <a class="service-link optimization-link" id="optimization-button" href="./?view=optimization" aria-current="false">
             <span class="service-link-icon optimization-link-icon" aria-hidden="true">
@@ -697,6 +717,87 @@
       <div class="field-boss-content" id="field-boss-content" hidden>
         <nav class="field-boss-tabs" id="field-boss-tabs" aria-label="필드보스 지역" data-i18n-aria-label="fieldBossRegionsAria"></nav>
         <div class="field-boss-list" id="field-boss-list"></div>
+      </div>
+    </section>
+
+    <section class="artifact-surface" id="artifact-surface" hidden>
+      <div class="artifact-heading">
+        <div class="artifact-heading-copy">
+          <span class="artifact-heading-icon" aria-hidden="true">
+            <img src="./assets/artifact-neutral.png" alt="">
+          </span>
+          <div>
+            <span class="artifact-kicker" id="artifact-kicker">KOREA · SERVER MATCH</span>
+            <h2 id="artifact-title">아티팩트 현황</h2>
+            <p id="artifact-description">한국 서버 대진별 점령 현황을 한눈에 확인하세요.</p>
+          </div>
+        </div>
+        <a class="ranking-back-button artifact-back-button" id="artifact-back-button" href="./">
+          <span class="ranking-back-button-icon" aria-hidden="true">←</span>
+          <span data-i18n="backToRanking">랭킹으로 돌아가기</span>
+        </a>
+      </div>
+
+      <div class="artifact-controls">
+        <label class="artifact-pair-field" for="artifact-pair-select">
+          <span id="artifact-pair-label">서버 대진</span>
+          <select id="artifact-pair-select"></select>
+        </label>
+        <div class="artifact-actions">
+          <button class="ghost-button artifact-snapshot-button" id="artifact-snapshot-button" type="button">
+            <span aria-hidden="true">▣</span>
+            <span id="artifact-snapshot-label">이미지 복사</span>
+          </button>
+          <button class="refresh-button" id="artifact-refresh-button" type="button">
+            <span class="refresh-glyph" aria-hidden="true">↻</span>
+            <span data-i18n="refresh">새로고침</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="artifact-state" id="artifact-loading-state">
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="artifact-loading-text">아티팩트 현황을 불러오는 중입니다</p>
+      </div>
+      <div class="artifact-state artifact-error-state" id="artifact-error-state" hidden>
+        <div class="error-mark" aria-hidden="true">!</div>
+        <strong id="artifact-error-title">현황을 불러오지 못했습니다</strong>
+        <p id="artifact-error-message"></p>
+        <button class="refresh-button compact" id="artifact-retry-button" type="button" data-i18n="retry">다시 시도</button>
+      </div>
+
+      <div class="artifact-dashboard" id="artifact-dashboard" hidden>
+        <article class="artifact-match-card">
+          <div class="artifact-side artifact-side-west">
+            <span class="artifact-side-caption" id="artifact-west-caption">서부 진영</span>
+            <strong id="artifact-west-server">—</strong>
+          </div>
+          <div class="artifact-scoreboard">
+            <span class="artifact-round-label" id="artifact-round-label">현재 점령</span>
+            <div class="artifact-score-line">
+              <strong class="west" id="artifact-west-score">0</strong>
+              <span>:</span>
+              <strong class="east" id="artifact-east-score">0</strong>
+            </div>
+            <span class="artifact-advantage neutral" id="artifact-advantage">현황 확인 중</span>
+          </div>
+          <div class="artifact-side artifact-side-east">
+            <span class="artifact-side-caption" id="artifact-east-caption">동부 진영</span>
+            <strong id="artifact-east-server">—</strong>
+          </div>
+          <div class="artifact-next-battle">
+            <span id="artifact-next-label">다음 아티팩트 점령전</span>
+            <strong id="artifact-countdown">—</strong>
+            <small id="artifact-next-time">—</small>
+          </div>
+        </article>
+
+        <div class="artifact-layer-grid" id="artifact-layer-grid"></div>
+        <div class="artifact-footer-meta">
+          <span id="artifact-updated-at">—</span>
+          <span id="artifact-source-note">한국 서버에서 확인된 최신 현황만 반영됩니다.</span>
+          <span class="artifact-copy-status" id="artifact-copy-status" role="status" aria-live="polite"></span>
+        </div>
       </div>
     </section>
 
