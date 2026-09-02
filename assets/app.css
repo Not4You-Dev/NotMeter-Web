@@ -5816,10 +5816,50 @@ tr:nth-child(3) .rank-badge {
 
 .artifact-controls {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto;
+  grid-template-columns: minmax(240px, 1fr) minmax(170px, 215px) auto;
   align-items: end;
   gap: 10px;
   padding: 11px 12px;
+}
+
+.artifact-round-field {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.artifact-round-field > span {
+  color: #7896a5;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.artifact-round-field select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 34px 0 12px;
+  border: 1px solid #2c4d5e;
+  border-radius: 9px;
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, #8aabb8 50%) calc(100% - 16px) 17px / 5px 5px no-repeat,
+    linear-gradient(135deg, #8aabb8 50%, transparent 50%) calc(100% - 11px) 17px / 5px 5px no-repeat,
+    linear-gradient(145deg, #0c202d, #081722);
+  color: #edf7f9;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  outline: none;
+}
+
+.artifact-round-field select:focus {
+  border-color: rgba(92, 219, 225, 0.8);
+  box-shadow: 0 0 0 2px rgba(61, 199, 204, 0.12);
+}
+
+.artifact-round-field select:disabled {
+  cursor: default;
+  opacity: 0.68;
 }
 
 .artifact-pair-field {

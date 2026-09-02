@@ -41,6 +41,9 @@
     ko: {
       description: "한국 서버 21개 대진의 점령 현황을 한눈에 확인하세요.",
       overviewTitle: "전체 21개 서버 대진", overviewCaption: "하층·중층 점령 현황을 한 화면에서 비교합니다.",
+      roundLabel: "점령전 회차", currentRound: "현재 현황", historyOption: "{date} 점령전",
+      historyTitle: "{date} 점령 결과", historyCaption: "종료된 회차의 하층·중층 점령 결과입니다.",
+      historyRecord: "점령전 종료 기록", historySource: "완료된 점령전 결과를 회차별로 보관합니다.",
       snapshot: "이미지 복사", loading: "아티팩트 현황을 불러오는 중입니다",
       errorTitle: "현황을 불러오지 못했습니다", error: "잠시 후 다시 확인해 주세요.",
       west: "서부 진영", east: "동부 진영", occupied: "현재 점령", waiting: "현황 확인 중",
@@ -56,6 +59,9 @@
     en: {
       description: "See all 21 Korean server matchups and their artifact control at once.",
       overviewTitle: "All 21 server matchups", overviewCaption: "Compare Lower and Middle Abyss control on one page.",
+      roundLabel: "Battle round", currentRound: "Current status", historyOption: "{date} battle",
+      historyTitle: "Results for {date}", historyCaption: "Final Lower and Middle Abyss control for this round.",
+      historyRecord: "Final battle result", historySource: "Completed artifact battles are saved by round.",
       snapshot: "Copy image", loading: "Loading artifact status",
       errorTitle: "Artifact status is unavailable", error: "Please try again shortly.",
       west: "West", east: "East", occupied: "Current control", waiting: "Checking status",
@@ -71,6 +77,9 @@
     "zh-TW": {
       description: "一次查看韓國伺服器全部 21 組對戰的神器佔領狀態。",
       overviewTitle: "全部 21 組伺服器對戰", overviewCaption: "在同一頁比較深淵下層與中層佔領狀態。",
+      roundLabel: "佔領戰場次", currentRound: "目前狀態", historyOption: "{date} 佔領戰",
+      historyTitle: "{date} 佔領結果", historyCaption: "此場次結束時的深淵下層與中層佔領結果。",
+      historyRecord: "佔領戰最終記錄", historySource: "已結束的神器佔領戰會依場次保存。",
       snapshot: "複製圖片", loading: "正在載入神器佔領狀態",
       errorTitle: "無法載入佔領狀態", error: "請稍後再試。",
       west: "西部陣營", east: "東部陣營", occupied: "目前佔領", waiting: "確認中",
@@ -94,6 +103,8 @@
     requestController: null,
     pollTimer: 0,
     clockTimer: 0,
+    selectedRoundKey: "current",
+    presentations: [],
   };
   const elements = {};
 
@@ -120,6 +131,7 @@
     if (state.bound) return;
     for (const id of [
       "artifact-description", "artifact-overview-title", "artifact-overview-caption",
+      "artifact-round-label", "artifact-round-select",
       "artifact-snapshot-button", "artifact-snapshot-label", "artifact-refresh-button",
       "artifact-retry-button", "artifact-loading-state", "artifact-loading-text",
       "artifact-error-state", "artifact-error-title", "artifact-error-message",
@@ -131,6 +143,10 @@
     elements["artifact-refresh-button"].addEventListener("click", () => void refresh());
     elements["artifact-retry-button"].addEventListener("click", () => void refresh());
     elements["artifact-snapshot-button"].addEventListener("click", () => void copySnapshot());
+    elements["artifact-round-select"].addEventListener("change", event => {
+      state.selectedRoundKey = event.target.value || "current";
+      render();
+    });
     state.bound = true;
   }
 
@@ -138,6 +154,10 @@
     elements["artifact-description"].textContent = text("description");
     elements["artifact-overview-title"].textContent = text("overviewTitle");
     elements["artifact-overview-caption"].textContent = text("overviewCaption");
+    elements["artifact-round-label"].textContent = text("roundLabel");
+    if (!state.data && elements["artifact-round-select"].options.length > 0) {
+      elements["artifact-round-select"].options[0].textContent = text("currentRound");
+    }
     elements["artifact-snapshot-label"].textContent = text("snapshot");
     elements["artifact-loading-text"].textContent = text("loading");
     elements["artifact-error-title"].textContent = text("errorTitle");
@@ -160,7 +180,7 @@
         if (!response.ok) throw new Error("unavailable");
         const payload = await response.json();
         if (!isValidPayload(payload)) throw new Error("invalid");
-        state.data = payload;
+        state.data = { ...payload, history: normalizeHistory(payload.history) };
         if (state.active) render();
       } catch (error) {
         if (error?.name !== "AbortError" && state.active && !state.data) showError();
@@ -188,17 +208,73 @@
       });
   }
 
+  function normalizeHistory(history) {
+    if (!Array.isArray(history)) return [];
+    const seen = new Set();
+    return history
+      .filter(item => {
+        const pair = PAIRS.find(expected => expected.pairId === Number(item?.pairId));
+        const battleAt = Number(item?.battleAt);
+        if (!pair || !Number.isSafeInteger(battleAt) || battleAt <= 0 ||
+          !Array.isArray(item.layers) || item.layers.length !== 2) return false;
+        const layers = item.layers.map(layer => Number(layer?.layer)).sort();
+        if (layers[0] !== 1 || layers[1] !== 2 || !item.layers.every(isValidHistoryLayer)) return false;
+        const key = `${pair.pairId}:${battleAt}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .sort((left, right) => Number(right.battleAt) - Number(left.battleAt));
+  }
+
+  function isValidHistoryLayer(layer) {
+    if (!(layer && (Number(layer.layer) === 1 || Number(layer.layer) === 2) &&
+      (layer.state === "confirmed" || layer.state === "waiting") && Array.isArray(layer.entries))) return false;
+    if (layer.state === "waiting") return layer.entries.length === 0;
+    const expectedIds = new Set(ARTIFACTS[Number(layer.layer)].map(([artifactId]) => artifactId));
+    return layer.entries.length === 3 && layer.entries.every(entry =>
+      expectedIds.delete(Number(entry?.artifactId)) && [0, 1, 2].includes(Number(entry?.ownerSide)));
+  }
+
+  function koreaDateKey(timestamp) {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit",
+    }).formatToParts(new Date(timestamp)).filter(part => part.type !== "literal")
+      .map(part => [part.type, part.value]));
+    return `${parts.year}-${parts.month}-${parts.day}`;
+  }
+
+  function availableRoundKeys() {
+    return [...new Set((state.data?.history || []).map(item => koreaDateKey(Number(item.battleAt))))]
+      .sort((left, right) => right.localeCompare(left));
+  }
+
+  function populateRoundSelect() {
+    const select = elements["artifact-round-select"];
+    const roundKeys = availableRoundKeys();
+    if (state.selectedRoundKey !== "current" && !roundKeys.includes(state.selectedRoundKey)) {
+      state.selectedRoundKey = "current";
+    }
+    const options = [new Option(text("currentRound"), "current")];
+    for (const roundKey of roundKeys) {
+      options.push(new Option(text("historyOption", { date: formatRoundDate(roundKey) }), roundKey));
+    }
+    select.replaceChildren(...options);
+    select.value = state.selectedRoundKey;
+    select.disabled = roundKeys.length === 0;
+  }
+
   function payloadPair(pairId) {
     return state.data?.pairs?.find(pair => Number(pair.pairId) === Number(pairId)) ||
       PAIRS.find(pair => pair.pairId === Number(pairId));
   }
 
-  function normalizedLayer(pair, layerNumber) {
+  function normalizedLayer(pair, layerNumber, historical = false) {
     const source = pair?.layers?.find(item => Number(item.layer) === layerNumber);
     const byId = new Map(Array.isArray(source?.entries)
       ? source.entries.map(entry => [Number(entry.artifactId), Number(entry.ownerSide)])
       : []);
-    const confirmed = Number(pair?.nextBattleAt) > Date.now() && source?.state === "confirmed";
+    const confirmed = (historical || Number(pair?.nextBattleAt) > Date.now()) && source?.state === "confirmed";
     return {
       layer: layerNumber,
       confirmed,
@@ -220,8 +296,18 @@
       updateCountdown();
       return;
     }
-    const pairs = PAIRS.map(pair => payloadPair(pair.pairId));
-    const presentations = pairs.map(buildPairPresentation);
+    populateRoundSelect();
+    const historical = state.selectedRoundKey !== "current";
+    const presentations = PAIRS.map(pair => historical
+      ? buildPairPresentation(historyPair(pair, state.selectedRoundKey), true)
+      : buildPairPresentation(payloadPair(pair.pairId), false));
+    state.presentations = presentations;
+    if (historical) {
+      const date = formatRoundDate(state.selectedRoundKey);
+      elements["artifact-overview-title"].textContent = text("historyTitle", { date });
+      elements["artifact-overview-caption"].textContent = text("historyCaption");
+      elements["artifact-source-note"].textContent = text("historySource");
+    }
     elements["artifact-overview-grid"].replaceChildren(...presentations.map(renderPairCard));
     const observedAt = Math.max(0, ...presentations.flatMap(item => item.layers.map(layer => layer.observedAt)));
     elements["artifact-updated-at"].textContent = observedAt > 0
@@ -232,8 +318,27 @@
     updateCountdown();
   }
 
-  function buildPairPresentation(pair) {
-    const layers = [normalizedLayer(pair, 1), normalizedLayer(pair, 2)];
+  function historyPair(pair, roundKey) {
+    const record = (state.data?.history || []).find(item =>
+      Number(item.pairId) === pair.pairId && koreaDateKey(Number(item.battleAt)) === roundKey);
+    return {
+      ...pair,
+      group: ((pair.pairId - 1) % 3) + 1,
+      nextBattleAt: Number(record?.battleAt) || roundTimestampForPair(roundKey, pair.pairId),
+      archivedAt: Number(record?.archivedAt) || 0,
+      updatedAt: Number(record?.updatedAt) || 0,
+      layers: record?.layers || [],
+    };
+  }
+
+  function roundTimestampForPair(roundKey, pairId) {
+    const minute = String(((Number(pairId) - 1) % 3) * 5).padStart(2, "0");
+    const timestamp = Date.parse(`${roundKey}T13:${minute}:00Z`);
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  }
+
+  function buildPairPresentation(pair, historical = false) {
+    const layers = [normalizedLayer(pair, 1, historical), normalizedLayer(pair, 2, historical)];
     const entries = layers.flatMap(layer => layer.entries);
     const confirmedLayers = layers.filter(layer => layer.confirmed).length;
     const west = entries.filter(entry => entry.ownerSide === 1).length;
@@ -241,16 +346,16 @@
     const lead = confirmedLayers === 0 ? text("waiting")
       : confirmedLayers < layers.length ? text("partial")
       : west > east ? text("westLead") : east > west ? text("eastLead") : text("draw");
-    return { pair, layers, west, east, confirmedLayers, lead };
+    return { pair, layers, west, east, confirmedLayers, lead, historical };
   }
 
   function renderPairCard(presentation) {
-    const { pair, layers, west, east, lead } = presentation;
+    const { pair, layers, west, east, lead, historical } = presentation;
     const card = document.createElement("article");
     const leadSide = west > east ? "west" : east > west ? "east" : "neutral";
     card.className = `artifact-overview-card ${leadSide}`;
     card.dataset.pairId = String(pair.pairId);
-    const battleAt = effectiveNextBattleAt(pair);
+    const battleAt = historical ? Number(pair.nextBattleAt) : effectiveNextBattleAt(pair);
     const battleTime = battleAt ? formatBattleTime(battleAt) : text("koreaOnly");
     card.innerHTML = `
       <header class="artifact-overview-card-head">
@@ -264,8 +369,8 @@
       </div>
       <div class="artifact-overview-layers"></div>
       <footer class="artifact-overview-next">
-        <span>${escapeHtml(text("next"))}</span>
-        <strong data-artifact-countdown="${pair.pairId}">${battleAt ? escapeHtml(formatCountdown(Math.max(0, battleAt - Date.now()))) : "—"}</strong>
+        <span>${escapeHtml(historical ? text("historyRecord") : text("next"))}</span>
+        <strong${historical ? "" : ` data-artifact-countdown="${pair.pairId}"`}>${battleAt ? escapeHtml(historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—"}</strong>
       </footer>`;
     card.querySelector(".artifact-overview-layers")
       .replaceChildren(...layers.map(renderCompactLayer));
@@ -320,7 +425,7 @@
   }
 
   function updateCountdown() {
-    if (!state.active || !state.bound) return;
+    if (!state.active || !state.bound || state.selectedRoundKey !== "current") return;
     document.querySelectorAll("[data-artifact-countdown]").forEach(element => {
       const pair = payloadPair(Number(element.dataset.artifactCountdown));
       const nextBattleAt = effectiveNextBattleAt(pair);
@@ -351,6 +456,19 @@
   function formatBattleTime(timestamp) {
     return new Intl.DateTimeFormat(state.locale, {
       timeZone: "Asia/Seoul", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).format(new Date(timestamp));
+  }
+
+  function formatRoundDate(roundKey) {
+    const timestamp = Date.parse(`${roundKey}T03:00:00Z`);
+    return new Intl.DateTimeFormat(state.locale, {
+      timeZone: "Asia/Seoul", year: "numeric", month: "short", day: "numeric",
+    }).format(new Date(timestamp));
+  }
+
+  function formatHistoryMoment(timestamp) {
+    return new Intl.DateTimeFormat(state.locale, {
+      timeZone: "Asia/Seoul", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
     }).format(new Date(timestamp));
   }
 
@@ -412,8 +530,12 @@
     const icon = await loadImage(ICON_URL);
     context.drawImage(icon, 64, 45, 86, 86);
     context.fillStyle = "#f3f9fb"; context.font = "900 48px Pretendard, sans-serif"; context.fillText("아티팩트 현황", 176, 88);
-    context.fillStyle = "#7e9dad"; context.font = "700 22px Pretendard, sans-serif"; context.fillText("NotMeter · 한국 서버 전체 21개 대진", 178, 124);
-    const presentations = PAIRS.map(pair => buildPairPresentation(payloadPair(pair.pairId)));
+    const historical = state.selectedRoundKey !== "current";
+    const snapshotRound = historical ? `${formatRoundDate(state.selectedRoundKey)} 점령 결과` : "한국 서버 전체 21개 대진";
+    context.fillStyle = "#7e9dad"; context.font = "700 22px Pretendard, sans-serif"; context.fillText(`NotMeter · ${snapshotRound}`, 178, 124);
+    const presentations = state.presentations.length === PAIRS.length
+      ? state.presentations
+      : PAIRS.map(pair => buildPairPresentation(payloadPair(pair.pairId), false));
     presentations.forEach((presentation, index) => {
       const column = index % 3;
       const row = Math.floor(index / 3);
@@ -427,10 +549,11 @@
   }
 
   function drawSnapshotPair(context, presentation, x, y, icon) {
-    const { pair, layers, west, east, lead } = presentation;
+    const { pair, layers, west, east, lead, historical } = presentation;
     roundedRect(context, x, y, 740, 398, 20, "rgba(7,22,32,.94)", "#294554");
     context.textAlign = "left"; context.fillStyle = "#7896a6"; context.font = "800 17px Pretendard, sans-serif";
-    context.fillText(`${String(pair.pairId).padStart(2, "0")} · ${formatBattleTime(effectiveNextBattleAt(pair))}`, x + 22, y + 31);
+    const battleAt = historical ? Number(pair.nextBattleAt) : effectiveNextBattleAt(pair);
+    context.fillText(`${String(pair.pairId).padStart(2, "0")} · ${battleAt ? formatBattleTime(battleAt) : "—"}`, x + 22, y + 31);
     context.textAlign = "right"; context.fillStyle = west > east ? "#74e9f4" : east > west ? "#e995f8" : "#a8bbc4";
     context.font = "900 17px Pretendard, sans-serif"; context.fillText(lead, x + 718, y + 31);
     context.textAlign = "left"; context.fillStyle = "#7fe9f6"; context.font = "900 28px Pretendard, sans-serif";
@@ -460,11 +583,10 @@
         context.fillText(layer.confirmed ? ownerName(entry.ownerSide) : text("waiting"), itemX + 54, itemY + 53, 158);
       });
     });
-    const nextBattleAt = effectiveNextBattleAt(pair);
     context.textAlign = "left"; context.fillStyle = "#758f9d"; context.font = "750 15px Pretendard, sans-serif";
-    context.fillText(text("next"), x + 22, y + 378);
+    context.fillText(historical ? text("historyRecord") : text("next"), x + 22, y + 378);
     context.textAlign = "right"; context.fillStyle = "#fff0af"; context.font = "900 17px Pretendard, sans-serif";
-    context.fillText(nextBattleAt ? formatCountdown(Math.max(0, nextBattleAt - Date.now())) : "—", x + 718, y + 378);
+    context.fillText(battleAt ? (historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—", x + 718, y + 378);
   }
 
   function roundedRect(context, x, y, width, height, radius, fill, stroke) {
@@ -485,7 +607,9 @@
   function downloadBlob(blob) {
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "NotMeter-아티팩트-전체-서버.png";
+    link.download = state.selectedRoundKey === "current"
+      ? "NotMeter-아티팩트-전체-서버.png"
+      : `NotMeter-아티팩트-${state.selectedRoundKey}.png`;
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(link.href), 1_000);
   }
