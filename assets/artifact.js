@@ -16,6 +16,11 @@
   const REQUEST_TIMEOUT_MS = 8_000;
   const BATTLE_REVEAL_DELAY_MS = 5 * 60_000;
   const FAVORITE_STORAGE_KEY = "notmeter-artifact-favorite-servers-v1";
+  const SNAPSHOT_WIDTH = 3200;
+  const SNAPSHOT_HEIGHT = 3400;
+  const SNAPSHOT_COLUMNS = 3;
+  const SNAPSHOT_CARD_WIDTH = 1016;
+  const SNAPSHOT_CARD_HEIGHT = 420;
   const ICON_URLS = Object.freeze({
     neutral: "./assets/artifact-neutral.png",
     west: "./assets/artifact-west.png?v=20260902-2",
@@ -872,9 +877,11 @@
 
   async function createSnapshotCanvas() {
     const canvas = document.createElement("canvas");
-    canvas.width = 2400;
-    canvas.height = 3500;
+    canvas.width = SNAPSHOT_WIDTH;
+    canvas.height = SNAPSHOT_HEIGHT;
     const context = canvas.getContext("2d");
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
     const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
     gradient.addColorStop(0, "#0d2330"); gradient.addColorStop(0.52, "#06121c"); gradient.addColorStop(1, "#180d20");
     context.fillStyle = gradient; context.fillRect(0, 0, canvas.width, canvas.height);
@@ -886,102 +893,102 @@
       loadImage(ICON_URLS.east),
     ]);
     const icons = { neutral: neutralIcon, west: westIcon, east: eastIcon };
-    context.drawImage(icons.neutral, 64, 45, 86, 86);
-    context.fillStyle = "#f3f9fb"; context.font = "900 48px Pretendard, sans-serif"; context.fillText("아티팩트 현황", 176, 88);
+    context.drawImage(icons.neutral, 64, 42, 104, 104);
+    context.fillStyle = "#f7fcfd"; context.font = "900 62px Pretendard, sans-serif"; context.fillText("아티팩트 현황", 196, 96);
     const historical = state.selectedRoundKey !== "current";
     const snapshotRound = historical ? `${formatRoundDate(state.selectedRoundKey)} 점령 결과` : "한국 서버 전체 21개 대진";
-    context.fillStyle = "#7e9dad"; context.font = "700 22px Pretendard, sans-serif"; context.fillText(`NotMeter · ${snapshotRound}`, 178, 124);
+    context.fillStyle = "#9bb4c0"; context.font = "750 29px Pretendard, sans-serif"; context.fillText(`NotMeter · ${snapshotRound}`, 198, 139);
     const period = matchingPeriod();
-    context.fillStyle = "#9eeff4"; context.font = "850 19px Pretendard, sans-serif";
-    context.fillText(text("matchWeek", { week: period.week }), 64, 169);
-    context.fillStyle = "#7896a5"; context.font = "750 17px Pretendard, sans-serif";
+    context.fillStyle = "#aaf8fb"; context.font = "850 25px Pretendard, sans-serif";
+    context.fillText(text("matchWeek", { week: period.week }), 64, 191);
+    context.fillStyle = "#93aebb"; context.font = "750 23px Pretendard, sans-serif";
     context.fillText(text("matchRange", {
       start: formatCycleDate(period.startAt), end: formatCycleDate(period.endAt),
-    }), 290, 169);
-    context.textAlign = "right"; context.fillStyle = "#fff0ad"; context.font = "850 18px Pretendard, sans-serif";
-    context.fillText(`${text("matchRounds", { total: period.totalRounds })} · ${text("matchSchedule")}`, 2336, 169);
+    }), 370, 191);
+    context.textAlign = "right"; context.fillStyle = "#fff2b8"; context.font = "850 24px Pretendard, sans-serif";
+    context.fillText(`${text("matchRounds", { total: period.totalRounds })} · ${text("matchSchedule")}`, 3136, 191);
     const presentations = state.presentations.length === PAIRS.length
       ? state.presentations
       : sortPresentationsByFavorites(PAIRS.map(pair =>
           buildPairPresentation(payloadPair(pair.pairId), false)));
     presentations.forEach((presentation, index) => {
-      const column = index % 3;
-      const row = Math.floor(index / 3);
-      drawSnapshotPair(context, presentation, 60 + column * 770, 205 + row * 448, icons);
+      const column = index % SNAPSHOT_COLUMNS;
+      const row = Math.floor(index / SNAPSHOT_COLUMNS);
+      drawSnapshotPair(context, presentation, 52 + column * 1040, 220 + row * 438, icons);
     });
-    context.textAlign = "left"; context.fillStyle = "#7994a3"; context.font = "650 18px Pretendard, sans-serif";
-    context.fillText(text("source"), 64, 3452);
-    context.textAlign = "right"; context.fillStyle = "#c7d8de"; context.font = "850 19px Pretendard, sans-serif";
-    context.fillText(new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date()), 2336, 3452);
+    context.textAlign = "left"; context.fillStyle = "#91aab6"; context.font = "700 23px Pretendard, sans-serif";
+    context.fillText(text("source"), 64, 3360);
+    context.textAlign = "right"; context.fillStyle = "#d7e5e9"; context.font = "850 24px Pretendard, sans-serif";
+    context.fillText(new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date()), 3136, 3360);
     return canvas;
   }
 
   function drawSnapshotPair(context, presentation, x, y, icons) {
     const { pair, layers, west, east, lead, cumulative, historical, favoriteCount } = presentation;
-    roundedRect(context, x, y, 740, 428, 20, "rgba(7,22,32,.94)", favoriteCount > 0 ? "#b89b4b" : "#294554");
-    context.textAlign = "left"; context.fillStyle = "#7896a6"; context.font = "800 17px Pretendard, sans-serif";
+    roundedRect(context, x, y, SNAPSHOT_CARD_WIDTH, SNAPSHOT_CARD_HEIGHT, 22, "rgba(5,18,27,.97)", favoriteCount > 0 ? "#d0b35d" : "#3a5968", 2);
+    context.textAlign = "left"; context.fillStyle = "#9ab2bf"; context.font = "800 21px Pretendard, sans-serif";
     const battleAt = historical ? Number(pair.nextBattleAt) : effectiveNextBattleAt(pair);
-    context.fillText(`${favoriteCount > 0 ? "★ " : ""}${String(pair.pairId).padStart(2, "0")} · ${battleAt ? formatBattleTime(battleAt) : "—"}`, x + 22, y + 31);
-    context.textAlign = "right"; context.fillStyle = west > east ? "#74e9f4" : east > west ? "#e995f8" : "#a8bbc4";
-    context.font = "900 17px Pretendard, sans-serif"; context.fillText(lead, x + 718, y + 31);
-    context.textAlign = "left"; context.fillStyle = "#7fe9f6"; context.font = "900 28px Pretendard, sans-serif";
-    context.fillText(pair.west.name, x + 22, y + 78, 235);
-    context.textAlign = "right"; context.fillStyle = "#ec9bfa"; context.fillText(pair.east.name, x + 718, y + 78, 235);
-    context.textAlign = "center"; context.font = "950 32px Pretendard, sans-serif";
-    context.fillStyle = "#35d8e9"; context.fillText(String(west), x + 330, y + 79);
-    context.fillStyle = "#718a97"; context.fillText(":", x + 370, y + 79);
-    context.fillStyle = "#dc72ef"; context.fillText(String(east), x + 410, y + 79);
-    context.textAlign = "center"; context.fillStyle = "#708d9a"; context.font = "850 13px Pretendard, sans-serif";
-    context.fillText(historical ? text("roundScore") : text("currentScore"), x + 370, y + 99);
+    context.fillText(`${favoriteCount > 0 ? "★ " : ""}${String(pair.pairId).padStart(2, "0")} · ${battleAt ? formatBattleTime(battleAt) : "—"}`, x + 24, y + 34);
+    context.textAlign = "right"; context.fillStyle = west > east ? "#8af5ff" : east > west ? "#f0a5ff" : "#c0d0d7";
+    context.font = "900 22px Pretendard, sans-serif"; context.fillText(lead, x + 992, y + 34);
+    context.textAlign = "left"; context.fillStyle = "#8df2fb"; context.font = "900 34px Pretendard, sans-serif";
+    context.fillText(pair.west.name, x + 24, y + 86, 340);
+    context.textAlign = "right"; context.fillStyle = "#f0a7fc"; context.fillText(pair.east.name, x + 992, y + 86, 340);
+    context.textAlign = "center"; context.font = "950 40px Pretendard, sans-serif";
+    context.fillStyle = "#44e5f3"; context.fillText(String(west), x + 440, y + 87);
+    context.fillStyle = "#8ba2ad"; context.fillText(":", x + 508, y + 87);
+    context.fillStyle = "#e37cf3"; context.fillText(String(east), x + 576, y + 87);
+    context.textAlign = "center"; context.fillStyle = "#91a9b4"; context.font = "850 17px Pretendard, sans-serif";
+    context.fillText(historical ? text("roundScore") : text("currentScore"), x + 508, y + 111);
     layers.forEach((layer, layerIndex) => {
-      const layerY = y + 112 + layerIndex * 112;
-      context.textAlign = "left"; context.fillStyle = "#dfecef"; context.font = "900 18px Pretendard, sans-serif";
-      context.fillText(layer.layer === 1 ? text("lower") : text("middle"), x + 22, layerY + 19);
-      context.textAlign = "right"; context.fillStyle = "#7894a3"; context.font = "800 16px Pretendard, sans-serif";
-      context.fillText(layer.confirmed ? text("confirmed") : text("waiting"), x + 718, layerY + 19);
+      const layerY = y + 124 + layerIndex * 101;
+      context.textAlign = "left"; context.fillStyle = "#edf6f8"; context.font = "900 22px Pretendard, sans-serif";
+      context.fillText(layer.layer === 1 ? text("lower") : text("middle"), x + 24, layerY + 22);
+      context.textAlign = "right"; context.fillStyle = "#9bb1bc"; context.font = "800 19px Pretendard, sans-serif";
+      context.fillText(layer.confirmed ? text("confirmed") : text("waiting"), x + 992, layerY + 22);
       layer.entries.forEach((entry, entryIndex) => {
-        const itemX = x + 20 + entryIndex * 238;
+        const itemX = x + 22 + entryIndex * 328;
         const itemY = layerY + 31;
-        const fill = entry.ownerSide === 1 ? "rgba(29,199,219,.17)" : entry.ownerSide === 2 ? "rgba(197,69,225,.17)" : "rgba(117,143,154,.09)";
-        const border = entry.ownerSide === 1 ? "#267e8d" : entry.ownerSide === 2 ? "#7e348c" : "#294452";
-        roundedRect(context, itemX, itemY, 224, 72, 11, fill, border);
-        context.drawImage(icons[artifactIconKey(entry.ownerSide)], itemX + 10, itemY + 18, 36, 36);
-        context.textAlign = "left"; context.fillStyle = "#ecf4f6"; context.font = "850 15px Pretendard, sans-serif";
-        context.fillText(shortArtifactName(entry.name), itemX + 54, itemY + 29, 158);
-        context.fillStyle = entry.ownerSide === 1 ? "#71e8f3" : entry.ownerSide === 2 ? "#e893f7" : "#98adb6";
-        context.font = "900 14px Pretendard, sans-serif";
-        context.fillText(layer.confirmed ? ownerName(entry.ownerSide) : text("waiting"), itemX + 54, itemY + 53, 158);
+        const fill = entry.ownerSide === 1 ? "rgba(24,201,222,.23)" : entry.ownerSide === 2 ? "rgba(203,73,229,.23)" : "rgba(126,153,164,.13)";
+        const border = entry.ownerSide === 1 ? "#3195a4" : entry.ownerSide === 2 ? "#9a48aa" : "#3a5968";
+        roundedRect(context, itemX, itemY, 316, 64, 12, fill, border, 2);
+        context.drawImage(icons[artifactIconKey(entry.ownerSide)], itemX + 10, itemY + 9, 46, 46);
+        context.textAlign = "left"; context.fillStyle = "#f5fafb"; context.font = "850 20px Pretendard, sans-serif";
+        context.fillText(shortArtifactName(entry.name), itemX + 66, itemY + 27, 238);
+        context.fillStyle = entry.ownerSide === 1 ? "#8af3fb" : entry.ownerSide === 2 ? "#f0a4fa" : "#b5c6cd";
+        context.font = "900 18px Pretendard, sans-serif";
+        context.fillText(layer.confirmed ? ownerName(entry.ownerSide) : text("waiting"), itemX + 66, itemY + 50, 238);
       });
     });
-    roundedRect(context, x + 20, y + 340, 700, 42, 9,
-      "rgba(18,53,64,.72)", "rgba(72,112,126,.62)");
-    context.textAlign = "left"; context.fillStyle = "#dbe9ed"; context.font = "900 16px Pretendard, sans-serif";
-    context.fillText(text("cumulativeScore"), x + 34, y + 358);
-    context.fillStyle = "#7895a2"; context.font = "750 13px Pretendard, sans-serif";
+    roundedRect(context, x + 22, y + 326, 972, 48, 10,
+      "rgba(20,60,73,.84)", "rgba(89,133,148,.82)", 2);
+    context.textAlign = "left"; context.fillStyle = "#edf6f8"; context.font = "900 20px Pretendard, sans-serif";
+    context.fillText(text("cumulativeScore"), x + 38, y + 347);
+    context.fillStyle = "#9ab0ba"; context.font = "750 16px Pretendard, sans-serif";
     context.fillText(cumulative.count > 0
       ? text("cumulativeCoverage", { count: cumulative.count, total: cumulative.total })
-      : text("cumulativePending"), x + 34, y + 375);
-    context.textAlign = "right"; context.font = "950 24px Pretendard, sans-serif";
+      : text("cumulativePending"), x + 38, y + 367);
+    context.textAlign = "right"; context.font = "950 30px Pretendard, sans-serif";
     if (cumulative.count > 0) {
-      context.fillStyle = "#46dce9"; context.fillText(String(cumulative.west), x + 650, y + 368);
-      context.fillStyle = "#6b8591"; context.fillText(":", x + 674, y + 368);
-      context.fillStyle = "#dc77ee"; context.fillText(String(cumulative.east), x + 708, y + 368);
+      context.fillStyle = "#57e8f3"; context.fillText(String(cumulative.west), x + 918, y + 359);
+      context.fillStyle = "#8aa0aa"; context.fillText(":", x + 946, y + 359);
+      context.fillStyle = "#e589f3"; context.fillText(String(cumulative.east), x + 982, y + 359);
     } else {
-      context.fillStyle = "#8198a2"; context.fillText("— : —", x + 708, y + 368);
+      context.fillStyle = "#9aafb8"; context.fillText("— : —", x + 982, y + 359);
     }
-    context.textAlign = "left"; context.fillStyle = "#758f9d"; context.font = "750 15px Pretendard, sans-serif";
-    context.fillText(historical ? text("historyRecord") : text("next"), x + 22, y + 411);
-    context.textAlign = "right"; context.fillStyle = "#fff0af"; context.font = "900 17px Pretendard, sans-serif";
-    context.fillText(battleAt ? (historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—", x + 718, y + 411);
+    context.textAlign = "left"; context.fillStyle = "#9bb0ba"; context.font = "750 19px Pretendard, sans-serif";
+    context.fillText(historical ? text("historyRecord") : text("next"), x + 24, y + 404);
+    context.textAlign = "right"; context.fillStyle = "#fff3b9"; context.font = "900 21px Pretendard, sans-serif";
+    context.fillText(battleAt ? (historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—", x + 992, y + 404);
   }
 
-  function roundedRect(context, x, y, width, height, radius, fill, stroke) {
+  function roundedRect(context, x, y, width, height, radius, fill, stroke, lineWidth = 1) {
     context.beginPath();
     context.moveTo(x + radius, y); context.lineTo(x + width - radius, y); context.quadraticCurveTo(x + width, y, x + width, y + radius);
     context.lineTo(x + width, y + height - radius); context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
     context.lineTo(x + radius, y + height); context.quadraticCurveTo(x, y + height, x, y + height - radius);
     context.lineTo(x, y + radius); context.quadraticCurveTo(x, y, x + radius, y); context.closePath();
-    context.fillStyle = fill; context.fill(); context.strokeStyle = stroke; context.lineWidth = 1; context.stroke();
+    context.fillStyle = fill; context.fill(); context.strokeStyle = stroke; context.lineWidth = lineWidth; context.stroke();
   }
 
   function loadImage(source) {
