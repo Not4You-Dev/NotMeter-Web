@@ -11,7 +11,9 @@
   const MATCH_BATTLE_WEEKDAYS = new Set([3, 6]);
   const DAY_MS = 24 * 60 * 60_000;
   const KOREA_OFFSET_MS = 9 * 60 * 60_000;
-  const POLL_INTERVAL_MS = 5 * 60_000;
+  const NORMAL_POLL_INTERVAL_MS = 5 * 60_000;
+  const BATTLE_POLL_INTERVAL_MS = 2 * 60_000;
+  const BATTLE_REFRESH_DURATION_MS = 20 * 60_000;
   const REQUEST_TIMEOUT_MS = 8_000;
   const BATTLE_REVEAL_DELAY_MS = 5 * 60_000;
   const FAVORITE_STORAGE_KEY = "notmeter-artifact-favorite-servers-v1";
@@ -165,6 +167,44 @@
     const url = new URL(GITHUB_CACHE_URL);
     url.searchParams.set("v", String(Date.now()));
     return url.toString();
+  }
+
+  function nextPollDelay(now = Date.now()) {
+    const korea = new Date(now + KOREA_OFFSET_MS);
+    if (!MATCH_BATTLE_WEEKDAYS.has(korea.getUTCDay())) {
+      return NORMAL_POLL_INTERVAL_MS;
+    }
+
+    let latestActiveEnd = 0;
+    let earliestFutureStart = Number.POSITIVE_INFINITY;
+    for (const groupMinute of [0, 5, 10]) {
+      const battleStart = Date.UTC(
+        korea.getUTCFullYear(), korea.getUTCMonth(), korea.getUTCDate(),
+        13, groupMinute, 0, 0);
+      const battleEnd = battleStart + BATTLE_REFRESH_DURATION_MS;
+      if (now >= battleStart && now < battleEnd) {
+        latestActiveEnd = Math.max(latestActiveEnd, battleEnd);
+      } else if (battleStart > now) {
+        earliestFutureStart = Math.min(earliestFutureStart, battleStart);
+      }
+    }
+
+    if (latestActiveEnd > now) {
+      return Math.min(BATTLE_POLL_INTERVAL_MS, latestActiveEnd - now);
+    }
+    if (earliestFutureStart < Number.POSITIVE_INFINITY) {
+      return Math.min(NORMAL_POLL_INTERVAL_MS, earliestFutureStart - now);
+    }
+    return NORMAL_POLL_INTERVAL_MS;
+  }
+
+  function schedulePoll() {
+    window.clearTimeout(state.pollTimer);
+    state.pollTimer = window.setTimeout(async () => {
+      if (!state.active) return;
+      if (!document.hidden) await refresh();
+      if (state.active) schedulePoll();
+    }, Math.max(1_000, nextPollDelay()));
   }
 
   function bind() {
@@ -968,16 +1008,15 @@
     state.active = true;
     setStaticCopy();
     render();
-    void refresh();
-    state.pollTimer = window.setInterval(() => {
-      if (!document.hidden) void refresh();
-    }, POLL_INTERVAL_MS);
+    void refresh().finally(() => {
+      if (state.active) schedulePoll();
+    });
     state.clockTimer = window.setInterval(updateCountdown, 1_000);
   }
 
   function deactivate() {
     state.active = false;
-    window.clearInterval(state.pollTimer); state.pollTimer = 0;
+    window.clearTimeout(state.pollTimer); state.pollTimer = 0;
     window.clearInterval(state.clockTimer); state.clockTimer = 0;
     state.requestController?.abort(); state.requestController = null;
   }
