@@ -7,6 +7,10 @@
     "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web/main/presence/notmeter-artifact-occupation-public.json";
   const EXPECTED_SCHEMA = "notmeter-artifact-occupation-public-v1";
   const EXPECTED_REVISION = "kr-2026-08-26";
+  const MATCH_DURATION_DAYS = 14;
+  const MATCH_BATTLE_WEEKDAYS = new Set([3, 6]);
+  const DAY_MS = 24 * 60 * 60_000;
+  const KOREA_OFFSET_MS = 9 * 60 * 60_000;
   const POLL_INTERVAL_MS = 5 * 60_000;
   const REQUEST_TIMEOUT_MS = 8_000;
   const ICON_URLS = Object.freeze({
@@ -48,6 +52,12 @@
       roundLabel: "점령전 회차", currentRound: "현재 현황", historyOption: "{date} 점령전",
       historyTitle: "{date} 점령 결과", historyCaption: "종료된 회차의 하층·중층 점령 결과입니다.",
       historyRecord: "점령전 종료 기록", historySource: "완료된 점령전 결과를 회차별로 보관합니다.",
+      matchLabel: "현재 서버 매칭", matchWeek: "2주 매칭 · {week}주차", matchRange: "{start} 시작 · {end} 교체 예정",
+      matchRoundLabel: "2주 점령전", matchRounds: "점령전 총 {total}회", matchSchedule: "매주 수·토 22:00",
+      matchRemaining: "매칭 교체까지", matchEnded: "새 매칭 확인 중", matchReset: "새 매칭 시작 시 누적 점수가 초기화됩니다.",
+      currentScore: "현재 점령", roundScore: "회차 결과", cumulativeScore: "2주 누적",
+      cumulativeCoverage: "{count}/{total}회 집계", cumulativePending: "집계 준비 중",
+      scoringGuide: "아티팩트 1곳을 1점으로 계산하며, 하층·중층이 모두 확인된 회차만 2주 누적 점수에 반영합니다.",
       snapshot: "이미지 복사", snapshotWorking: "이미지 만드는 중", snapshotCopied: "복사 완료",
       snapshotDownloaded: "파일 저장 완료", snapshotFailedShort: "다시 시도",
       loading: "아티팩트 현황을 불러오는 중입니다",
@@ -68,6 +78,12 @@
       roundLabel: "Battle round", currentRound: "Current status", historyOption: "{date} battle",
       historyTitle: "Results for {date}", historyCaption: "Final Lower and Middle Abyss control for this round.",
       historyRecord: "Final battle result", historySource: "Completed artifact battles are saved by round.",
+      matchLabel: "Current server match", matchWeek: "Two-week match · Week {week}", matchRange: "{start} start · {end} change",
+      matchRoundLabel: "Two-week battles", matchRounds: "{total} artifact battles", matchSchedule: "Wed & Sat at 22:00",
+      matchRemaining: "Until matchup change", matchEnded: "Waiting for new matchup", matchReset: "The total resets when a new matchup begins.",
+      currentScore: "Current control", roundScore: "Round result", cumulativeScore: "Two-week total",
+      cumulativeCoverage: "{count}/{total} rounds", cumulativePending: "Waiting for data",
+      scoringGuide: "Each artifact is worth one point. Only rounds with all Lower and Middle Abyss locations confirmed are included.",
       snapshot: "Copy image", snapshotWorking: "Creating image", snapshotCopied: "Copied",
       snapshotDownloaded: "File saved", snapshotFailedShort: "Try again",
       loading: "Loading artifact status",
@@ -88,6 +104,12 @@
       roundLabel: "佔領戰場次", currentRound: "目前狀態", historyOption: "{date} 佔領戰",
       historyTitle: "{date} 佔領結果", historyCaption: "此場次結束時的深淵下層與中層佔領結果。",
       historyRecord: "佔領戰最終記錄", historySource: "已結束的神器佔領戰會依場次保存。",
+      matchLabel: "目前伺服器配對", matchWeek: "兩週配對 · 第 {week} 週", matchRange: "{start} 開始 · {end} 預計更換",
+      matchRoundLabel: "兩週佔領戰", matchRounds: "神器佔領戰共 {total} 場", matchSchedule: "每週三、六 22:00",
+      matchRemaining: "距離配對更換", matchEnded: "等待新配對", matchReset: "新配對開始時累計分數會重設。",
+      currentScore: "目前佔領", roundScore: "本場結果", cumulativeScore: "兩週累計",
+      cumulativeCoverage: "已統計 {count}/{total} 場", cumulativePending: "等待資料",
+      scoringGuide: "每座神器計 1 分，僅在深淵下層與中層全部確認後納入兩週累計。",
       snapshot: "複製圖片", snapshotWorking: "正在建立圖片", snapshotCopied: "已複製",
       snapshotDownloaded: "檔案已儲存", snapshotFailedShort: "再試一次",
       loading: "正在載入神器佔領狀態",
@@ -147,7 +169,10 @@
       "artifact-retry-button", "artifact-loading-state", "artifact-loading-text",
       "artifact-error-state", "artifact-error-title", "artifact-error-message",
       "artifact-dashboard", "artifact-overview-grid", "artifact-updated-at",
-      "artifact-source-note", "artifact-copy-status",
+      "artifact-source-note", "artifact-copy-status", "artifact-cycle-label",
+      "artifact-cycle-week", "artifact-cycle-range", "artifact-cycle-round-label",
+      "artifact-cycle-rounds", "artifact-cycle-schedule", "artifact-cycle-remaining-label",
+      "artifact-cycle-countdown", "artifact-cycle-reset", "artifact-score-guide",
     ]) {
       elements[id] = document.getElementById(id);
     }
@@ -173,6 +198,11 @@
     elements["artifact-loading-text"].textContent = text("loading");
     elements["artifact-error-title"].textContent = text("errorTitle");
     elements["artifact-source-note"].textContent = text("source");
+    elements["artifact-cycle-label"].textContent = text("matchLabel");
+    elements["artifact-cycle-round-label"].textContent = text("matchRoundLabel");
+    elements["artifact-cycle-remaining-label"].textContent = text("matchRemaining");
+    elements["artifact-cycle-reset"].textContent = text("matchReset");
+    elements["artifact-score-guide"].textContent = text("scoringGuide");
   }
 
   async function refresh() {
@@ -302,6 +332,7 @@
   function render() {
     if (!state.active || !state.bound) return;
     setStaticCopy();
+    renderCycleSummary();
     if (!state.data) {
       showLoading(true);
       updateCountdown();
@@ -348,6 +379,84 @@
     return Number.isFinite(timestamp) ? timestamp : 0;
   }
 
+  function matchingPeriod(now = Date.now()) {
+    const revisionDate = EXPECTED_REVISION.replace(/^kr-/, "");
+    const startAt = Date.parse(`${revisionDate}T00:00:00+09:00`);
+    const endAt = startAt + MATCH_DURATION_DAYS * DAY_MS;
+    const elapsedWeeks = Math.floor(Math.max(0, now - startAt) / (7 * DAY_MS));
+    let totalRounds = 0;
+    for (let day = 0; day < MATCH_DURATION_DAYS; day += 1) {
+      const koreaDate = new Date(startAt + day * DAY_MS + KOREA_OFFSET_MS);
+      if (MATCH_BATTLE_WEEKDAYS.has(koreaDate.getUTCDay())) totalRounds += 1;
+    }
+    return {
+      startAt,
+      endAt,
+      week: Math.min(2, Math.max(1, elapsedWeeks + 1)),
+      totalRounds,
+    };
+  }
+
+  function renderCycleSummary() {
+    const period = matchingPeriod();
+    elements["artifact-cycle-week"].textContent = text("matchWeek", { week: period.week });
+    elements["artifact-cycle-range"].textContent = text("matchRange", {
+      start: formatCycleDate(period.startAt),
+      end: formatCycleDate(period.endAt),
+    });
+    elements["artifact-cycle-rounds"].textContent = text("matchRounds", { total: period.totalRounds });
+    elements["artifact-cycle-schedule"].textContent = text("matchSchedule");
+    updateCycleCountdown(period);
+  }
+
+  function previousBattleAt(nextBattleAt) {
+    if (!Number.isSafeInteger(nextBattleAt) || nextBattleAt <= 0) return 0;
+    const koreaDate = new Date(nextBattleAt + KOREA_OFFSET_MS);
+    const weekday = koreaDate.getUTCDay();
+    if (weekday === 3) return nextBattleAt - 4 * DAY_MS;
+    if (weekday === 6) return nextBattleAt - 3 * DAY_MS;
+    return 0;
+  }
+
+  function completeRoundScore(layers) {
+    if (!Array.isArray(layers) || layers.length !== 2) return null;
+    const ordered = [...layers].sort((left, right) => Number(left?.layer) - Number(right?.layer));
+    if (Number(ordered[0]?.layer) !== 1 || Number(ordered[1]?.layer) !== 2 ||
+      ordered.some(layer => layer?.state !== "confirmed" || !isValidHistoryLayer(layer))) return null;
+    const entries = ordered.flatMap(layer => layer.entries);
+    return {
+      west: entries.filter(entry => Number(entry.ownerSide) === 1).length,
+      east: entries.filter(entry => Number(entry.ownerSide) === 2).length,
+    };
+  }
+
+  function buildCumulativeScore(pairId, cutoffAt = Number.POSITIVE_INFINITY) {
+    const period = matchingPeriod();
+    const rounds = new Map();
+    for (const record of state.data?.history || []) {
+      const battleAt = Number(record?.battleAt);
+      if (Number(record?.pairId) !== Number(pairId) || battleAt < period.startAt ||
+        battleAt >= period.endAt || battleAt > cutoffAt) continue;
+      const score = completeRoundScore(record.layers);
+      if (score) rounds.set(battleAt, score);
+    }
+
+    const currentPair = state.data?.pairs?.find(pair => Number(pair?.pairId) === Number(pairId));
+    const currentBattleAt = previousBattleAt(Number(currentPair?.nextBattleAt));
+    const currentScore = completeRoundScore(currentPair?.layers);
+    if (currentScore && currentBattleAt >= period.startAt && currentBattleAt < period.endAt &&
+      currentBattleAt <= cutoffAt && !rounds.has(currentBattleAt)) {
+      rounds.set(currentBattleAt, currentScore);
+    }
+
+    return {
+      west: [...rounds.values()].reduce((sum, score) => sum + score.west, 0),
+      east: [...rounds.values()].reduce((sum, score) => sum + score.east, 0),
+      count: rounds.size,
+      total: period.totalRounds,
+    };
+  }
+
   function buildPairPresentation(pair, historical = false) {
     const layers = [normalizedLayer(pair, 1, historical), normalizedLayer(pair, 2, historical)];
     const entries = layers.flatMap(layer => layer.entries);
@@ -357,11 +466,14 @@
     const lead = confirmedLayers === 0 ? text("waiting")
       : confirmedLayers < layers.length ? text("partial")
       : west > east ? text("westLead") : east > west ? text("eastLead") : text("draw");
-    return { pair, layers, west, east, confirmedLayers, lead, historical };
+    const cumulative = buildCumulativeScore(
+      pair?.pairId,
+      historical ? Number(pair?.nextBattleAt) || 0 : Number.POSITIVE_INFINITY);
+    return { pair, layers, west, east, confirmedLayers, lead, cumulative, historical };
   }
 
   function renderPairCard(presentation) {
-    const { pair, layers, west, east, lead, historical } = presentation;
+    const { pair, layers, west, east, lead, cumulative, historical } = presentation;
     const card = document.createElement("article");
     const leadSide = west > east ? "west" : east > west ? "east" : "neutral";
     card.className = `artifact-overview-card ${leadSide}`;
@@ -375,8 +487,19 @@
       </header>
       <div class="artifact-overview-versus">
         <strong class="west" title="${escapeHtml(pair.west.name)}">${escapeHtml(pair.west.name)}</strong>
-        <span class="artifact-overview-score"><b class="west">${west}</b><i>:</i><b class="east">${east}</b></span>
+        <span class="artifact-overview-score-block">
+          <small>${escapeHtml(historical ? text("roundScore") : text("currentScore"))}</small>
+          <span class="artifact-overview-score"><b class="west">${west}</b><i>:</i><b class="east">${east}</b></span>
+        </span>
         <strong class="east" title="${escapeHtml(pair.east.name)}">${escapeHtml(pair.east.name)}</strong>
+      </div>
+      <div class="artifact-overview-cumulative">
+        <span><b>${escapeHtml(text("cumulativeScore"))}</b><small>${escapeHtml(cumulative.count > 0
+          ? text("cumulativeCoverage", { count: cumulative.count, total: cumulative.total })
+          : text("cumulativePending"))}</small></span>
+        <strong>${cumulative.count > 0
+          ? `<b class="west">${cumulative.west}</b><i>:</i><b class="east">${cumulative.east}</b>`
+          : "<b>—</b><i>:</i><b>—</b>"}</strong>
       </div>
       <div class="artifact-overview-layers"></div>
       <footer class="artifact-overview-next">
@@ -444,13 +567,22 @@
   }
 
   function updateCountdown() {
-    if (!state.active || !state.bound || state.selectedRoundKey !== "current") return;
+    if (!state.active || !state.bound) return;
+    updateCycleCountdown();
+    if (state.selectedRoundKey !== "current") return;
     document.querySelectorAll("[data-artifact-countdown]").forEach(element => {
       const pair = payloadPair(Number(element.dataset.artifactCountdown));
       const nextBattleAt = effectiveNextBattleAt(pair);
       element.textContent = nextBattleAt
         ? formatCountdown(Math.max(0, nextBattleAt - Date.now())) : "—";
     });
+  }
+
+  function updateCycleCountdown(period = matchingPeriod()) {
+    const remaining = period.endAt - Date.now();
+    elements["artifact-cycle-countdown"].textContent = remaining > 0
+      ? formatCountdown(remaining)
+      : text("matchEnded");
   }
 
   function effectiveNextBattleAt(pair) {
@@ -482,6 +614,12 @@
     const timestamp = Date.parse(`${roundKey}T03:00:00Z`);
     return new Intl.DateTimeFormat(state.locale, {
       timeZone: "Asia/Seoul", year: "numeric", month: "short", day: "numeric",
+    }).format(new Date(timestamp));
+  }
+
+  function formatCycleDate(timestamp) {
+    return new Intl.DateTimeFormat(state.locale, {
+      timeZone: "Asia/Seoul", month: "short", day: "numeric",
     }).format(new Date(timestamp));
   }
 
@@ -586,7 +724,7 @@
   async function createSnapshotCanvas() {
     const canvas = document.createElement("canvas");
     canvas.width = 2400;
-    canvas.height = 3260;
+    canvas.height = 3500;
     const context = canvas.getContext("2d");
     const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
     gradient.addColorStop(0, "#0d2330"); gradient.addColorStop(0.52, "#06121c"); gradient.addColorStop(1, "#180d20");
@@ -604,24 +742,33 @@
     const historical = state.selectedRoundKey !== "current";
     const snapshotRound = historical ? `${formatRoundDate(state.selectedRoundKey)} 점령 결과` : "한국 서버 전체 21개 대진";
     context.fillStyle = "#7e9dad"; context.font = "700 22px Pretendard, sans-serif"; context.fillText(`NotMeter · ${snapshotRound}`, 178, 124);
+    const period = matchingPeriod();
+    context.fillStyle = "#9eeff4"; context.font = "850 19px Pretendard, sans-serif";
+    context.fillText(text("matchWeek", { week: period.week }), 64, 169);
+    context.fillStyle = "#7896a5"; context.font = "750 17px Pretendard, sans-serif";
+    context.fillText(text("matchRange", {
+      start: formatCycleDate(period.startAt), end: formatCycleDate(period.endAt),
+    }), 290, 169);
+    context.textAlign = "right"; context.fillStyle = "#fff0ad"; context.font = "850 18px Pretendard, sans-serif";
+    context.fillText(`${text("matchRounds", { total: period.totalRounds })} · ${text("matchSchedule")}`, 2336, 169);
     const presentations = state.presentations.length === PAIRS.length
       ? state.presentations
       : PAIRS.map(pair => buildPairPresentation(payloadPair(pair.pairId), false));
     presentations.forEach((presentation, index) => {
       const column = index % 3;
       const row = Math.floor(index / 3);
-      drawSnapshotPair(context, presentation, 60 + column * 770, 175 + row * 424, icons);
+      drawSnapshotPair(context, presentation, 60 + column * 770, 205 + row * 448, icons);
     });
     context.textAlign = "left"; context.fillStyle = "#7994a3"; context.font = "650 18px Pretendard, sans-serif";
-    context.fillText(text("source"), 64, 3212);
+    context.fillText(text("source"), 64, 3452);
     context.textAlign = "right"; context.fillStyle = "#c7d8de"; context.font = "850 19px Pretendard, sans-serif";
-    context.fillText(new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date()), 2336, 3212);
+    context.fillText(new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date()), 2336, 3452);
     return canvas;
   }
 
   function drawSnapshotPair(context, presentation, x, y, icons) {
-    const { pair, layers, west, east, lead, historical } = presentation;
-    roundedRect(context, x, y, 740, 398, 20, "rgba(7,22,32,.94)", "#294554");
+    const { pair, layers, west, east, lead, cumulative, historical } = presentation;
+    roundedRect(context, x, y, 740, 428, 20, "rgba(7,22,32,.94)", "#294554");
     context.textAlign = "left"; context.fillStyle = "#7896a6"; context.font = "800 17px Pretendard, sans-serif";
     const battleAt = historical ? Number(pair.nextBattleAt) : effectiveNextBattleAt(pair);
     context.fillText(`${String(pair.pairId).padStart(2, "0")} · ${battleAt ? formatBattleTime(battleAt) : "—"}`, x + 22, y + 31);
@@ -634,8 +781,10 @@
     context.fillStyle = "#35d8e9"; context.fillText(String(west), x + 330, y + 79);
     context.fillStyle = "#718a97"; context.fillText(":", x + 370, y + 79);
     context.fillStyle = "#dc72ef"; context.fillText(String(east), x + 410, y + 79);
+    context.textAlign = "center"; context.fillStyle = "#708d9a"; context.font = "850 13px Pretendard, sans-serif";
+    context.fillText(historical ? text("roundScore") : text("currentScore"), x + 370, y + 99);
     layers.forEach((layer, layerIndex) => {
-      const layerY = y + 105 + layerIndex * 118;
+      const layerY = y + 112 + layerIndex * 112;
       context.textAlign = "left"; context.fillStyle = "#dfecef"; context.font = "900 18px Pretendard, sans-serif";
       context.fillText(layer.layer === 1 ? text("lower") : text("middle"), x + 22, layerY + 19);
       context.textAlign = "right"; context.fillStyle = "#7894a3"; context.font = "800 16px Pretendard, sans-serif";
@@ -654,10 +803,26 @@
         context.fillText(layer.confirmed ? ownerName(entry.ownerSide) : text("waiting"), itemX + 54, itemY + 53, 158);
       });
     });
+    roundedRect(context, x + 20, y + 340, 700, 42, 9,
+      "rgba(18,53,64,.72)", "rgba(72,112,126,.62)");
+    context.textAlign = "left"; context.fillStyle = "#dbe9ed"; context.font = "900 16px Pretendard, sans-serif";
+    context.fillText(text("cumulativeScore"), x + 34, y + 358);
+    context.fillStyle = "#7895a2"; context.font = "750 13px Pretendard, sans-serif";
+    context.fillText(cumulative.count > 0
+      ? text("cumulativeCoverage", { count: cumulative.count, total: cumulative.total })
+      : text("cumulativePending"), x + 34, y + 375);
+    context.textAlign = "right"; context.font = "950 24px Pretendard, sans-serif";
+    if (cumulative.count > 0) {
+      context.fillStyle = "#46dce9"; context.fillText(String(cumulative.west), x + 650, y + 368);
+      context.fillStyle = "#6b8591"; context.fillText(":", x + 674, y + 368);
+      context.fillStyle = "#dc77ee"; context.fillText(String(cumulative.east), x + 708, y + 368);
+    } else {
+      context.fillStyle = "#8198a2"; context.fillText("— : —", x + 708, y + 368);
+    }
     context.textAlign = "left"; context.fillStyle = "#758f9d"; context.font = "750 15px Pretendard, sans-serif";
-    context.fillText(historical ? text("historyRecord") : text("next"), x + 22, y + 378);
+    context.fillText(historical ? text("historyRecord") : text("next"), x + 22, y + 411);
     context.textAlign = "right"; context.fillStyle = "#fff0af"; context.font = "900 17px Pretendard, sans-serif";
-    context.fillText(battleAt ? (historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—", x + 718, y + 378);
+    context.fillText(battleAt ? (historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—", x + 718, y + 411);
   }
 
   function roundedRect(context, x, y, width, height, radius, fill, stroke) {

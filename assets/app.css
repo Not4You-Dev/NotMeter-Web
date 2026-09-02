@@ -5995,6 +5995,80 @@ tr:nth-child(3) .rank-badge {
   font-size: 10px;
 }
 
+.artifact-cycle-panel {
+  overflow: hidden;
+  border: 1px solid #294655;
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, rgba(26, 181, 202, 0.08), transparent 37%, rgba(188, 70, 215, 0.07)),
+    linear-gradient(145deg, rgba(12, 29, 40, 0.99), rgba(6, 17, 26, 0.99));
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025), 0 8px 22px rgba(0, 0, 0, 0.12);
+}
+
+.artifact-cycle-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.artifact-cycle-summary article {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 67px;
+  align-content: center;
+  gap: 2px;
+  padding: 10px 13px 9px;
+}
+
+.artifact-cycle-summary article + article {
+  border-left: 1px solid rgba(51, 83, 97, 0.65);
+}
+
+.artifact-cycle-summary article > span {
+  color: #7895a3;
+  font-size: 8.5px;
+  font-weight: 900;
+}
+
+.artifact-cycle-summary article > strong {
+  overflow: hidden;
+  color: #eef8fa;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 950;
+  letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artifact-cycle-summary article > small {
+  overflow: hidden;
+  color: #7893a0;
+  font-size: 8px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artifact-cycle-summary article:first-child > strong {
+  color: #94f2f7;
+}
+
+.artifact-cycle-countdown-card > strong {
+  color: #fff0ad !important;
+}
+
+.artifact-score-guide {
+  margin: 0;
+  padding: 6px 12px;
+  border-top: 1px solid rgba(45, 74, 87, 0.62);
+  background: rgba(4, 14, 21, 0.46);
+  color: #73909e;
+  font-size: 8px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
 .artifact-overview-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -6044,7 +6118,7 @@ tr:nth-child(3) .rank-badge {
 .artifact-overview-versus {
   display: grid;
   min-height: 49px;
-  grid-template-columns: minmax(0, 1fr) 58px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 70px minmax(0, 1fr);
   align-items: center;
   gap: 5px;
   padding: 7px 9px 5px;
@@ -6062,6 +6136,20 @@ tr:nth-child(3) .rank-badge {
 
 .artifact-overview-versus > strong.west { color: #84edfa; text-align: left; }
 .artifact-overview-versus > strong.east { color: #ed9bfb; text-align: right; }
+
+.artifact-overview-score-block {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+}
+
+.artifact-overview-score-block > small {
+  color: #6f8b98;
+  font-size: 7px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
 
 .artifact-overview-score {
   display: flex;
@@ -6083,6 +6171,56 @@ tr:nth-child(3) .rank-badge {
 
 .artifact-overview-score .east,
 .artifact-overview-layer .east { color: #dc78ed; }
+
+.artifact-overview-cumulative {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 7px 7px;
+  padding: 5px 8px;
+  border: 1px solid rgba(74, 111, 126, 0.45);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(26, 188, 205, 0.11), rgba(9, 24, 33, 0.82) 43%, rgba(191, 72, 216, 0.1));
+}
+
+.artifact-overview-cumulative > span {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.artifact-overview-cumulative > span b {
+  color: #dcebef;
+  font-size: 8.5px;
+  font-weight: 950;
+}
+
+.artifact-overview-cumulative > span small {
+  color: #7894a1;
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.artifact-overview-cumulative > strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8ba0aa;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 950;
+}
+
+.artifact-overview-cumulative > strong i {
+  color: #607b88;
+  font-style: normal;
+}
+
+.artifact-overview-cumulative > strong .west { color: #48dce9; }
+.artifact-overview-cumulative > strong .east { color: #dd79ee; }
 
 .artifact-overview-layers {
   display: grid;
@@ -7093,6 +7231,29 @@ tr:nth-child(3) .rank-badge {
 
   .artifact-overview-grid {
     grid-template-columns: 1fr;
+  }
+
+  .artifact-cycle-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .artifact-cycle-summary article {
+    min-height: 58px;
+    padding: 8px 10px;
+  }
+
+  .artifact-cycle-summary article + article {
+    border-top: 1px solid rgba(51, 83, 97, 0.65);
+    border-left: 0;
+  }
+
+  .artifact-cycle-summary article > strong {
+    font-size: 13px;
+  }
+
+  .artifact-score-guide {
+    padding: 7px 10px;
+    font-size: 8.5px;
   }
 
   .artifact-overview-versus > strong {

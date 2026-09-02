@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260902-6">
+  <link rel="stylesheet" href="./assets/app.css?v=20260902-7">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
@@ -207,13 +207,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260902-6" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260902-7" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260827-4" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
   <script src="./assets/character.js?v=20260901-6" defer></script>
-  <script src="./assets/artifact.js?v=20260902-8" defer></script>
+  <script src="./assets/artifact.js?v=20260902-7" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260902-6" defer></script>
+  <script src="./assets/app.js?v=20260902-7" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -774,6 +774,26 @@
       </div>
 
       <div class="artifact-dashboard" id="artifact-dashboard" hidden>
+        <section class="artifact-cycle-panel" aria-label="현재 서버 매칭과 2주 누적 점수 안내">
+          <div class="artifact-cycle-summary">
+            <article>
+              <span id="artifact-cycle-label">현재 서버 매칭</span>
+              <strong id="artifact-cycle-week">2주 매칭 · 2주차</strong>
+              <small id="artifact-cycle-range">8월 26일 시작 · 9월 9일 교체 예정</small>
+            </article>
+            <article>
+              <span id="artifact-cycle-round-label">2주 점령전</span>
+              <strong id="artifact-cycle-rounds">점령전 총 4회</strong>
+              <small id="artifact-cycle-schedule">매주 수·토 22:00</small>
+            </article>
+            <article class="artifact-cycle-countdown-card">
+              <span id="artifact-cycle-remaining-label">매칭 교체까지</span>
+              <strong id="artifact-cycle-countdown">—</strong>
+              <small id="artifact-cycle-reset">새 매칭 시작 시 누적 점수가 초기화됩니다.</small>
+            </article>
+          </div>
+          <p class="artifact-score-guide" id="artifact-score-guide">아티팩트 1곳을 1점으로 계산하며, 하층·중층이 모두 확인된 회차만 2주 누적 점수에 반영합니다.</p>
+        </section>
         <div class="artifact-overview-grid" id="artifact-overview-grid" aria-live="polite"></div>
         <div class="artifact-footer-meta">
           <span id="artifact-updated-at">—</span>
