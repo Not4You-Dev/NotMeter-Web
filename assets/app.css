@@ -5901,6 +5901,7 @@ tr:nth-child(3) .rank-badge {
   display: flex;
   align-items: center;
   gap: 7px;
+  position: relative;
 }
 
 .artifact-actions .ghost-button,
@@ -5914,6 +5915,38 @@ tr:nth-child(3) .rank-badge {
   border-color: #435d70;
   background: #0d2130;
   color: #dcecf2;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease,
+    box-shadow 160ms ease, transform 160ms ease;
+}
+
+.artifact-snapshot-button.is-working {
+  border-color: rgba(86, 207, 220, 0.58);
+  color: #a9dce2;
+  cursor: wait;
+}
+
+.artifact-snapshot-button.is-working > span:first-child {
+  animation: spin 850ms linear infinite;
+}
+
+.artifact-snapshot-button.is-copied {
+  border-color: #38d8b1;
+  background: rgba(27, 139, 111, 0.22);
+  color: #9dffe3;
+  box-shadow: 0 0 0 3px rgba(56, 216, 177, 0.1), 0 8px 24px rgba(10, 73, 61, 0.2);
+  animation: artifact-copy-confirm 420ms ease-out;
+}
+
+.artifact-snapshot-button.is-downloaded {
+  border-color: #5cc9e9;
+  background: rgba(38, 132, 166, 0.2);
+  color: #b8f2ff;
+}
+
+.artifact-snapshot-button.is-failed {
+  border-color: #e17a7a;
+  background: rgba(142, 48, 55, 0.2);
+  color: #ffc6c6;
 }
 
 .artifact-state {
@@ -6443,8 +6476,54 @@ tr:nth-child(3) .rank-badge {
 }
 
 .artifact-copy-status {
-  color: #78e4dc;
+  position: absolute;
+  z-index: 8;
+  top: calc(100% + 7px);
+  right: 0;
+  max-width: min(290px, 86vw);
+  padding: 7px 10px;
+  border: 1px solid rgba(80, 214, 190, 0.42);
+  border-radius: 8px;
+  background: rgba(6, 26, 33, 0.96);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+  color: #8ff2d9;
+  font-size: 10px;
   font-weight: 900;
+  white-space: nowrap;
+  animation: artifact-copy-toast 180ms ease-out;
+}
+
+.artifact-copy-status:empty {
+  display: none;
+}
+
+.artifact-copy-status[data-state="downloaded"] {
+  border-color: rgba(92, 201, 233, 0.42);
+  color: #b8f2ff;
+}
+
+.artifact-copy-status[data-state="failed"] {
+  border-color: rgba(225, 122, 122, 0.48);
+  color: #ffc6c6;
+}
+
+@keyframes artifact-copy-confirm {
+  0% { transform: scale(0.96); }
+  58% { transform: scale(1.035); }
+  100% { transform: scale(1); }
+}
+
+@keyframes artifact-copy-toast {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artifact-snapshot-button,
+  .artifact-copy-status {
+    animation: none !important;
+    transition: none;
+  }
 }
 
 @keyframes spin {

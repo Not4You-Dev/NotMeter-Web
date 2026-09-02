@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260902-5">
+  <link rel="stylesheet" href="./assets/app.css?v=20260902-6">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
@@ -207,13 +207,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260902-5" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260902-6" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260827-4" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
   <script src="./assets/character.js?v=20260901-6" defer></script>
-  <script src="./assets/artifact.js?v=20260902-7" defer></script>
+  <script src="./assets/artifact.js?v=20260902-8" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260902-5" defer></script>
+  <script src="./assets/app.js?v=20260902-6" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -751,13 +751,14 @@
         </label>
         <div class="artifact-actions">
           <button class="ghost-button artifact-snapshot-button" id="artifact-snapshot-button" type="button">
-            <span aria-hidden="true">▣</span>
+            <span aria-hidden="true" data-artifact-snapshot-icon>▣</span>
             <span id="artifact-snapshot-label">이미지 복사</span>
           </button>
           <button class="refresh-button" id="artifact-refresh-button" type="button">
             <span class="refresh-glyph" aria-hidden="true">↻</span>
             <span data-i18n="refresh">새로고침</span>
           </button>
+          <span class="artifact-copy-status" id="artifact-copy-status" role="status" aria-live="polite"></span>
         </div>
       </div>
 
@@ -777,7 +778,6 @@
         <div class="artifact-footer-meta">
           <span id="artifact-updated-at">—</span>
           <span id="artifact-source-note">한국 서버에서 확인된 최신 현황만 반영됩니다.</span>
-          <span class="artifact-copy-status" id="artifact-copy-status" role="status" aria-live="polite"></span>
         </div>
       </div>
     </section>

@@ -7,7 +7,7 @@
     "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web/main/presence/notmeter-artifact-occupation-public.json";
   const EXPECTED_SCHEMA = "notmeter-artifact-occupation-public-v1";
   const EXPECTED_REVISION = "kr-2026-08-26";
-  const POLL_INTERVAL_MS = 10 * 60_000;
+  const POLL_INTERVAL_MS = 5 * 60_000;
   const REQUEST_TIMEOUT_MS = 8_000;
   const ICON_URLS = Object.freeze({
     neutral: "./assets/artifact-neutral.png",
@@ -48,7 +48,9 @@
       roundLabel: "점령전 회차", currentRound: "현재 현황", historyOption: "{date} 점령전",
       historyTitle: "{date} 점령 결과", historyCaption: "종료된 회차의 하층·중층 점령 결과입니다.",
       historyRecord: "점령전 종료 기록", historySource: "완료된 점령전 결과를 회차별로 보관합니다.",
-      snapshot: "이미지 복사", loading: "아티팩트 현황을 불러오는 중입니다",
+      snapshot: "이미지 복사", snapshotWorking: "이미지 만드는 중", snapshotCopied: "복사 완료",
+      snapshotDownloaded: "파일 저장 완료", snapshotFailedShort: "다시 시도",
+      loading: "아티팩트 현황을 불러오는 중입니다",
       errorTitle: "현황을 불러오지 못했습니다", error: "잠시 후 다시 확인해 주세요.",
       west: "서부 진영", east: "동부 진영", occupied: "현재 점령", waiting: "현황 확인 중",
       partial: "일부 현황 확인 중",
@@ -56,7 +58,7 @@
       next: "다음 아티팩트 점령전", lower: "어비스 하층", middle: "어비스 중층",
       lowerCaption: "하층 아티팩트 3곳", middleCaption: "중층 아티팩트 3곳",
       neutral: "미확인", confirmed: "확인됨", updated: "최근 확인 {time}",
-      noData: "새 회차 정보 확인 중", source: "한국 서버에서 확인된 현황을 약 10분마다 반영합니다.",
+      noData: "새 회차 정보 확인 중", source: "한국 서버에서 확인된 현황을 약 5분마다 반영합니다.",
       copied: "이미지를 클립보드에 복사했습니다.", downloaded: "이미지 파일로 저장했습니다.",
       snapshotFailed: "이미지를 만들지 못했습니다.", koreaOnly: "한국 서버 전용",
     },
@@ -66,7 +68,9 @@
       roundLabel: "Battle round", currentRound: "Current status", historyOption: "{date} battle",
       historyTitle: "Results for {date}", historyCaption: "Final Lower and Middle Abyss control for this round.",
       historyRecord: "Final battle result", historySource: "Completed artifact battles are saved by round.",
-      snapshot: "Copy image", loading: "Loading artifact status",
+      snapshot: "Copy image", snapshotWorking: "Creating image", snapshotCopied: "Copied",
+      snapshotDownloaded: "File saved", snapshotFailedShort: "Try again",
+      loading: "Loading artifact status",
       errorTitle: "Artifact status is unavailable", error: "Please try again shortly.",
       west: "West", east: "East", occupied: "Current control", waiting: "Checking status",
       partial: "Some locations pending",
@@ -74,7 +78,7 @@
       next: "Next artifact battle", lower: "Lower Abyss", middle: "Middle Abyss",
       lowerCaption: "3 lower artifacts", middleCaption: "3 middle artifacts",
       neutral: "Unknown", confirmed: "Confirmed", updated: "Checked {time}",
-      noData: "Waiting for the new round", source: "Verified Korean server status is updated about every 10 minutes.",
+      noData: "Waiting for the new round", source: "Verified Korean server status is updated about every 5 minutes.",
       copied: "Image copied to the clipboard.", downloaded: "Image downloaded.",
       snapshotFailed: "Could not create the image.", koreaOnly: "Korean servers only",
     },
@@ -84,7 +88,9 @@
       roundLabel: "佔領戰場次", currentRound: "目前狀態", historyOption: "{date} 佔領戰",
       historyTitle: "{date} 佔領結果", historyCaption: "此場次結束時的深淵下層與中層佔領結果。",
       historyRecord: "佔領戰最終記錄", historySource: "已結束的神器佔領戰會依場次保存。",
-      snapshot: "複製圖片", loading: "正在載入神器佔領狀態",
+      snapshot: "複製圖片", snapshotWorking: "正在建立圖片", snapshotCopied: "已複製",
+      snapshotDownloaded: "檔案已儲存", snapshotFailedShort: "再試一次",
+      loading: "正在載入神器佔領狀態",
       errorTitle: "無法載入佔領狀態", error: "請稍後再試。",
       west: "西部陣營", east: "東部陣營", occupied: "目前佔領", waiting: "確認中",
       partial: "部分地點確認中",
@@ -92,7 +98,7 @@
       next: "下一場神器佔領戰", lower: "深淵下層", middle: "深淵中層",
       lowerCaption: "下層神器 3 處", middleCaption: "中層神器 3 處",
       neutral: "未確認", confirmed: "已確認", updated: "最近確認 {time}",
-      noData: "等待新回合資訊", source: "僅顯示韓國伺服器資料，約每 10 分鐘更新。",
+      noData: "等待新回合資訊", source: "僅顯示韓國伺服器資料，約每 5 分鐘更新。",
       copied: "圖片已複製到剪貼簿。", downloaded: "圖片已下載。",
       snapshotFailed: "無法建立圖片。", koreaOnly: "僅限韓國伺服器",
     },
@@ -107,6 +113,7 @@
     requestController: null,
     pollTimer: 0,
     clockTimer: 0,
+    snapshotFeedbackTimer: 0,
     selectedRoundKey: "current",
     presentations: [],
   };
@@ -504,29 +511,76 @@
     if (!state.data) return;
     const status = elements["artifact-copy-status"];
     status.textContent = "";
+    status.removeAttribute("data-state");
+    setSnapshotButtonState("working");
     try {
       const canvas = await createSnapshotCanvas();
       const blob = await new Promise((resolve, reject) => canvas.toBlob(
         value => value ? resolve(value) : reject(new Error("blob")), "image/png"));
       if (navigator.clipboard?.write && globalThis.ClipboardItem) {
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        status.textContent = text("copied");
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+          showSnapshotResult("copied", "copied");
+        } catch {
+          downloadBlob(blob);
+          showSnapshotResult("downloaded", "downloaded");
+        }
       } else {
         downloadBlob(blob);
-        status.textContent = text("downloaded");
+        showSnapshotResult("downloaded", "downloaded");
       }
     } catch {
-      try {
-        const canvas = await createSnapshotCanvas();
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-        if (!blob) throw new Error("blob");
-        downloadBlob(blob);
-        status.textContent = text("downloaded");
-      } catch {
-        status.textContent = text("snapshotFailed");
-      }
+      showSnapshotResult("failed", "snapshotFailed");
     }
-    window.setTimeout(() => { if (status) status.textContent = ""; }, 4_000);
+  }
+
+  function showSnapshotResult(buttonState, messageKey) {
+    const status = elements["artifact-copy-status"];
+    status.textContent = text(messageKey);
+    status.dataset.state = buttonState;
+    setSnapshotButtonState(buttonState);
+  }
+
+  function setSnapshotButtonState(buttonState) {
+    const button = elements["artifact-snapshot-button"];
+    const label = elements["artifact-snapshot-label"];
+    const icon = button?.querySelector("[data-artifact-snapshot-icon]");
+    if (!button || !label) return;
+
+    window.clearTimeout(state.snapshotFeedbackTimer);
+    button.classList.remove("is-working", "is-copied", "is-downloaded", "is-failed");
+    button.disabled = buttonState === "working";
+    button.setAttribute("aria-busy", buttonState === "working" ? "true" : "false");
+    if (buttonState === "working") {
+      button.classList.add("is-working");
+      label.textContent = text("snapshotWorking");
+      if (icon) icon.textContent = "◌";
+      return;
+    }
+
+    const presentation = {
+      copied: ["is-copied", "snapshotCopied", "✓"],
+      downloaded: ["is-downloaded", "snapshotDownloaded", "↓"],
+      failed: ["is-failed", "snapshotFailedShort", "!"],
+    }[buttonState];
+    if (presentation) {
+      button.classList.add(presentation[0]);
+      label.textContent = text(presentation[1]);
+      if (icon) icon.textContent = presentation[2];
+    }
+
+    state.snapshotFeedbackTimer = window.setTimeout(() => {
+      button.classList.remove("is-copied", "is-downloaded", "is-failed");
+      button.disabled = false;
+      button.setAttribute("aria-busy", "false");
+      label.textContent = text("snapshot");
+      if (icon) icon.textContent = "▣";
+      const status = elements["artifact-copy-status"];
+      if (status) {
+        status.textContent = "";
+        status.removeAttribute("data-state");
+      }
+    }, 3_200);
   }
 
   async function createSnapshotCanvas() {
