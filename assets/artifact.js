@@ -16,11 +16,11 @@
   const REQUEST_TIMEOUT_MS = 8_000;
   const BATTLE_REVEAL_DELAY_MS = 5 * 60_000;
   const FAVORITE_STORAGE_KEY = "notmeter-artifact-favorite-servers-v1";
-  const SNAPSHOT_WIDTH = 3200;
-  const SNAPSHOT_HEIGHT = 3400;
-  const SNAPSHOT_COLUMNS = 3;
-  const SNAPSHOT_CARD_WIDTH = 1016;
-  const SNAPSHOT_CARD_HEIGHT = 420;
+  const SNAPSHOT_WIDTH = 2400;
+  const SNAPSHOT_HEIGHT = 2680;
+  const SNAPSHOT_COLUMNS = 2;
+  const SNAPSHOT_CARD_WIDTH = 1158;
+  const SNAPSHOT_CARD_HEIGHT = 204;
   const ICON_URLS = Object.freeze({
     neutral: "./assets/artifact-neutral.png",
     west: "./assets/artifact-west.png?v=20260902-2",
@@ -885,28 +885,31 @@
     const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
     gradient.addColorStop(0, "#0d2330"); gradient.addColorStop(0.52, "#06121c"); gradient.addColorStop(1, "#180d20");
     context.fillStyle = gradient; context.fillRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "rgba(36,219,229,.12)"; context.beginPath(); context.arc(115, 220, 320, 0, Math.PI * 2); context.fill();
-    context.fillStyle = "rgba(214,76,235,.11)"; context.beginPath(); context.arc(2280, 250, 430, 0, Math.PI * 2); context.fill();
+    context.fillStyle = "rgba(36,219,229,.12)"; context.beginPath(); context.arc(100, 180, 280, 0, Math.PI * 2); context.fill();
+    context.fillStyle = "rgba(214,76,235,.11)"; context.beginPath(); context.arc(2050, 180, 360, 0, Math.PI * 2); context.fill();
     const [neutralIcon, westIcon, eastIcon] = await Promise.all([
       loadImage(ICON_URLS.neutral),
       loadImage(ICON_URLS.west),
       loadImage(ICON_URLS.east),
     ]);
     const icons = { neutral: neutralIcon, west: westIcon, east: eastIcon };
-    context.drawImage(icons.neutral, 64, 42, 104, 104);
-    context.fillStyle = "#f7fcfd"; context.font = "900 62px Pretendard, sans-serif"; context.fillText("아티팩트 현황", 196, 96);
+    context.drawImage(icons.neutral, 40, 30, 86, 86);
+    context.fillStyle = "#f7fcfd"; context.font = "900 56px Pretendard, sans-serif"; context.fillText("아티팩트 현황", 150, 77);
     const historical = state.selectedRoundKey !== "current";
     const snapshotRound = historical ? `${formatRoundDate(state.selectedRoundKey)} 점령 결과` : "한국 서버 전체 21개 대진";
-    context.fillStyle = "#9bb4c0"; context.font = "750 29px Pretendard, sans-serif"; context.fillText(`NotMeter · ${snapshotRound}`, 198, 139);
+    context.fillStyle = "#a9bec8"; context.font = "750 27px Pretendard, sans-serif"; context.fillText(`NotMeter · ${snapshotRound}`, 151, 113);
     const period = matchingPeriod();
-    context.fillStyle = "#aaf8fb"; context.font = "850 25px Pretendard, sans-serif";
-    context.fillText(text("matchWeek", { week: period.week }), 64, 191);
-    context.fillStyle = "#93aebb"; context.font = "750 23px Pretendard, sans-serif";
+    context.fillStyle = "#aaf8fb"; context.font = "850 24px Pretendard, sans-serif";
+    context.fillText(text("matchWeek", { week: period.week }), 40, 154);
+    context.fillStyle = "#9bb2bd"; context.font = "750 22px Pretendard, sans-serif";
     context.fillText(text("matchRange", {
       start: formatCycleDate(period.startAt), end: formatCycleDate(period.endAt),
-    }), 370, 191);
-    context.textAlign = "right"; context.fillStyle = "#fff2b8"; context.font = "850 24px Pretendard, sans-serif";
-    context.fillText(`${text("matchRounds", { total: period.totalRounds })} · ${text("matchSchedule")}`, 3136, 191);
+    }), 330, 154);
+    context.textAlign = "right"; context.fillStyle = "#fff2b8"; context.font = "850 23px Pretendard, sans-serif";
+    context.fillText(`${text("matchRounds", { total: period.totalRounds })} · ${text("matchSchedule")}`, 2360, 154);
+    roundedRect(context, 40, 171, 2320, 38, 10, "rgba(18,53,64,.68)", "rgba(79,121,135,.7)", 2);
+    context.textAlign = "center"; context.fillStyle = "#d9e8ec"; context.font = "800 21px Pretendard, sans-serif";
+    context.fillText("하층  뿌리 · 유황섬 · 시엘 군도     |     중층  중앙섬 · 늪지 · 고목숲", 1200, 198);
     const presentations = state.presentations.length === PAIRS.length
       ? state.presentations
       : sortPresentationsByFavorites(PAIRS.map(pair =>
@@ -914,72 +917,66 @@
     presentations.forEach((presentation, index) => {
       const column = index % SNAPSHOT_COLUMNS;
       const row = Math.floor(index / SNAPSHOT_COLUMNS);
-      drawSnapshotPair(context, presentation, 52 + column * 1040, 220 + row * 438, icons);
+      const isLastSolo = presentations.length % SNAPSHOT_COLUMNS !== 0
+        && index === presentations.length - 1;
+      const cardX = isLastSolo
+        ? (SNAPSHOT_WIDTH - SNAPSHOT_CARD_WIDTH) / 2
+        : 30 + column * 1182;
+      drawSnapshotPair(context, presentation, cardX, 220 + row * 218, icons);
     });
-    context.textAlign = "left"; context.fillStyle = "#91aab6"; context.font = "700 23px Pretendard, sans-serif";
-    context.fillText(text("source"), 64, 3360);
-    context.textAlign = "right"; context.fillStyle = "#d7e5e9"; context.font = "850 24px Pretendard, sans-serif";
-    context.fillText(new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date()), 3136, 3360);
+    context.textAlign = "left"; context.fillStyle = "#91aab6"; context.font = "700 20px Pretendard, sans-serif";
+    context.fillText(text("source"), 40, 2654);
+    context.textAlign = "right"; context.fillStyle = "#d7e5e9"; context.font = "850 21px Pretendard, sans-serif";
+    context.fillText(new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date()), 2360, 2654);
     return canvas;
   }
 
   function drawSnapshotPair(context, presentation, x, y, icons) {
     const { pair, layers, west, east, lead, cumulative, historical, favoriteCount } = presentation;
-    roundedRect(context, x, y, SNAPSHOT_CARD_WIDTH, SNAPSHOT_CARD_HEIGHT, 22, "rgba(5,18,27,.97)", favoriteCount > 0 ? "#d0b35d" : "#3a5968", 2);
-    context.textAlign = "left"; context.fillStyle = "#9ab2bf"; context.font = "800 21px Pretendard, sans-serif";
+    roundedRect(context, x, y, SNAPSHOT_CARD_WIDTH, SNAPSHOT_CARD_HEIGHT, 18, "rgba(5,18,27,.97)", favoriteCount > 0 ? "#d0b35d" : "#3a5968", 2);
+    context.textAlign = "left"; context.fillStyle = "#a9bdc6"; context.font = "800 19px Pretendard, sans-serif";
     const battleAt = historical ? Number(pair.nextBattleAt) : effectiveNextBattleAt(pair);
-    context.fillText(`${favoriteCount > 0 ? "★ " : ""}${String(pair.pairId).padStart(2, "0")} · ${battleAt ? formatBattleTime(battleAt) : "—"}`, x + 24, y + 34);
+    context.fillText(`${favoriteCount > 0 ? "★ " : ""}${String(pair.pairId).padStart(2, "0")} · ${battleAt ? formatBattleTime(battleAt) : "—"}`, x + 20, y + 27);
     context.textAlign = "right"; context.fillStyle = west > east ? "#8af5ff" : east > west ? "#f0a5ff" : "#c0d0d7";
-    context.font = "900 22px Pretendard, sans-serif"; context.fillText(lead, x + 992, y + 34);
-    context.textAlign = "left"; context.fillStyle = "#8df2fb"; context.font = "900 34px Pretendard, sans-serif";
-    context.fillText(pair.west.name, x + 24, y + 86, 340);
-    context.textAlign = "right"; context.fillStyle = "#f0a7fc"; context.fillText(pair.east.name, x + 992, y + 86, 340);
-    context.textAlign = "center"; context.font = "950 40px Pretendard, sans-serif";
-    context.fillStyle = "#44e5f3"; context.fillText(String(west), x + 440, y + 87);
-    context.fillStyle = "#8ba2ad"; context.fillText(":", x + 508, y + 87);
-    context.fillStyle = "#e37cf3"; context.fillText(String(east), x + 576, y + 87);
-    context.textAlign = "center"; context.fillStyle = "#91a9b4"; context.font = "850 17px Pretendard, sans-serif";
-    context.fillText(historical ? text("roundScore") : text("currentScore"), x + 508, y + 111);
-    layers.forEach((layer, layerIndex) => {
-      const layerY = y + 124 + layerIndex * 101;
-      context.textAlign = "left"; context.fillStyle = "#edf6f8"; context.font = "900 22px Pretendard, sans-serif";
-      context.fillText(layer.layer === 1 ? text("lower") : text("middle"), x + 24, layerY + 22);
-      context.textAlign = "right"; context.fillStyle = "#9bb1bc"; context.font = "800 19px Pretendard, sans-serif";
-      context.fillText(layer.confirmed ? text("confirmed") : text("waiting"), x + 992, layerY + 22);
-      layer.entries.forEach((entry, entryIndex) => {
-        const itemX = x + 22 + entryIndex * 328;
-        const itemY = layerY + 31;
-        const fill = entry.ownerSide === 1 ? "rgba(24,201,222,.23)" : entry.ownerSide === 2 ? "rgba(203,73,229,.23)" : "rgba(126,153,164,.13)";
-        const border = entry.ownerSide === 1 ? "#3195a4" : entry.ownerSide === 2 ? "#9a48aa" : "#3a5968";
-        roundedRect(context, itemX, itemY, 316, 64, 12, fill, border, 2);
-        context.drawImage(icons[artifactIconKey(entry.ownerSide)], itemX + 10, itemY + 9, 46, 46);
-        context.textAlign = "left"; context.fillStyle = "#f5fafb"; context.font = "850 20px Pretendard, sans-serif";
-        context.fillText(shortArtifactName(entry.name), itemX + 66, itemY + 27, 238);
-        context.fillStyle = entry.ownerSide === 1 ? "#8af3fb" : entry.ownerSide === 2 ? "#f0a4fa" : "#b5c6cd";
-        context.font = "900 18px Pretendard, sans-serif";
-        context.fillText(layer.confirmed ? ownerName(entry.ownerSide) : text("waiting"), itemX + 66, itemY + 50, 238);
-      });
+    context.font = "900 20px Pretendard, sans-serif"; context.fillText(lead, x + 1138, y + 27);
+    context.textAlign = "left"; context.fillStyle = "#8df2fb"; context.font = "900 38px Pretendard, sans-serif";
+    context.fillText(pair.west.name, x + 20, y + 70, 370);
+    context.textAlign = "right"; context.fillStyle = "#f0a7fc"; context.fillText(pair.east.name, x + 1138, y + 70, 370);
+    context.textAlign = "center"; context.font = "950 44px Pretendard, sans-serif";
+    context.fillStyle = "#44e5f3"; context.fillText(String(west), x + 508, y + 72);
+    context.fillStyle = "#8ba2ad"; context.fillText(":", x + 579, y + 72);
+    context.fillStyle = "#e37cf3"; context.fillText(String(east), x + 650, y + 72);
+    const entries = layers.flatMap(layer => layer.entries);
+    entries.forEach((entry, entryIndex) => {
+      const itemX = x + 20 + entryIndex * 186;
+      const itemY = y + 88;
+      const fill = entry.ownerSide === 1 ? "rgba(24,201,222,.25)" : entry.ownerSide === 2 ? "rgba(203,73,229,.25)" : "rgba(126,153,164,.14)";
+      const border = entry.ownerSide === 1 ? "#3195a4" : entry.ownerSide === 2 ? "#9a48aa" : "#3a5968";
+      const foreground = entry.ownerSide === 1 ? "#9af7fd" : entry.ownerSide === 2 ? "#f1adfb" : "#c0d0d7";
+      roundedRect(context, itemX, itemY, 174, 55, 10, fill, border, 2);
+      context.drawImage(icons[artifactIconKey(entry.ownerSide)], itemX + 8, itemY + 9, 37, 37);
+      context.textAlign = "left"; context.fillStyle = foreground; context.font = "900 23px Pretendard, sans-serif";
+      context.fillText(snapshotArtifactName(entry.name), itemX + 51, itemY + 36, 115);
     });
-    roundedRect(context, x + 22, y + 326, 972, 48, 10,
-      "rgba(20,60,73,.84)", "rgba(89,133,148,.82)", 2);
-    context.textAlign = "left"; context.fillStyle = "#edf6f8"; context.font = "900 20px Pretendard, sans-serif";
-    context.fillText(text("cumulativeScore"), x + 38, y + 347);
-    context.fillStyle = "#9ab0ba"; context.font = "750 16px Pretendard, sans-serif";
-    context.fillText(cumulative.count > 0
-      ? text("cumulativeCoverage", { count: cumulative.count, total: cumulative.total })
-      : text("cumulativePending"), x + 38, y + 367);
-    context.textAlign = "right"; context.font = "950 30px Pretendard, sans-serif";
-    if (cumulative.count > 0) {
-      context.fillStyle = "#57e8f3"; context.fillText(String(cumulative.west), x + 918, y + 359);
-      context.fillStyle = "#8aa0aa"; context.fillText(":", x + 946, y + 359);
-      context.fillStyle = "#e589f3"; context.fillText(String(cumulative.east), x + 982, y + 359);
-    } else {
-      context.fillStyle = "#9aafb8"; context.fillText("— : —", x + 982, y + 359);
-    }
-    context.textAlign = "left"; context.fillStyle = "#9bb0ba"; context.font = "750 19px Pretendard, sans-serif";
-    context.fillText(historical ? text("historyRecord") : text("next"), x + 24, y + 404);
-    context.textAlign = "right"; context.fillStyle = "#fff3b9"; context.font = "900 21px Pretendard, sans-serif";
-    context.fillText(battleAt ? (historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—", x + 992, y + 404);
+    context.textAlign = "left"; context.fillStyle = "#dce9ed"; context.font = "850 19px Pretendard, sans-serif";
+    const cumulativeText = cumulative.count > 0
+      ? `${text("cumulativeScore")} ${cumulative.west}:${cumulative.east} · ${text("cumulativeCoverage", { count: cumulative.count, total: cumulative.total })}`
+      : `${text("cumulativeScore")} · ${text("cumulativePending")}`;
+    context.fillText(cumulativeText, x + 20, y + 184, 650);
+    context.textAlign = "right"; context.fillStyle = "#fff3b9"; context.font = "900 20px Pretendard, sans-serif";
+    const timeText = battleAt ? (historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—";
+    context.fillText(`${historical ? text("historyRecord") : text("next")} ${timeText}`, x + 1138, y + 184, 450);
+  }
+
+  function snapshotArtifactName(name) {
+    return String(name || "")
+      .replace("에레슈란타의 뿌리 아티팩트", "뿌리")
+      .replace("유황나무섬 아티팩트", "유황섬")
+      .replace("시엘의 날개 군도 아티팩트", "시엘 군도")
+      .replace("침식된 중앙섬 아티팩트", "중앙섬")
+      .replace("오염된 늪지 아티팩트", "늪지")
+      .replace("뒤틀린 고목나무 숲 아티팩트", "고목숲")
+      .replace(/\s*아티팩트$/u, "");
   }
 
   function roundedRect(context, x, y, width, height, radius, fill, stroke, lineWidth = 1) {
