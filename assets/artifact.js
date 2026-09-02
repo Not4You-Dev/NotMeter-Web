@@ -11,7 +11,7 @@
   const REQUEST_TIMEOUT_MS = 8_000;
   const ICON_URLS = Object.freeze({
     neutral: "./assets/artifact-neutral.png",
-    west: "./assets/artifact-west.png",
+    west: "./assets/artifact-west.png?v=20260902-2",
     east: "./assets/artifact-east.png",
   });
   const PAIRS = [
