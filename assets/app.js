@@ -3468,11 +3468,9 @@
     const { section, body } = createSetupGuideSection(titleKey, modifier, noteKey);
     body.classList.add("setup-guide-card-grid");
     for (const stat of (Array.isArray(stats) ? stats : [])) {
-      const medianValue = `${formatDecimal(stat.medianTotalValue, Number(stat.medianTotalValue) % 1 ? 1 : 0)}${stat.isPercent ? "%" : ""}`;
       body.append(createSetupGuideCard(stat.name, stat.icon, setupGuideMeta(
         t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }),
-        t("setupGuideTotalSlots", { value: formatInteger(stat.totalCount) }),
-        t("setupGuideMedianValue", { value: medianValue }))));
+        t("setupGuideTotalSlots", { value: formatInteger(stat.totalCount) }))));
     }
     if (!body.childElementCount) appendSetupGuideEmpty(body);
     return section;
@@ -3509,13 +3507,9 @@
         columns.className = "setup-guide-soul-columns";
         const categories = [
           ["setupGuideSoulSkills", slot.skills, skill => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(skill.usageRatePercent, 0) }),
-            t("setupGuideMedianLevel", { value: formatInteger(skill.medianLevel) }))],
+            t("setupGuideUsage", { value: formatPercent(skill.usageRatePercent, 0) }))],
           ["setupGuideSoulStats", slot.stats, stat => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }),
-            t("setupGuideMedianValue", {
-              value: `${formatDecimal(stat.medianTotalValue, Number(stat.medianTotalValue) % 1 ? 1 : 0)}${stat.isPercent ? "%" : ""}`,
-            }))],
+            t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }))],
         ];
         for (const [labelKey, choices, meta] of categories) {
           if (!Array.isArray(choices) || choices.length === 0) continue;
@@ -3566,12 +3560,9 @@
         group.append(title);
         const categories = [
           ["setupGuideArcanaCards", slot.choices, choice => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
-            Number(choice.medianEnchantLevel) > 0
-              ? t("setupGuideMedianEnhance", { value: formatInteger(choice.medianEnchantLevel) }) : "")],
+            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }))],
           ["setupGuideArcanaSkills", slot.skills, choice => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
-            t("setupGuideMedianLevel", { value: formatInteger(choice.medianLevel) }))],
+            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }))],
         ];
         for (const [labelKey, choices, meta] of categories) {
           if (!Array.isArray(choices) || choices.length === 0) continue;
@@ -3636,7 +3627,6 @@
         choice.icon,
         setupGuideMeta(
           t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
-          t("setupGuideMedianLevel", { value: formatInteger(choice.medianLevel) }),
           t("setupGuideLevelRange", {
             low: formatInteger(choice.p25Level),
             high: formatInteger(choice.p75Level),
