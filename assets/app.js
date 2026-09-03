@@ -3599,7 +3599,7 @@
         choice.name,
         choice.icon,
         meta(choice),
-        labelKey === "setupGuideArcanaStats")));
+        true)));
       group.append(title, grid);
       body.append(group);
     }
