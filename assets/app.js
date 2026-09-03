@@ -172,6 +172,10 @@
     "나즈문", "겔코스", "파톤", "펠레이르", "엘비다", "케투", "파이디온", "노툰", "무르트",
     "로탄", "쿠하푸", "두안카", "브로크", "왈터", "푸라킨", "이그누스",
   ];
+  const SERVER_SHORT_NAMES = Object.freeze({
+    "이스라펠": "이스",
+    "이스할겐": "할겐",
+  });
   const FIELD_BOSS_REGIONS = Array.isArray(globalThis.NotMeterFieldBossCatalog)
     ? globalThis.NotMeterFieldBossCatalog
     : [];
@@ -244,7 +248,7 @@
       setupGuideMedianExceed: "돌파 중앙 {value}", setupGuideTotalSlots: "총 {value}개",
       setupGuideMedianValue: "1인 중앙 {value}", setupGuideArcanaSlots: "슬롯별 카드",
       setupGuideArcanaSets: "세트 구성", setupGuideArcanaSkills: "아르카나 스킬",
-      setupGuideArcanaStats: "아르카나 능력치", setupGuideNoData: "확인된 표본이 없습니다",
+      setupGuideArcanaStats: "아르카나 추가 능력치", setupGuideNoData: "확인된 표본이 없습니다",
       classTop10: "클래스 TOP 10",
       fieldBoss: "필드보스",
       optimization: "최적화",
@@ -661,7 +665,7 @@
       setupGuideMedianExceed: "Median breakthrough {value}", setupGuideTotalSlots: "{value} total",
       setupGuideMedianValue: "Median per character {value}", setupGuideArcanaSlots: "Cards by slot",
       setupGuideArcanaSets: "Set combinations", setupGuideArcanaSkills: "Arcana skills",
-      setupGuideArcanaStats: "Arcana stats", setupGuideNoData: "No sample available",
+      setupGuideArcanaStats: "Arcana bonus stats", setupGuideNoData: "No sample available",
       classTop10: "Class TOP 10",
       fieldBoss: "Field Boss",
       optimization: "Optimization",
@@ -3403,15 +3407,9 @@
     return values.filter(value => String(value || "").length > 0);
   }
 
-  function createSetupGuideCard(name, icon, meta = [], rank = 0, omitIcon = false) {
+  function createSetupGuideCard(name, icon, meta = [], omitIcon = false) {
     const card = document.createElement("article");
     card.className = `setup-guide-card${omitIcon ? " setup-guide-card-no-icon" : ""}`;
-    if (rank > 0) {
-      const badge = document.createElement("b");
-      badge.className = "setup-guide-rank";
-      badge.textContent = String(rank);
-      card.append(badge);
-    }
     let visual = null;
     if (!omitIcon) {
       visual = document.createElement("span");
@@ -3454,12 +3452,12 @@
   function renderSetupGuideStats(titleKey, stats, modifier = "", noteKey = "") {
     const { section, body } = createSetupGuideSection(titleKey, modifier, noteKey);
     body.classList.add("setup-guide-card-grid");
-    for (const [index, stat] of (Array.isArray(stats) ? stats : []).entries()) {
+    for (const stat of (Array.isArray(stats) ? stats : [])) {
       const medianValue = `${formatDecimal(stat.medianTotalValue, Number(stat.medianTotalValue) % 1 ? 1 : 0)}${stat.isPercent ? "%" : ""}`;
       body.append(createSetupGuideCard(stat.name, stat.icon, setupGuideMeta(
         t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }),
         t("setupGuideTotalSlots", { value: formatInteger(stat.totalCount) }),
-        t("setupGuideMedianValue", { value: medianValue })), index + 1));
+        t("setupGuideMedianValue", { value: medianValue }))));
     }
     if (!body.childElementCount) appendSetupGuideEmpty(body);
     return section;
@@ -3512,11 +3510,10 @@
           const label = document.createElement("h5");
           label.textContent = t(labelKey);
           category.append(label);
-          choices.forEach((choice, index) => category.append(createSetupGuideCard(
+          choices.forEach(choice => category.append(createSetupGuideCard(
             choice.name,
             choice.icon,
             meta(choice),
-            index + 1,
             labelKey === "setupGuideSoulStats")));
           columns.append(category);
         }
@@ -3545,14 +3542,13 @@
         const title = document.createElement("h4");
         title.textContent = slot.slotName || "—";
         group.append(title);
-        (slot.choices || []).forEach((choice, index) => group.append(createSetupGuideCard(
+        (slot.choices || []).forEach(choice => group.append(createSetupGuideCard(
           choice.name,
           choice.icon,
           setupGuideMeta(
             t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
             Number(choice.medianEnchantLevel) > 0
-              ? t("setupGuideMedianEnhance", { value: formatInteger(choice.medianEnchantLevel) }) : ""),
-          index + 1)));
+              ? t("setupGuideMedianEnhance", { value: formatInteger(choice.medianEnchantLevel) }) : ""))));
         slotGrid.append(group);
       }
       slotGroup.append(slotTitle, slotGrid);
@@ -3577,11 +3573,10 @@
       title.textContent = t(labelKey);
       const grid = document.createElement("div");
       grid.className = "setup-guide-card-grid";
-      choices.forEach((choice, index) => grid.append(createSetupGuideCard(
+      choices.forEach(choice => grid.append(createSetupGuideCard(
         choice.name,
         choice.icon,
         meta(choice),
-        index + 1,
         labelKey === "setupGuideArcanaStats")));
       group.append(title, grid);
       body.append(group);
@@ -3605,7 +3600,7 @@
       title.textContent = t(labelKey);
       const grid = document.createElement("div");
       grid.className = "setup-guide-skill-grid";
-      choices.forEach((choice, index) => grid.append(createSetupGuideCard(
+      choices.forEach(choice => grid.append(createSetupGuideCard(
         choice.name,
         choice.icon,
         setupGuideMeta(
@@ -3614,8 +3609,7 @@
           t("setupGuideLevelRange", {
             low: formatInteger(choice.p25Level),
             high: formatInteger(choice.p75Level),
-          })),
-        index + 1)));
+          })))));
       group.append(title, grid);
       body.append(group);
     }
@@ -7676,7 +7670,7 @@
     const offset = serverId % 1000;
     const names = group === 1 ? SERVER_NAMES_ELYOS : group === 2 ? SERVER_NAMES_ASMODIAN : null;
     const name = names?.[offset - 1] || "";
-    return [...name].slice(0, 2).join("");
+    return SERVER_SHORT_NAMES[name] || [...name].slice(0, 2).join("");
   }
 
   function isTaiwanName(name) {

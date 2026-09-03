@@ -229,7 +229,6 @@ body.stat-efficiency-view .ranking-panel {
 .setup-guide-card strong { display: block; overflow: hidden; color: #e8f4f6; font-size: 11px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .setup-guide-card-meta { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
 .setup-guide-card-meta span { padding: 2px 4px; border-radius: 4px; color: #86aab6; background: #102a35; font-size: 8px; line-height: 1.3; }
-.setup-guide-rank { position: absolute; z-index: 1; top: 4px; left: 4px; display: grid; width: 14px; height: 14px; place-items: center; border-radius: 50%; color: #092027; background: #75e3d9; box-shadow: 0 1px 5px rgba(0, 0, 0, .35); font-size: 8px; }
 .setup-guide-subgroup + .setup-guide-subgroup { margin-top: 12px; padding-top: 11px; border-top: 1px solid #183743; }
 .setup-guide-skill-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .setup-guide-inline-empty { grid-column: 1 / -1; margin: 0; padding: 20px; color: #7898a7; text-align: center; }

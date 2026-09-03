@@ -43,7 +43,7 @@ globalThis.NotMeterStatsCopyZhTw = Object.freeze({
   setupGuideMedianExceed: "突破中位 {value}", setupGuideTotalSlots: "共 {value} 個",
   setupGuideMedianValue: "每人中位 {value}", setupGuideArcanaSlots: "各欄位卡片",
   setupGuideArcanaSets: "套裝組合", setupGuideArcanaSkills: "阿爾卡納技能",
-  setupGuideArcanaStats: "阿爾卡納能力值", setupGuideNoData: "尚無可用樣本",
+  setupGuideArcanaStats: "阿爾卡納追加能力值", setupGuideNoData: "尚無可用樣本",
   classTop10: "職業 TOP 10",
   fieldBoss: "野外首領",
   discord: "Discord",
