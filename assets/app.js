@@ -176,6 +176,13 @@
     "이스라펠": "이스",
     "이스할겐": "할겐",
   });
+  const ARCANA_SLOT_LABEL_KEYS = Object.freeze({
+    1: "setupGuideArcanaChalice", 2: "setupGuideArcanaParchment",
+    3: "setupGuideArcanaCompass", 4: "setupGuideArcanaBell",
+    5: "setupGuideArcanaMirror", 6: "setupGuideArcanaScales",
+    7: "setupGuideArcanaKey", 8: "setupGuideArcanaHourglass",
+    9: "setupGuideArcanaDice", 10: "setupGuideArcanaLantern",
+  });
   const FIELD_BOSS_REGIONS = Array.isArray(globalThis.NotMeterFieldBossCatalog)
     ? globalThis.NotMeterFieldBossCatalog
     : [];
@@ -249,6 +256,10 @@
       setupGuideMedianValue: "1인 중앙 {value}", setupGuideArcanaSlots: "슬롯별 카드",
       setupGuideArcanaSets: "세트 구성", setupGuideArcanaSkills: "아르카나 스킬",
       setupGuideArcanaStats: "아르카나 추가 능력치", setupGuideNoData: "확인된 표본이 없습니다",
+      setupGuideArcanaChalice: "성배", setupGuideArcanaParchment: "양피지",
+      setupGuideArcanaCompass: "나침반", setupGuideArcanaBell: "종", setupGuideArcanaMirror: "거울",
+      setupGuideArcanaScales: "천칭", setupGuideArcanaKey: "열쇠", setupGuideArcanaHourglass: "모래시계",
+      setupGuideArcanaDice: "주사위", setupGuideArcanaLantern: "등불",
       classTop10: "클래스 TOP 10",
       fieldBoss: "필드보스",
       optimization: "최적화",
@@ -666,6 +677,10 @@
       setupGuideMedianValue: "Median per character {value}", setupGuideArcanaSlots: "Cards by slot",
       setupGuideArcanaSets: "Set combinations", setupGuideArcanaSkills: "Arcana skills",
       setupGuideArcanaStats: "Arcana bonus stats", setupGuideNoData: "No sample available",
+      setupGuideArcanaChalice: "Chalice", setupGuideArcanaParchment: "Parchment",
+      setupGuideArcanaCompass: "Compass", setupGuideArcanaBell: "Bell", setupGuideArcanaMirror: "Mirror",
+      setupGuideArcanaScales: "Scales", setupGuideArcanaKey: "Key", setupGuideArcanaHourglass: "Hourglass",
+      setupGuideArcanaDice: "Dice", setupGuideArcanaLantern: "Lantern",
       classTop10: "Class TOP 10",
       fieldBoss: "Field Boss",
       optimization: "Optimization",
@@ -3540,7 +3555,8 @@
         const group = document.createElement("div");
         group.className = "setup-guide-slot setup-guide-arcana-slot";
         const title = document.createElement("h4");
-        title.textContent = slot.slotName || "—";
+        const slotLabelKey = ARCANA_SLOT_LABEL_KEYS[Number(slot.slotPos)];
+        title.textContent = slotLabelKey ? t(slotLabelKey) : (slot.slotName || "—");
         group.append(title);
         (slot.choices || []).forEach(choice => group.append(createSetupGuideCard(
           choice.name,
