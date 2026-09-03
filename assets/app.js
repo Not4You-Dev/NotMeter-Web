@@ -254,7 +254,7 @@
       setupGuideLevelRange: "주요 구간 Lv.{low}~{high}", setupGuideMedianEnhance: "강화 중앙 +{value}",
       setupGuideMedianExceed: "돌파 중앙 {value}", setupGuideTotalSlots: "총 {value}개",
       setupGuideMedianValue: "1인 중앙 {value}", setupGuideArcanaSlots: "슬롯별 카드",
-      setupGuideArcanaSets: "세트 구성", setupGuideArcanaSkills: "아르카나 스킬",
+      setupGuideArcanaSets: "세트 구성", setupGuideArcanaCards: "많이 사용하는 카드", setupGuideArcanaSkills: "많이 붙인 스킬",
       setupGuideArcanaStats: "아르카나 추가 능력치", setupGuideNoData: "확인된 표본이 없습니다",
       setupGuideArcanaChalice: "성배", setupGuideArcanaParchment: "양피지",
       setupGuideArcanaCompass: "나침반", setupGuideArcanaBell: "종", setupGuideArcanaMirror: "거울",
@@ -675,7 +675,7 @@
       setupGuideLevelRange: "Typical Lv.{low}–{high}", setupGuideMedianEnhance: "Median +{value}",
       setupGuideMedianExceed: "Median breakthrough {value}", setupGuideTotalSlots: "{value} total",
       setupGuideMedianValue: "Median per character {value}", setupGuideArcanaSlots: "Cards by slot",
-      setupGuideArcanaSets: "Set combinations", setupGuideArcanaSkills: "Arcana skills",
+      setupGuideArcanaSets: "Set combinations", setupGuideArcanaCards: "Most-used cards", setupGuideArcanaSkills: "Most-used attached skills",
       setupGuideArcanaStats: "Arcana bonus stats", setupGuideNoData: "No sample available",
       setupGuideArcanaChalice: "Chalice", setupGuideArcanaParchment: "Parchment",
       setupGuideArcanaCompass: "Compass", setupGuideArcanaBell: "Bell", setupGuideArcanaMirror: "Mirror",
@@ -3555,16 +3555,35 @@
         const group = document.createElement("div");
         group.className = "setup-guide-slot setup-guide-arcana-slot";
         const title = document.createElement("h4");
-        const slotLabelKey = ARCANA_SLOT_LABEL_KEYS[Number(slot.slotPos)];
+        const rawSlotPos = Number(slot.slotPos);
+        const slotPos = rawSlotPos >= 21 && rawSlotPos <= 30
+          ? rawSlotPos - 20
+          : rawSlotPos;
+        const slotLabelKey = ARCANA_SLOT_LABEL_KEYS[slotPos];
         title.textContent = slotLabelKey ? t(slotLabelKey) : (slot.slotName || "—");
         group.append(title);
-        (slot.choices || []).forEach(choice => group.append(createSetupGuideCard(
-          choice.name,
-          choice.icon,
-          setupGuideMeta(
+        const categories = [
+          ["setupGuideArcanaCards", slot.choices, choice => setupGuideMeta(
             t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
             Number(choice.medianEnchantLevel) > 0
-              ? t("setupGuideMedianEnhance", { value: formatInteger(choice.medianEnchantLevel) }) : ""))));
+              ? t("setupGuideMedianEnhance", { value: formatInteger(choice.medianEnchantLevel) }) : "")],
+          ["setupGuideArcanaSkills", slot.skills, choice => setupGuideMeta(
+            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+            t("setupGuideMedianLevel", { value: formatInteger(choice.medianLevel) }))],
+        ];
+        for (const [labelKey, choices, meta] of categories) {
+          if (!Array.isArray(choices) || choices.length === 0) continue;
+          const category = document.createElement("div");
+          category.className = `setup-guide-slot-category${labelKey === "setupGuideArcanaSkills" ? " is-skills" : ""}`;
+          const categoryTitle = document.createElement("h5");
+          categoryTitle.textContent = t(labelKey);
+          category.append(categoryTitle);
+          choices.forEach(choice => category.append(createSetupGuideCard(
+            choice.name,
+            choice.icon,
+            meta(choice))));
+          group.append(category);
+        }
         slotGrid.append(group);
       }
       slotGroup.append(slotTitle, slotGrid);
@@ -3574,9 +3593,6 @@
       ["setupGuideArcanaSets", arcana?.sets, choice => setupGuideMeta(
         t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
         t("setupGuideTotalSlots", { value: formatInteger(choice.medianEquippedCount) }))],
-      ["setupGuideArcanaSkills", arcana?.skills, choice => setupGuideMeta(
-        t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
-        t("setupGuideMedianLevel", { value: formatInteger(choice.medianLevel) }))],
       ["setupGuideArcanaStats", arcana?.stats, choice => setupGuideMeta(
         t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
         t("setupGuideMedianValue", { value: `${formatDecimal(choice.medianTotalValue, 1)}${choice.isPercent ? "%" : ""}` }))],

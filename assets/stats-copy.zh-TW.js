@@ -42,7 +42,7 @@ globalThis.NotMeterStatsCopyZhTw = Object.freeze({
   setupGuideLevelRange: "常見區間 Lv.{low}～{high}", setupGuideMedianEnhance: "強化中位 +{value}",
   setupGuideMedianExceed: "突破中位 {value}", setupGuideTotalSlots: "共 {value} 個",
   setupGuideMedianValue: "每人中位 {value}", setupGuideArcanaSlots: "各欄位卡片",
-  setupGuideArcanaSets: "套裝組合", setupGuideArcanaSkills: "阿爾卡納技能",
+  setupGuideArcanaSets: "套裝組合", setupGuideArcanaCards: "常用卡片", setupGuideArcanaSkills: "常用附加技能",
   setupGuideArcanaStats: "阿爾卡納追加能力值", setupGuideNoData: "尚無可用樣本",
   setupGuideArcanaChalice: "聖杯", setupGuideArcanaParchment: "羊皮紙",
   setupGuideArcanaCompass: "羅盤", setupGuideArcanaBell: "鐘", setupGuideArcanaMirror: "鏡子",
