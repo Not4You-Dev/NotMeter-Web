@@ -236,7 +236,7 @@ body.stat-efficiency-view .ranking-panel {
 .setup-guide-card-icon img { width: 100%; height: 100%; object-fit: cover; }
 .setup-guide-card > div { min-width: 0; }
 .setup-guide-card-no-icon { grid-template-columns: minmax(0, 1fr); min-height: 42px; padding-left: 9px; }
-.setup-guide-card-no-icon > div { padding-left: 16px; }
+.setup-guide-card-no-icon > div { padding-left: 0; }
 .setup-guide-card-no-icon strong { overflow: visible; text-overflow: clip; white-space: normal; }
 .setup-guide-card strong { display: block; overflow: hidden; color: #e8f4f6; font-size: 11px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .setup-guide-card-meta { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
