@@ -3556,9 +3556,11 @@
         group.className = "setup-guide-slot setup-guide-arcana-slot";
         const title = document.createElement("h4");
         const rawSlotPos = Number(slot.slotPos);
-        const slotPos = rawSlotPos >= 21 && rawSlotPos <= 30
-          ? rawSlotPos - 20
-          : rawSlotPos;
+        const slotPos = rawSlotPos >= 41 && rawSlotPos <= 50
+          ? rawSlotPos - 40
+          : rawSlotPos >= 21 && rawSlotPos <= 30
+            ? rawSlotPos - 20
+            : rawSlotPos;
         const slotLabelKey = ARCANA_SLOT_LABEL_KEYS[slotPos];
         title.textContent = slotLabelKey ? t(slotLabelKey) : (slot.slotName || "—");
         group.append(title);
