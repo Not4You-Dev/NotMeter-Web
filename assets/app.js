@@ -3527,9 +3527,13 @@
       "setup-guide-soul-section",
       "setupGuideSoulNote");
     const source = Array.isArray(slots) ? slots : [];
+    const isGearSlot = slot => {
+      const position = Number(slot?.slotPos);
+      return position <= 8 || position === 19;
+    };
     const slotGroups = [
-      ["setupGuideSoulGear", source.filter(slot => Number(slot.slotPos) <= 8)],
-      ["setupGuideSoulAccessories", source.filter(slot => Number(slot.slotPos) > 8)],
+      ["setupGuideSoulGear", source.filter(isGearSlot)],
+      ["setupGuideSoulAccessories", source.filter(slot => !isGearSlot(slot))],
     ];
     for (const [groupTitleKey, groupedSlots] of slotGroups) {
       const visibleSlots = groupedSlots.filter(slot =>
