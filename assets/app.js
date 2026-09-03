@@ -233,8 +233,10 @@
       setupGuideConfidenceHigh: "높음", setupGuideConfidenceMedium: "보통",
       setupGuideConfidenceLow: "낮음", setupGuideConfidenceInsufficient: "표본 부족",
       setupGuideManastoneTitle: "마석 · 피해 증폭", setupGuideManastoneNote: "피해 증폭 계열 마석만 따로 집계합니다.",
-      setupGuideSpiritStoneTitle: "영석", setupGuideSpiritStoneNote: "장착된 영석 옵션을 마석과 분리해 집계합니다.",
-      setupGuideSoulTitle: "부위별 영혼 각인", setupGuideSoulSkills: "스킬", setupGuideSoulStats: "옵션",
+      setupGuideSpiritStoneTitle: "영석 · 피해 증폭", setupGuideSpiritStoneNote: "피해 증폭 계열 영석만 따로 집계합니다.",
+      setupGuideSoulTitle: "부위별 영혼 각인", setupGuideSoulNote: "동일한 좌우 장신구는 한 부위로 합쳐 집계합니다.",
+      setupGuideSoulGear: "무기·방어구", setupGuideSoulAccessories: "장신구·특수 장비",
+      setupGuideSoulSkills: "스킬", setupGuideSoulStats: "옵션",
       setupGuideArcanaTitle: "아르카나", setupGuideSkillTitle: "스킬 투자 우선순위",
       setupGuideActive: "스킬", setupGuideStigma: "스티그마", setupGuidePassive: "패시브",
       setupGuideUsage: "사용 {value}", setupGuideMedianLevel: "중앙 Lv.{value}",
@@ -648,8 +650,10 @@
       setupGuideConfidenceHigh: "High", setupGuideConfidenceMedium: "Medium",
       setupGuideConfidenceLow: "Low", setupGuideConfidenceInsufficient: "Not enough data",
       setupGuideManastoneTitle: "Manastones · damage amplification", setupGuideManastoneNote: "Damage-amplification manastones are counted separately.",
-      setupGuideSpiritStoneTitle: "Spirit stones", setupGuideSpiritStoneNote: "Equipped spirit-stone stats are counted separately from manastones.",
-      setupGuideSoulTitle: "Soul engravings by slot", setupGuideSoulSkills: "Skills", setupGuideSoulStats: "Options",
+      setupGuideSpiritStoneTitle: "Spirit stones · damage amplification", setupGuideSpiritStoneNote: "Only damage-amplification spirit stones are counted.",
+      setupGuideSoulTitle: "Soul engravings by slot", setupGuideSoulNote: "Matching left and right accessories are combined into one slot.",
+      setupGuideSoulGear: "Weapons & armor", setupGuideSoulAccessories: "Accessories & special gear",
+      setupGuideSoulSkills: "Skills", setupGuideSoulStats: "Options",
       setupGuideArcanaTitle: "Arcana", setupGuideSkillTitle: "Skill investment priority",
       setupGuideActive: "Skills", setupGuideStigma: "Stigma", setupGuidePassive: "Passive",
       setupGuideUsage: "Used by {value}", setupGuideMedianLevel: "Median Lv.{value}",
@@ -3462,40 +3466,65 @@
   }
 
   function renderSetupGuideSoul(slots) {
-    const { section, body } = createSetupGuideSection("setupGuideSoulTitle");
-    body.classList.add("setup-guide-slot-grid");
-    for (const slot of Array.isArray(slots) ? slots : []) {
-      const group = document.createElement("div");
-      group.className = "setup-guide-slot setup-guide-soul-slot";
-      const title = document.createElement("h4");
-      title.textContent = slot.slotName || "—";
-      group.append(title);
-      const categories = [
-        ["setupGuideSoulSkills", slot.skills, skill => setupGuideMeta(
-          t("setupGuideUsage", { value: formatPercent(skill.usageRatePercent, 0) }),
-          t("setupGuideMedianLevel", { value: formatInteger(skill.medianLevel) }))],
-        ["setupGuideSoulStats", slot.stats, stat => setupGuideMeta(
-          t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }),
-          t("setupGuideMedianValue", {
-            value: `${formatDecimal(stat.medianTotalValue, Number(stat.medianTotalValue) % 1 ? 1 : 0)}${stat.isPercent ? "%" : ""}`,
-          }))],
-      ];
-      for (const [labelKey, choices, meta] of categories) {
-        if (!Array.isArray(choices) || choices.length === 0) continue;
-        const category = document.createElement("div");
-        category.className = "setup-guide-slot-category";
-        const label = document.createElement("h5");
-        label.textContent = t(labelKey);
-        category.append(label);
-        choices.forEach((choice, index) => category.append(createSetupGuideCard(
-          choice.name,
-          choice.icon,
-          meta(choice),
-          index + 1,
-          labelKey === "setupGuideSoulStats")));
-        group.append(category);
+    const { section, body } = createSetupGuideSection(
+      "setupGuideSoulTitle",
+      "setup-guide-soul-section",
+      "setupGuideSoulNote");
+    const source = Array.isArray(slots) ? slots : [];
+    const slotGroups = [
+      ["setupGuideSoulGear", source.filter(slot => Number(slot.slotPos) <= 8)],
+      ["setupGuideSoulAccessories", source.filter(slot => Number(slot.slotPos) > 8)],
+    ];
+    for (const [groupTitleKey, groupedSlots] of slotGroups) {
+      const visibleSlots = groupedSlots.filter(slot =>
+        (Array.isArray(slot.skills) && slot.skills.length > 0) ||
+        (Array.isArray(slot.stats) && slot.stats.length > 0));
+      if (visibleSlots.length === 0) continue;
+      const subgroup = document.createElement("div");
+      subgroup.className = "setup-guide-subgroup setup-guide-soul-subgroup";
+      const subgroupTitle = document.createElement("h4");
+      subgroupTitle.textContent = t(groupTitleKey);
+      const slotGrid = document.createElement("div");
+      slotGrid.className = "setup-guide-slot-grid setup-guide-soul-slot-grid";
+      for (const slot of visibleSlots) {
+        const group = document.createElement("div");
+        group.className = "setup-guide-slot setup-guide-soul-slot";
+        const title = document.createElement("h4");
+        title.textContent = slot.slotName || "—";
+        group.append(title);
+        const columns = document.createElement("div");
+        columns.className = "setup-guide-soul-columns";
+        const categories = [
+          ["setupGuideSoulSkills", slot.skills, skill => setupGuideMeta(
+            t("setupGuideUsage", { value: formatPercent(skill.usageRatePercent, 0) }),
+            t("setupGuideMedianLevel", { value: formatInteger(skill.medianLevel) }))],
+          ["setupGuideSoulStats", slot.stats, stat => setupGuideMeta(
+            t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }),
+            t("setupGuideMedianValue", {
+              value: `${formatDecimal(stat.medianTotalValue, Number(stat.medianTotalValue) % 1 ? 1 : 0)}${stat.isPercent ? "%" : ""}`,
+            }))],
+        ];
+        for (const [labelKey, choices, meta] of categories) {
+          if (!Array.isArray(choices) || choices.length === 0) continue;
+          const category = document.createElement("div");
+          category.className = `setup-guide-slot-category ${
+            labelKey === "setupGuideSoulStats" ? "is-options" : "is-skills"}`;
+          const label = document.createElement("h5");
+          label.textContent = t(labelKey);
+          category.append(label);
+          choices.forEach((choice, index) => category.append(createSetupGuideCard(
+            choice.name,
+            choice.icon,
+            meta(choice),
+            index + 1,
+            labelKey === "setupGuideSoulStats")));
+          columns.append(category);
+        }
+        group.append(columns);
+        slotGrid.append(group);
       }
-      if (group.childElementCount > 1) body.append(group);
+      subgroup.append(subgroupTitle, slotGrid);
+      body.append(subgroup);
     }
     if (!body.childElementCount) appendSetupGuideEmpty(body);
     return section;

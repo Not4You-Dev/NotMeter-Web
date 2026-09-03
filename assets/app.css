@@ -200,6 +200,22 @@ body.stat-efficiency-view .ranking-panel {
 .setup-guide-subgroup > h4 { margin: 0 0 7px; color: #76dcd5; font-size: 11px; font-weight: 900; }
 .setup-guide-slot-category + .setup-guide-slot-category { margin-top: 9px; padding-top: 8px; border-top: 1px solid #17343f; }
 .setup-guide-slot-category > h5 { margin: 0 0 6px; color: #8aaeb9; font-size: 9px; font-weight: 850; letter-spacing: .04em; }
+.setup-guide-soul-slot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.setup-guide-soul-slot { overflow: hidden; padding: 0; background: linear-gradient(145deg, #0b202b, #091923); }
+.setup-guide-soul-slot > h4 { margin: 0; padding: 9px 11px; border-bottom: 1px solid #1b414d; color: #a2f2ea; background: rgba(31, 111, 111, .13); font-size: 12px; }
+.setup-guide-soul-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.setup-guide-soul-columns > .setup-guide-slot-category { min-width: 0; padding: 8px; }
+.setup-guide-soul-columns > .setup-guide-slot-category + .setup-guide-slot-category { margin: 0; padding-top: 8px; border-top: 0; border-left: 1px solid #173843; }
+.setup-guide-soul-columns > .setup-guide-slot-category:only-child { grid-column: 1 / -1; border-left: 0; }
+.setup-guide-soul-columns .setup-guide-slot-category > h5 { display: inline-flex; margin-bottom: 4px; padding: 2px 6px; border: 1px solid #27515c; border-radius: 999px; color: #9bbbc4; background: #102b36; }
+.setup-guide-soul-columns .setup-guide-slot-category.is-skills > h5 { border-color: #2b6967; color: #94e3dc; background: rgba(25, 90, 89, .26); }
+.setup-guide-soul-slot .setup-guide-card { min-height: 36px; margin: 0; padding: 5px 4px; border: 0; border-radius: 0; background: transparent; }
+.setup-guide-soul-slot .setup-guide-card + .setup-guide-card { border-top: 1px solid rgba(36, 70, 80, .52); }
+.setup-guide-soul-slot .setup-guide-card-icon { width: 29px; height: 29px; border-radius: 6px; }
+.setup-guide-soul-slot .setup-guide-card-no-icon { min-height: 34px; }
+.setup-guide-soul-slot .setup-guide-card strong { font-size: 10px; }
+.setup-guide-soul-slot .setup-guide-card-meta { margin-top: 2px; }
+.setup-guide-soul-subgroup + .setup-guide-soul-subgroup { margin-top: 14px; }
 .setup-guide-card { position: relative; display: grid; grid-template-columns: 35px minmax(0, 1fr); align-items: center; gap: 8px; min-width: 0; min-height: 50px; padding: 7px 8px; border: 1px solid #1d3c48; border-radius: 7px; background: rgba(12, 31, 42, .9); }
 .setup-guide-card + .setup-guide-card { margin-top: 5px; }
 .setup-guide-card-grid > .setup-guide-card + .setup-guide-card,
@@ -6764,6 +6780,7 @@ tr:nth-child(3) .rank-badge {
 }
 
 @media (max-width: 860px) {
+  .setup-guide-soul-slot-grid { grid-template-columns: 1fr; }
   .class-performance-proof {
     grid-template-columns: 1fr;
   }
@@ -8062,6 +8079,8 @@ tr:nth-child(3) .rank-badge {
   .setup-guide-skill-grid { grid-template-columns: 1fr; }
   .setup-guide-section-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
   .setup-guide-section-note { text-align: left; }
+  .setup-guide-soul-columns { grid-template-columns: 1fr; }
+  .setup-guide-soul-columns > .setup-guide-slot-category + .setup-guide-slot-category { border-top: 1px solid #173843; border-left: 0; }
   .setup-guide-surface .contribution-tab { min-width: 94px; }
 }
 
