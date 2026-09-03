@@ -175,6 +175,44 @@ body.stat-efficiency-view .ranking-panel {
 .contribution-method article p { margin: 5px 0 0; color: #86a6b5; font-size: 11px; line-height: 1.55; }
 .contribution-caution { margin: 0 12px 12px; padding: 10px 12px; border-left: 3px solid #d29c49; color: #c2a978; background: rgba(126, 81, 21, .1); font-size: 11px; line-height: 1.55; }
 
+.setup-guide-surface .contribution-heading-icon { color: #8cf0e5; }
+.setup-guide-surface .contribution-tabs { padding-bottom: 15px; }
+.setup-guide-surface .contribution-tab { display: inline-flex; align-items: center; gap: 7px; min-width: 104px; justify-content: center; }
+.setup-guide-surface .contribution-tab .job-icon { width: 25px; height: 25px; }
+.setup-guide-surface .contribution-tab span { font-weight: 850; }
+.setup-guide-surface .contribution-tab small { padding-left: 2px; color: #6f96a6; font-size: 9px; font-variant-numeric: tabular-nums; }
+.setup-guide-surface .contribution-tab.active small { color: #91ddd7; }
+.setup-guide-surface .contribution-content { padding-bottom: 4px; }
+.setup-guide-surface .contribution-content-heading { margin-bottom: 9px; border-radius: 9px; }
+.setup-guide-surface #contribution-dungeon-title { display: inline-flex; align-items: center; gap: 8px; }
+.setup-guide-surface #contribution-dungeon-title .job-icon { width: 29px; height: 29px; }
+.setup-guide-surface .contribution-rows { display: grid; gap: 9px; }
+
+.setup-guide-section { overflow: hidden; border: 1px solid #1d4350; border-radius: 10px; background: rgba(8, 25, 34, .82); }
+.setup-guide-section > h3 { margin: 0; padding: 12px 14px; border-bottom: 1px solid #1b3a46; color: #e5fbfb; background: linear-gradient(90deg, rgba(29, 110, 109, .2), rgba(10, 30, 40, .15)); font-size: 14px; font-weight: 950; }
+.setup-guide-section-body { padding: 11px; }
+.setup-guide-card-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.setup-guide-slot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.setup-guide-slot { min-width: 0; padding: 9px; border: 1px solid #1c3b47; border-radius: 8px; background: #0a1d28; }
+.setup-guide-slot > h4,
+.setup-guide-subgroup > h4 { margin: 0 0 7px; color: #76dcd5; font-size: 11px; font-weight: 900; }
+.setup-guide-card { position: relative; display: grid; grid-template-columns: 35px minmax(0, 1fr); align-items: center; gap: 8px; min-width: 0; min-height: 50px; padding: 7px 8px; border: 1px solid #1d3c48; border-radius: 7px; background: rgba(12, 31, 42, .9); }
+.setup-guide-card + .setup-guide-card { margin-top: 5px; }
+.setup-guide-card-grid > .setup-guide-card + .setup-guide-card,
+.setup-guide-skill-grid > .setup-guide-card + .setup-guide-card { margin-top: 0; }
+.setup-guide-card-icon { display: grid; width: 35px; height: 35px; overflow: hidden; place-items: center; border: 1px solid #32616a; border-radius: 7px; color: #8ee5de; background: #102d38; font-size: 13px; font-weight: 900; }
+.setup-guide-card-icon img { width: 100%; height: 100%; object-fit: cover; }
+.setup-guide-card > div { min-width: 0; }
+.setup-guide-card strong { display: block; overflow: hidden; color: #e8f4f6; font-size: 11px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.setup-guide-card-meta { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.setup-guide-card-meta span { padding: 2px 4px; border-radius: 4px; color: #86aab6; background: #102a35; font-size: 8px; line-height: 1.3; }
+.setup-guide-rank { position: absolute; z-index: 1; top: 4px; left: 4px; display: grid; width: 14px; height: 14px; place-items: center; border-radius: 50%; color: #092027; background: #75e3d9; box-shadow: 0 1px 5px rgba(0, 0, 0, .35); font-size: 8px; }
+.setup-guide-subgroup + .setup-guide-subgroup { margin-top: 12px; padding-top: 11px; border-top: 1px solid #183743; }
+.setup-guide-skill-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.setup-guide-inline-empty { grid-column: 1 / -1; margin: 0; padding: 20px; color: #7898a7; text-align: center; }
+.setup-guide-quick { border-color: #34736f; background: linear-gradient(135deg, rgba(22, 72, 73, .34), rgba(8, 25, 34, .86)); }
+.setup-guide-quick > h3 { color: #b8fff7; }
+
 button,
 select,
 input {
@@ -7038,6 +7076,10 @@ tr:nth-child(3) .rank-badge {
   .contribution-table-heading, .contribution-row { gap: 4px; padding-inline: 9px; }
   .contribution-method { margin-inline: 9px; }
   .contribution-method-grid { grid-template-columns: 1fr; }
+  .setup-guide-card-grid,
+  .setup-guide-slot-grid,
+  .setup-guide-skill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .setup-guide-section-body { padding: 8px; }
 
   .class-performance-method {
     grid-template-columns: 1fr;
@@ -8007,6 +8049,13 @@ tr:nth-child(3) .rank-badge {
   .detail-buff {
     width: 100%;
   }
+}
+
+@media (max-width: 520px) {
+  .setup-guide-card-grid,
+  .setup-guide-slot-grid,
+  .setup-guide-skill-grid { grid-template-columns: 1fr; }
+  .setup-guide-surface .contribution-tab { min-width: 94px; }
 }
 
 @media (max-width: 600px) {

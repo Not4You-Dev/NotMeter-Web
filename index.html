@@ -18,14 +18,15 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260903-13">
+  <link rel="stylesheet" href="./assets/app.css?v=20260903-14">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
   <script>
     (() => {
-      const requestedView = new URLSearchParams(window.location.search).get("view") || "ranking";
-      const pageView = ["ranking", "class-top10", "class-performance", "contribution", "boss-resistance", "stat-efficiency", "field-boss", "artifact", "optimization", "character"]
+      const rawView = new URLSearchParams(window.location.search).get("view") || "ranking";
+      const requestedView = rawView === "contribution" ? "setup-guide" : rawView;
+      const pageView = ["ranking", "class-top10", "class-performance", "setup-guide", "contribution", "boss-resistance", "stat-efficiency", "field-boss", "artifact", "optimization", "character"]
         .includes(requestedView) ? requestedView : "ranking";
       let savedLocale = "";
       try {
@@ -64,9 +65,9 @@
             title: "NotMeter CP 보정 직업 DPS 통계",
             description: "이번 주 동일 조건 전투기록을 CP로 보정해 직업별 DPS 성능과 신뢰도를 비교합니다."
           },
-          "contribution": {
-            title: "NotMeter 기여도 통계",
-            description: "이번 주 주요 던전 최종 보스에서 직업별 기여도 5% 미만 발생 빈도를 확인합니다."
+          "setup-guide": {
+            title: "NotMeter 직업별 세팅 가이드",
+            description: "전체 기간 상위 랭커의 PVE 장비·마석·영혼 각인·아르카나·스킬 세팅 통계를 확인합니다."
           },
           "boss-resistance": {
             title: "NotMeter 보스 저항 통계",
@@ -106,9 +107,9 @@
             title: "NotMeter CP-adjusted Class DPS",
             description: "Compare weekly class DPS and confidence using CP-adjusted encounters under matching conditions."
           },
-          "contribution": {
-            title: "NotMeter Contribution Statistics",
-            description: "Compare how often each class falls below 5% contribution on key final bosses this week."
+          "setup-guide": {
+            title: "NotMeter Class Setup Guide",
+            description: "Explore PVE equipment, manastones, soul engravings, Arcana, and skill trends among all-time top rankers."
           },
           "boss-resistance": {
             title: "NotMeter Boss Resistance Statistics",
@@ -148,9 +149,9 @@
             title: "NotMeter CP 校正職業 DPS 統計",
             description: "使用本週相同條件的戰鬥紀錄校正 CP，比較各職業 DPS 表現與可信度。"
           },
-          "contribution": {
-            title: "NotMeter 貢獻度統計",
-            description: "查看本週主要副本最終首領中，各職業貢獻度低於 5% 的發生頻率。"
+          "setup-guide": {
+            title: "NotMeter 職業配裝指南",
+            description: "查看歷代頂尖玩家的 PVE 裝備、魔石、靈魂刻印、阿爾卡納與技能配置趨勢。"
           },
           "boss-resistance": {
             title: "NotMeter 首領抗性統計",
@@ -207,13 +208,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260819-2" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260903-13" defer></script>
-  <script src="./assets/stats-copy.zh-TW.js?v=20260827-4" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260903-14" defer></script>
+  <script src="./assets/stats-copy.zh-TW.js?v=20260903-5" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
   <script src="./assets/character.js?v=20260901-6" defer></script>
   <script src="./assets/artifact.js?v=20260903-12" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260903-13" defer></script>
+  <script src="./assets/app.js?v=20260903-14" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -249,14 +250,14 @@
             </span>
             <span class="service-link-label" data-i18n="classPerformance">직업 성능</span>
           </a>
-          <a class="service-link contribution-link" id="contribution-button" href="./?view=contribution" aria-current="false">
-            <span class="feature-new-badge" data-feature-new-until="2026-08-19T23:59:59+09:00" data-i18n-title="newFeature" hidden>NEW</span>
+          <a class="service-link contribution-link" id="contribution-button" href="./?view=setup-guide" aria-current="false">
+            <span class="feature-new-badge" data-feature-new-until="2026-09-10T23:59:59+09:00" data-i18n-title="newFeature" hidden>NEW</span>
             <span class="service-link-icon contribution-link-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
-                <path d="M4 9h16v11H4zM3 6h18v4H3zM12 6v14M8 6c-2.4 0-3.5-3.2-.7-3.2C9.6 2.8 12 6 12 6M16 6c2.4 0 3.5-3.2.7-3.2C14.4 2.8 12 6 12 6"></path>
+                <path d="M4 5.5c2.7-1 5.3-.7 8 1.1v12c-2.7-1.8-5.3-2.1-8-1.1zM20 5.5c-2.7-1-5.3-.7-8 1.1v12c2.7-1.8 5.3-2.1 8-1.1z"></path>
               </svg>
             </span>
-            <span class="service-link-label" data-i18n="contributionStats">기여도 통계</span>
+            <span class="service-link-label" data-i18n="contributionStats">세팅 가이드</span>
           </a>
           <a class="service-link boss-resistance-link" id="boss-resistance-button" href="./?view=boss-resistance" aria-current="false">
             <span class="feature-new-badge" data-feature-new-until="2026-08-22T23:59:59+09:00" data-i18n-title="newFeature" hidden>NEW</span>
@@ -427,42 +428,41 @@
       <div class="character-profile-content" id="character-profile-content" hidden></div>
     </section>
 
-    <section class="contribution-surface" id="contribution-surface" hidden>
+    <section class="contribution-surface setup-guide-surface" id="contribution-surface" hidden>
       <div class="contribution-heading">
         <div class="contribution-heading-copy">
-          <span class="contribution-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 9h16v11H4zM3 6h18v4H3zM12 6v14M8 6c-2.4 0-3.5-3.2-.7-3.2C9.6 2.8 12 6 12 6M16 6c2.4 0 3.5-3.2.7-3.2C14.4 2.8 12 6 12 6"></path></svg></span>
+          <span class="contribution-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 5.5c2.7-1 5.3-.7 8 1.1v12c-2.7-1.8-5.3-2.1-8-1.1zM20 5.5c-2.7-1-5.3-.7-8 1.1v12c2.7-1.8 5.3-2.1 8-1.1z"></path></svg></span>
           <div>
-            <span class="contribution-kicker">FINAL BOSS · SHARE &lt; 5% · THIS WEEK</span>
-            <h2 data-i18n="contributionStatsTitle">최종 보스 기여도 통계</h2>
-            <p data-i18n="contributionStatsDescription">이번 주 주요 던전 최종 보스에서 직업별 기여도 5% 미만 발생 빈도를 비교합니다.</p>
+            <span class="contribution-kicker">ALL-TIME TOP RANKERS · PVE LOADOUT</span>
+            <h2 data-i18n="contributionStatsTitle">직업별 세팅 가이드</h2>
+            <p data-i18n="contributionStatsDescription">상위 랭커가 실제 사용하는 장비와 성장 우선순위를 한눈에 확인하세요.</p>
           </div>
         </div>
         <a class="ranking-back-button" id="contribution-back-button" href="./"><span class="ranking-back-button-icon" aria-hidden="true">←</span><span data-i18n="backToRanking">랭킹으로 돌아가기</span></a>
       </div>
       <div class="contribution-summary" id="contribution-summary" hidden>
-        <div><span data-i18n="contributionPeriod">집계 기간</span><strong id="contribution-period">—</strong></div>
-        <div><span data-i18n="contributionRecords">최종 보스 기록</span><strong id="contribution-records">—</strong></div>
-        <div><span data-i18n="contributionSamples">플레이어 표본</span><strong id="contribution-samples">—</strong></div>
-        <div><span data-i18n="contributionLowSamples">5% 미만</span><strong id="contribution-low-samples">—</strong></div>
+        <div><span data-i18n="contributionPeriod">캐시 갱신</span><strong id="contribution-period">—</strong></div>
+        <div><span data-i18n="contributionRecords">확보 표본</span><strong id="contribution-records">—</strong></div>
+        <div><span data-i18n="contributionSamples">확인한 후보</span><strong id="contribution-samples">—</strong></div>
+        <div><span data-i18n="contributionLowSamples">표본 신뢰도</span><strong id="contribution-low-samples">—</strong></div>
       </div>
-      <nav class="contribution-tabs" id="contribution-tabs" aria-label="기여도 통계 던전 선택" data-i18n-aria-label="contributionDungeonAria"></nav>
-      <div class="contribution-state" id="contribution-loading-state"><div class="spinner" aria-hidden="true"></div><p data-i18n="contributionLoading">이번 주 기여도 통계 캐시를 불러오는 중입니다</p></div>
-      <div class="contribution-state contribution-error-state" id="contribution-error-state" hidden><div class="error-mark" aria-hidden="true">!</div><strong data-i18n="contributionLoadError">기여도 통계 캐시를 불러오지 못했습니다</strong><p id="contribution-error-message"></p><button class="refresh-button compact" id="contribution-retry-button" type="button" data-i18n="retry">다시 시도</button></div>
-      <div class="contribution-state" id="contribution-empty-state" hidden><p data-i18n="contributionEmpty">이번 주 집계 가능한 최종 보스 기록이 아직 없습니다</p></div>
+      <nav class="contribution-tabs" id="contribution-tabs" aria-label="세팅 가이드 직업 선택" data-i18n-aria-label="contributionDungeonAria"></nav>
+      <div class="contribution-state" id="contribution-loading-state"><div class="spinner" aria-hidden="true"></div><p data-i18n="contributionLoading">상위 랭커의 PVE 세팅을 불러오는 중입니다</p></div>
+      <div class="contribution-state contribution-error-state" id="contribution-error-state" hidden><div class="error-mark" aria-hidden="true">!</div><strong data-i18n="contributionLoadError">세팅 가이드 캐시를 불러오지 못했습니다</strong><p id="contribution-error-message"></p><button class="refresh-button compact" id="contribution-retry-button" type="button" data-i18n="retry">다시 시도</button></div>
+      <div class="contribution-state" id="contribution-empty-state" hidden><p data-i18n="contributionEmpty">아직 확인 가능한 PVE 세팅 표본이 없습니다.</p></div>
       <div class="contribution-content" id="contribution-content" hidden>
-        <div class="contribution-content-heading"><div><strong id="contribution-dungeon-title">—</strong><span id="contribution-boss-title">—</span></div><span data-i18n="contributionSortGuide">5% 미만 발생률 높은 순</span></div>
-        <div class="contribution-table-heading" aria-hidden="true"><span data-i18n="job">직업</span><span data-i18n="contributionLowCount">5% 미만</span><span data-i18n="contributionTotalCount">전체 표본</span><span data-i18n="contributionRate">발생률</span></div>
+        <div class="contribution-content-heading"><div><strong id="contribution-dungeon-title">—</strong><span id="contribution-boss-title">—</span></div><span data-i18n="contributionSortGuide">사용률이 높은 순서로 표시</span></div>
         <div class="contribution-rows" id="contribution-rows"></div>
       </div>
       <details class="contribution-method" open>
-        <summary data-i18n="contributionMethodTitle">기여도 통계는 어떻게 계산하나요?</summary>
+        <summary data-i18n="contributionMethodTitle">세팅 가이드는 어떻게 만들었나요?</summary>
         <div class="contribution-method-grid">
-          <article><b>01</b><strong data-i18n="contributionMethodScopeTitle">집계 대상</strong><p data-i18n="contributionMethodScopeText">이번 주 수요일 05:00부터 다음 수요일 05:00까지 저장된 4개 던전의 최종 보스 확정 처치 기록만 사용합니다.</p></article>
-          <article><b>02</b><strong data-i18n="contributionMethodFormulaTitle">5% 계산</strong><p data-i18n="contributionMethodFormulaText">처치기록에 저장된 기여도를 사용하며 5% 미만만 집계합니다. 과거 기록은 저장된 피해량과 보스 MAX HP로 같은 기준을 복원하고, 정확히 5%는 제외합니다.</p></article>
-          <article><b>03</b><strong data-i18n="contributionMethodSampleTitle">표본 단위</strong><p data-i18n="contributionMethodSampleText">한 캐릭터가 여러 번 참여하면 각 전투를 별도 표본으로 셉니다. 발생률은 5% 미만 표본 수 ÷ 해당 직업 전체 표본 수입니다.</p></article>
-          <article><b>04</b><strong data-i18n="contributionMethodTrustTitle">신뢰성 기준</strong><p data-i18n="contributionMethodTrustText">서버·직업·파티원이 모두 확인되고 통계 유효성 검증을 통과한 완전한 기록만 사용합니다. 불완전하거나 변조가 의심되는 기록은 제외합니다.</p></article>
+          <article><b>01</b><strong data-i18n="contributionMethodScopeTitle">상위 랭커 기준</strong><p data-i18n="contributionMethodScopeText">직업별 전체 기간 랭킹을 1위부터 확인해 최신 PVE 세팅이 있는 캐릭터 20명을 채웁니다.</p></article>
+          <article><b>02</b><strong data-i18n="contributionMethodFormulaTitle">누락 자동 보충</strong><p data-i18n="contributionMethodFormulaText">캐릭터 정보나 PVE 스냅샷이 없으면 다음 순위로 내려가며 유효한 20명을 확보합니다.</p></article>
+          <article><b>03</b><strong data-i18n="contributionMethodSampleTitle">한 캐릭터 한 표</strong><p data-i18n="contributionMethodSampleText">같은 캐릭터는 한 번만 반영하여 검색 횟수나 기록 수가 많은 캐릭터가 통계를 독점하지 않습니다.</p></article>
+          <article><b>04</b><strong data-i18n="contributionMethodTrustTitle">6시간마다 갱신</strong><p data-i18n="contributionMethodTrustText">최근 30일 안에 확인된 PVE 장비만 사용하며, 표본 수와 사용률을 함께 보여줍니다.</p></article>
         </div>
-        <p class="contribution-caution" data-i18n="contributionCaution">이 지표는 보상 기준 미달이 발생한 빈도이며 직업 DPS 순위가 아닙니다. 파티 구성·공략 역할·숙련도 차이를 함께 고려해 해석해 주세요.</p>
+        <p class="contribution-caution" data-i18n="contributionCaution">실전 상위 랭커의 선택을 정리한 참고 자료입니다. 패치·보유 장비·플레이 방식에 따라 정답은 달라질 수 있습니다.</p>
       </details>
     </section>
 
@@ -1224,7 +1224,7 @@
 
           <div class="ranker-dungeon-section-title">
             <strong data-i18n="rankerDungeonGuideDungeonTitle">랭커 마크 대상 던전</strong>
-            <span data-i18n="rankerDungeonGuideIntro">아래 6개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.</span>
+            <span data-i18n="rankerDungeonGuideIntro">아래 7개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.</span>
           </div>
           <div class="ranker-dungeon-list">
             <article class="ranker-dungeon-item" data-dungeon-key="deus-research-hard" data-ranking-basis="dps">
@@ -1241,29 +1241,36 @@
                 <p data-i18n="rankerDungeonNoiranBosses">불완전한 브라운트 · 광기의 클로민스터 · 아스크란</p>
               </div>
             </article>
-            <article class="ranker-dungeon-item" data-dungeon-key="musphel-hard" data-ranking-basis="dps">
+            <article class="ranker-dungeon-item" data-dungeon-key="bakron-trial" data-ranking-basis="dps">
               <span class="ranker-dungeon-number" aria-hidden="true">03</span>
+              <div>
+                <strong data-i18n="rankerDungeonBakronTitle">시련: 바크론의 공중섬</strong>
+                <p data-i18n="rankerDungeonBakronBosses">티에 · 타몬 · 바크론</p>
+              </div>
+            </article>
+            <article class="ranker-dungeon-item" data-dungeon-key="musphel-hard" data-ranking-basis="dps">
+              <span class="ranker-dungeon-number" aria-hidden="true">04</span>
               <div>
                 <strong data-i18n="rankerDungeonMusphelTitle">무스펠의 성배(어려움)</strong>
                 <p data-i18n="rankerDungeonMusphelBosses">이스카리엘 · 칼드릭스</p>
               </div>
             </article>
             <article class="ranker-dungeon-item" data-dungeon-key="fallen-deva-hard" data-ranking-basis="dps">
-              <span class="ranker-dungeon-number" aria-hidden="true">04</span>
+              <span class="ranker-dungeon-number" aria-hidden="true">05</span>
               <div>
                 <strong data-i18n="rankerDungeonFallenDevaTitle">타락한 데바의 성(어려움)</strong>
                 <p data-i18n="rankerDungeonFallenDevaBosses">의지의 투르겐 · 금기의 마수 그리오사 · 위악의 바실루스</p>
               </div>
             </article>
             <article class="ranker-dungeon-item" data-dungeon-key="abyss-horn-4" data-ranking-basis="dps">
-              <span class="ranker-dungeon-number" aria-hidden="true">05</span>
+              <span class="ranker-dungeon-number" aria-hidden="true">06</span>
               <div>
                 <strong data-i18n="rankerDungeonAbyssHornTitle">심연의 뿔 암굴(4단계)</strong>
                 <p data-i18n="rankerDungeonAbyssHornBosses">카푸 · 다칸 · 가르가움</p>
               </div>
             </article>
             <article class="ranker-dungeon-item ranker-dungeon-item-special" data-dungeon-key="nightmare-atheron-10" data-ranking-basis="combat-time">
-              <span class="ranker-dungeon-number" aria-hidden="true">06</span>
+              <span class="ranker-dungeon-number" aria-hidden="true">07</span>
               <div>
                 <strong data-i18n="rankerDungeonNightmareTitle">악몽</strong>
                 <p data-i18n="rankerDungeonNightmareBosses">각성한 아테론 10단계 · DPS가 아닌 빠른 전투 시간 순</p>
@@ -1271,8 +1278,8 @@
             </article>
           </div>
           <div class="ranker-dungeon-guide-notes">
-            <p data-i18n="rankerDungeonGuideScope">일반 던전 5개는 높은 DPS 순, 악몽은 짧은 전투 시간 순으로 집계합니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.</p>
-            <p data-i18n="rankerDungeonGuideBakronExcluded">시련: 바크론의 공중섬은 클래스 버그로 인한 기록 오염이 해소될 때까지 랭커 표시와 랭커 권한 닉네임 효과 대상에서 임시 제외됩니다.</p>
+            <p data-i18n="rankerDungeonGuideScope">일반 던전 6개는 높은 DPS 순, 악몽은 짧은 전투 시간 순으로 집계합니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.</p>
+            <p data-i18n="rankerDungeonGuideBakronRewardExcluded">시련: 바크론의 공중섬은 랭커 마크에는 반영되지만, 랭커 권한 닉네임 효과 대상에서는 임시 제외됩니다.</p>
             <p data-i18n="rankerDungeonGuideDummy">훈련용 허수아비(1분)는 홈페이지 랭킹만 제공하며, 딜미터기 전투 종료 구간 순위·상위% 배지와 실시간 랭커 마크 대상에서는 제외됩니다.</p>
             <p data-i18n="rankerDungeonGuidePeriod">상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주 기록을 사용합니다. 이번 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.</p>
           </div>

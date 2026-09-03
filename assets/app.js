@@ -27,9 +27,9 @@
     `${VPS_RANKING_CACHE_ROOT}/web/class-overall`,
   ];
   const CONTRIBUTION_CACHE_URLS = [
-    `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`,
-    `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`,
-    `${VPS_RANKING_CACHE_ROOT}/web/contribution`,
+    `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-setting-guide.json.gz`,
+    `${GITHUB_RANKING_CACHE_ROOT}/notmeter-setting-guide.json.gz`,
+    `${VPS_RANKING_CACHE_ROOT}/web/setup-guide`,
   ];
   const VPS_CLASS_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/classes`;
   const VPS_VIEW_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/views`;
@@ -48,7 +48,7 @@
   const EXPECTED_CLASS_RANKING_SCHEMA = "notmeter-web-class-ranking-v1";
   const EXPECTED_VIEW_RANKING_SCHEMA = "notmeter-web-view-ranking-v1";
   const EXPECTED_CLASS_OVERALL_SCHEMA = "notmeter-web-class-overall-v1";
-  const EXPECTED_CONTRIBUTION_SCHEMA = "notmeter-web-contribution-stats-v1";
+  const EXPECTED_CONTRIBUTION_SCHEMA = "notmeter-setup-guide-v1";
   const EXPECTED_CUSTOM_CP_SCHEMA = "notmeter-web-custom-cp-v4";
   const EXPECTED_CUSTOM_CP_RANK_SCHEMA = "notmeter-web-custom-cp-rank-v1";
   const EXPECTED_CUSTOM_CP_RANK_CHUNK_SCHEMA = "notmeter-web-custom-cp-rank-chunk-v2";
@@ -206,30 +206,43 @@
       dailyUsers: "일일 사용자",
       classPerformance: "직업 성능",
       newFeature: "새로 추가된 기능",
-      contributionStats: "기여도 통계",
-      contributionPageTitle: "NotMeter 기여도 통계",
-      contributionPageSubtitle: "이번 주 최종 보스 기여도 5% 미만 발생 빈도",
-      contributionStatsTitle: "최종 보스 기여도 통계",
-      contributionStatsDescription: "이번 주 주요 던전 최종 보스에서 직업별 기여도 5% 미만 발생 빈도를 비교합니다.",
-      contributionPeriod: "집계 기간", contributionRecords: "최종 보스 기록",
-      contributionSamples: "플레이어 표본", contributionLowSamples: "5% 미만",
-      contributionDungeonAria: "기여도 통계 던전 선택",
-      contributionLoading: "이번 주 기여도 통계 캐시를 불러오는 중입니다",
-      contributionLoadError: "기여도 통계 캐시를 불러오지 못했습니다",
-      contributionEmpty: "이번 주 집계 가능한 최종 보스 기록이 아직 없습니다",
-      contributionSortGuide: "5% 미만 발생률 높은 순", contributionLowCount: "5% 미만",
-      contributionTotalCount: "전체 표본", contributionRate: "발생률",
-      contributionBoss: "최종 보스 · {boss}", contributionCountValue: "{value}회",
-      contributionMethodTitle: "기여도 통계는 어떻게 계산하나요?",
-      contributionMethodScopeTitle: "집계 대상",
-      contributionMethodScopeText: "이번 주 수요일 05:00부터 다음 수요일 05:00까지 저장된 4개 던전의 최종 보스 확정 처치 기록만 사용합니다.",
-      contributionMethodFormulaTitle: "5% 계산",
-      contributionMethodFormulaText: "처치기록에 저장된 기여도를 사용하며 5% 미만만 집계합니다. 과거 기록은 저장된 피해량과 보스 MAX HP로 같은 기준을 복원하고, 정확히 5%는 제외합니다.",
-      contributionMethodSampleTitle: "표본 단위",
-      contributionMethodSampleText: "한 캐릭터가 여러 번 참여하면 각 전투를 별도 표본으로 셉니다. 발생률은 5% 미만 표본 수 ÷ 해당 직업 전체 표본 수입니다.",
-      contributionMethodTrustTitle: "신뢰성 기준",
-      contributionMethodTrustText: "서버·직업·파티원이 모두 확인되고 통계 유효성 검증을 통과한 완전한 기록만 사용합니다. 불완전하거나 변조가 의심되는 기록은 제외합니다.",
-      contributionCaution: "이 지표는 보상 기준 미달이 발생한 빈도이며 직업 DPS 순위가 아닙니다. 파티 구성·공략 역할·숙련도 차이를 함께 고려해 해석해 주세요.",
+      contributionStats: "세팅 가이드",
+      contributionPageTitle: "NotMeter 직업별 세팅 가이드",
+      contributionPageSubtitle: "전체 기간 상위 랭커의 실제 PVE 세팅 통계",
+      contributionStatsTitle: "직업별 세팅 가이드",
+      contributionStatsDescription: "상위 랭커가 실제 사용하는 장비와 성장 우선순위를 한눈에 확인하세요.",
+      contributionPeriod: "캐시 갱신", contributionRecords: "확보 표본",
+      contributionSamples: "확인한 후보", contributionLowSamples: "표본 신뢰도",
+      contributionDungeonAria: "세팅 가이드 직업 선택",
+      contributionLoading: "상위 랭커의 PVE 세팅을 불러오는 중입니다",
+      contributionLoadError: "세팅 가이드 캐시를 불러오지 못했습니다",
+      contributionEmpty: "아직 확인 가능한 PVE 세팅 표본이 없습니다",
+      contributionSortGuide: "사용률이 높은 순서로 표시",
+      contributionMethodTitle: "세팅 가이드는 어떻게 만들었나요?",
+      contributionMethodScopeTitle: "상위 랭커 기준",
+      contributionMethodScopeText: "직업별 전체 기간 랭킹을 1위부터 확인해 최신 PVE 세팅이 있는 캐릭터 20명을 채웁니다.",
+      contributionMethodFormulaTitle: "누락 자동 보충",
+      contributionMethodFormulaText: "캐릭터 정보나 PVE 스냅샷이 없으면 다음 순위로 내려가며 유효한 20명을 확보합니다.",
+      contributionMethodSampleTitle: "한 캐릭터 한 표",
+      contributionMethodSampleText: "같은 캐릭터는 한 번만 반영하여 검색 횟수나 기록 수가 많은 캐릭터가 통계를 독점하지 않습니다.",
+      contributionMethodTrustTitle: "6시간마다 갱신",
+      contributionMethodTrustText: "최근 30일 안에 확인된 PVE 장비만 사용하며, 표본 수와 사용률을 함께 보여줍니다.",
+      contributionCaution: "실전 상위 랭커의 선택을 정리한 참고 자료입니다. 패치·보유 장비·플레이 방식에 따라 정답은 달라질 수 있습니다.",
+      setupGuideSampleValue: "{sample}/{target}명",
+      setupGuideCandidatesValue: "{count}명",
+      setupGuideMedianCp: "PVE CP 중앙값 {value}",
+      setupGuideConfidenceHigh: "높음", setupGuideConfidenceMedium: "보통",
+      setupGuideConfidenceLow: "낮음", setupGuideConfidenceInsufficient: "표본 부족",
+      setupGuideQuickTitle: "먼저 볼 핵심 세팅", setupGuideEquipmentTitle: "장비 선택",
+      setupGuideManastoneTitle: "마석", setupGuideSoulTitle: "부위별 영혼 각인",
+      setupGuideArcanaTitle: "아르카나", setupGuideSkillTitle: "스킬 투자 우선순위",
+      setupGuideActive: "스킬", setupGuideStigma: "스티그마", setupGuidePassive: "패시브",
+      setupGuideUsage: "사용 {value}", setupGuideMedianLevel: "중앙 Lv.{value}",
+      setupGuideLevelRange: "주요 구간 Lv.{low}~{high}", setupGuideMedianEnhance: "강화 중앙 +{value}",
+      setupGuideMedianExceed: "돌파 중앙 {value}", setupGuideTotalSlots: "총 {value}개",
+      setupGuideMedianValue: "1인 중앙 {value}", setupGuideArcanaCards: "많이 쓰는 카드",
+      setupGuideArcanaSets: "세트 구성", setupGuideArcanaSkills: "아르카나 스킬",
+      setupGuideArcanaStats: "아르카나 능력치", setupGuideNoData: "확인된 표본이 없습니다",
       classTop10: "클래스 TOP 10",
       fieldBoss: "필드보스",
       optimization: "최적화",
@@ -497,11 +510,13 @@
       rankerDungeonGuideRetentionTitle: "랭커 구간을 벗어나면?",
       rankerDungeonGuideRetentionBody: "현재 CP가 자격을 얻은 25K 구간을 벗어나거나 TOP 3 자격을 잃으면 랭커 권한 효과는 숨겨집니다. 선택한 효과는 지워지지 않으며, 같은 구간에서 자격이 다시 확인되면 자동 복원됩니다.",
       rankerDungeonGuideDungeonTitle: "랭커 마크 대상 던전",
-      rankerDungeonGuideIntro: "아래 6개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.",
+      rankerDungeonGuideIntro: "아래 7개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.",
       rankerDungeonDeusTitle: "잠식된 데우스 연구기지(어려움)",
       rankerDungeonDeusBosses: "감독관 그롬카스 · 연구소장 자일러스 · 오만의 아티엘",
       rankerDungeonNoiranTitle: "노이란의 숨겨진 유산(4단계)",
       rankerDungeonNoiranBosses: "불완전한 브라운트 · 광기의 클로민스터 · 아스크란",
+      rankerDungeonBakronTitle: "시련: 바크론의 공중섬",
+      rankerDungeonBakronBosses: "티에 · 타몬 · 바크론",
       rankerDungeonMusphelTitle: "무스펠의 성배(어려움)",
       rankerDungeonMusphelBosses: "이스카리엘 · 칼드릭스",
       rankerDungeonFallenDevaTitle: "타락한 데바의 성(어려움)",
@@ -510,8 +525,8 @@
       rankerDungeonAbyssHornBosses: "카푸 · 다칸 · 가르가움",
       rankerDungeonNightmareTitle: "악몽",
       rankerDungeonNightmareBosses: "각성한 아테론 10단계 · DPS가 아닌 빠른 전투 시간 순",
-      rankerDungeonGuideScope: "일반 던전 5개는 높은 DPS 순, 악몽은 짧은 전투 시간 순으로 집계합니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.",
-      rankerDungeonGuideBakronExcluded: "시련: 바크론의 공중섬은 클래스 버그로 인한 기록 오염이 해소될 때까지 랭커 표시와 랭커 권한 닉네임 효과 대상에서 임시 제외됩니다.",
+      rankerDungeonGuideScope: "일반 던전 6개는 높은 DPS 순, 악몽은 짧은 전투 시간 순으로 집계합니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.",
+      rankerDungeonGuideBakronRewardExcluded: "시련: 바크론의 공중섬은 랭커 마크에는 반영되지만, 랭커 권한 닉네임 효과 대상에서는 임시 제외됩니다.",
       rankerDungeonGuideDummy: "훈련용 허수아비(1분)는 홈페이지 랭킹만 제공하며, 딜미터기 전투 종료 구간 순위·상위% 배지와 실시간 랭커 마크 대상에서는 제외됩니다.",
       rankerDungeonGuidePeriod: "상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주 기록을 사용합니다. 이번 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.",
       weeklyCompare: "▲▼는 직전 주 동일 조건의 직업별 상위 25% DPS 변화",
@@ -607,30 +622,42 @@
       dailyUsers: "Daily users",
       classPerformance: "Class Performance",
       newFeature: "Newly added feature",
-      contributionStats: "Contribution",
-      contributionPageTitle: "NotMeter Contribution Statistics",
-      contributionPageSubtitle: "Weekly frequency of final-boss contribution below 5%",
-      contributionStatsTitle: "Final Boss Contribution Statistics",
-      contributionStatsDescription: "Compare how often each class records contribution below 5% on key final bosses this week.",
-      contributionPeriod: "Period", contributionRecords: "Final-boss records",
-      contributionSamples: "Player samples", contributionLowSamples: "Below 5%",
-      contributionDungeonAria: "Select contribution-statistics dungeon",
-      contributionLoading: "Loading this week's contribution cache",
-      contributionLoadError: "Could not load contribution statistics",
-      contributionEmpty: "No eligible final-boss records are available this week",
-      contributionSortGuide: "Sorted by highest <5% rate", contributionLowCount: "<5%",
-      contributionTotalCount: "All samples", contributionRate: "Rate",
-      contributionBoss: "Final boss · {boss}", contributionCountValue: "{value}",
-      contributionMethodTitle: "How are these statistics calculated?",
-      contributionMethodScopeTitle: "Scope",
-      contributionMethodScopeText: "Only confirmed final-boss kills from the four listed dungeons during the current Wednesday 05:00 to next Wednesday 05:00 KST window are included.",
-      contributionMethodFormulaTitle: "5% formula",
-      contributionMethodFormulaText: "The contribution saved in each combat record is used. Legacy records are restored from saved damage and boss MAX HP. Exactly 5% is excluded.",
-      contributionMethodSampleTitle: "Sample unit",
-      contributionMethodSampleText: "Repeated runs by one character count as separate combat samples. Rate = samples below 5% ÷ all samples for that class.",
-      contributionMethodTrustTitle: "Validation",
-      contributionMethodTrustText: "Only complete records with confirmed server, class, and party data that pass statistics validation are included. Incomplete or suspicious records are excluded.",
-      contributionCaution: "This measures reward-threshold failure frequency, not class DPS ranking. Interpret it with party composition, encounter roles, and player skill in mind.",
+      contributionStats: "Setup Guide",
+      contributionPageTitle: "NotMeter Class Setup Guide",
+      contributionPageSubtitle: "Actual PVE setup trends among all-time top rankers",
+      contributionStatsTitle: "Class Setup Guide",
+      contributionStatsDescription: "See the equipment and growth priorities actually used by top rankers.",
+      contributionPeriod: "Cache updated", contributionRecords: "Valid samples",
+      contributionSamples: "Candidates checked", contributionLowSamples: "Confidence",
+      contributionDungeonAria: "Select a class setup guide",
+      contributionLoading: "Loading top-ranker PVE setups",
+      contributionLoadError: "Could not load the setup guide cache",
+      contributionEmpty: "No usable PVE setup samples are available yet",
+      contributionSortGuide: "Ordered by adoption rate",
+      contributionMethodTitle: "How is this setup guide built?",
+      contributionMethodScopeTitle: "Top-ranker cohort",
+      contributionMethodScopeText: "Starting at rank 1 for each class, we collect 20 characters with a recent PVE setup.",
+      contributionMethodFormulaTitle: "Automatic backfill",
+      contributionMethodFormulaText: "If a character or PVE snapshot is unavailable, the next ranked character is checked until 20 valid samples are found.",
+      contributionMethodSampleTitle: "One character, one vote",
+      contributionMethodSampleText: "Each character counts once, so repeated searches or many combat records cannot dominate the guide.",
+      contributionMethodTrustTitle: "Updated every 6 hours",
+      contributionMethodTrustText: "Only PVE snapshots seen within the last 30 days are used, with sample size and adoption rate shown together.",
+      contributionCaution: "This summarizes real choices by top rankers. Patches, available gear, and play style can change the best choice for you.",
+      setupGuideSampleValue: "{sample}/{target}", setupGuideCandidatesValue: "{count}",
+      setupGuideMedianCp: "Median PVE CP {value}",
+      setupGuideConfidenceHigh: "High", setupGuideConfidenceMedium: "Medium",
+      setupGuideConfidenceLow: "Low", setupGuideConfidenceInsufficient: "Not enough data",
+      setupGuideQuickTitle: "Start with these", setupGuideEquipmentTitle: "Equipment",
+      setupGuideManastoneTitle: "Manastones", setupGuideSoulTitle: "Soul engravings by slot",
+      setupGuideArcanaTitle: "Arcana", setupGuideSkillTitle: "Skill investment priority",
+      setupGuideActive: "Skills", setupGuideStigma: "Stigma", setupGuidePassive: "Passive",
+      setupGuideUsage: "Used by {value}", setupGuideMedianLevel: "Median Lv.{value}",
+      setupGuideLevelRange: "Typical Lv.{low}–{high}", setupGuideMedianEnhance: "Median +{value}",
+      setupGuideMedianExceed: "Median breakthrough {value}", setupGuideTotalSlots: "{value} total",
+      setupGuideMedianValue: "Median per character {value}", setupGuideArcanaCards: "Popular cards",
+      setupGuideArcanaSets: "Set combinations", setupGuideArcanaSkills: "Arcana skills",
+      setupGuideArcanaStats: "Arcana stats", setupGuideNoData: "No sample available",
       classTop10: "Class TOP 10",
       fieldBoss: "Field Boss",
       optimization: "Optimization",
@@ -898,11 +925,13 @@
       rankerDungeonGuideRetentionTitle: "What if I leave the bracket?",
       rankerDungeonGuideRetentionBody: "A rank-granted effect is hidden if your detected CP leaves the qualifying 25K bracket or Top 3 eligibility is lost. The selected effect is kept and returns when eligibility is verified again.",
       rankerDungeonGuideDungeonTitle: "Dungeons with live rank markers",
-      rankerDungeonGuideIntro: "The six contents below are evaluated separately by boss, class, and CP bracket.",
+      rankerDungeonGuideIntro: "The seven contents below are evaluated separately by boss, class, and CP bracket.",
       rankerDungeonDeusTitle: "Corrupted Deus Research Base (Hard)",
       rankerDungeonDeusBosses: "Supervisor Gromkas · Lab Director Xylus · Arrogant Atiel",
       rankerDungeonNoiranTitle: "Noiran's Hidden Legacy (Stage 4)",
       rankerDungeonNoiranBosses: "Incomplete Brownt · Mad Clominster · Askran",
+      rankerDungeonBakronTitle: "Trial: Bakron's Sky Island",
+      rankerDungeonBakronBosses: "Tie · Tamon · Bakron",
       rankerDungeonMusphelTitle: "Musphel's Grail (Hard)",
       rankerDungeonMusphelBosses: "Iskariel · Caldrix",
       rankerDungeonFallenDevaTitle: "Fallen Daeva's Castle (Hard)",
@@ -911,8 +940,8 @@
       rankerDungeonAbyssHornBosses: "Kapu · Dakan · Gargaum",
       rankerDungeonNightmareTitle: "Nightmare",
       rankerDungeonNightmareBosses: "Awakened Atheron Stage 10 · ranked by fastest combat time, not DPS",
-      rankerDungeonGuideScope: "The five regular dungeons rank higher DPS first; Nightmare ranks shorter combat time first. All Bosses only combines the statistics for viewing—the live rank marker is decided by each boss's individual ranking.",
-      rankerDungeonGuideBakronExcluded: "Trial: Bakron's Sky Island is temporarily excluded from ranker markers and ranker-granted nickname effects until the class-bug record contamination is resolved.",
+      rankerDungeonGuideScope: "The six regular dungeons rank higher DPS first; Nightmare ranks shorter combat time first. All Bosses only combines the statistics for viewing—the live rank marker is decided by each boss's individual ranking.",
+      rankerDungeonGuideBakronRewardExcluded: "Trial: Bakron's Sky Island is included in rank markers but remains temporarily excluded from ranker-granted nickname effects.",
       rankerDungeonGuideDummy: "Training Dummy (1 min) provides website rankings only. It does not show the meter's post-combat bracket-rank or Top % badge, and it does not award a live rank marker.",
       rankerDungeonGuidePeriod: "Top % uses all-time records below 800K CP and current-week records at 800K CP or above. The current week runs from Wednesday 05:00 KST to the following Wednesday 05:00 KST.",
       weeklyCompare: "▲▼ shows the change in each class's top-25% DPS under the same filters",
@@ -1174,7 +1203,7 @@
       openFieldBossView();
     } else if (pageView === "class-performance") {
       openClassPerformanceView(false);
-    } else if (pageView === "contribution") {
+    } else if (pageView === "setup-guide") {
       openContributionView();
     } else if (pageView === "boss-resistance") {
       openBossResistanceView();
@@ -1709,7 +1738,7 @@
     CLASS_OVERALL_CACHE_URLS[0] =
       `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`;
     CONTRIBUTION_CACHE_URLS[0] =
-      `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`;
+      `${GITHUB_RANKING_CACHE_ROOT}/notmeter-setting-guide.json.gz`;
     CUSTOM_CP_CACHE_URLS[0] =
       `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`;
     GITHUB_CLASS_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/classes`;
@@ -1790,9 +1819,9 @@
       `${VPS_RANKING_CACHE_ROOT}/web/class-overall`);
     CONTRIBUTION_CACHE_URLS.splice(0, CONTRIBUTION_CACHE_URLS.length,
       ...rankingCacheCandidates(
-        "data/notmeter-ranking-contribution.json.gz",
-        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-contribution.json.gz`),
-      `${VPS_RANKING_CACHE_ROOT}/web/contribution`);
+        "data/notmeter-setting-guide.json.gz",
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-setting-guide.json.gz`),
+      `${VPS_RANKING_CACHE_ROOT}/web/setup-guide`);
     CUSTOM_CP_CACHE_URLS.splice(0, CUSTOM_CP_CACHE_URLS.length,
       ...rankingCacheCandidates(
         "data/notmeter-ranking-custom-cp.json.gz",
@@ -2065,8 +2094,9 @@
 
   function initialPageView() {
     const view = new URLSearchParams(window.location.search).get("view");
+    if (view === "contribution") return "setup-guide";
     return view === "class-top10" || view === "field-boss" || view === "artifact" || view === "optimization" ||
-      view === "class-performance" || view === "contribution" ||
+      view === "class-performance" || view === "setup-guide" ||
       view === "boss-resistance" || view === "stat-efficiency" ||
       view === "character" ? view : "ranking";
   }
@@ -3240,14 +3270,14 @@
         const cache = await fetchCompressedJson(CONTRIBUTION_CACHE_URLS, force);
         if (cache?.schema !== EXPECTED_CONTRIBUTION_SCHEMA ||
             Number(cache.version) !== 1 ||
-            !Array.isArray(cache.dungeons)) {
-          throw new Error("invalid contribution cache schema");
+            !Array.isArray(cache.jobs)) {
+          throw new Error("invalid setup guide cache schema");
         }
         state.contributionData = cache;
         const currentKey = state.contributionDungeonKey;
-        state.contributionDungeonKey = cache.dungeons.some(item => item.dungeonKey === currentKey)
+        state.contributionDungeonKey = cache.jobs.some(item => item.jobName === currentKey)
           ? currentKey
-          : String(cache.dungeons[0]?.dungeonKey || "");
+          : String(cache.jobs.find(item => Number(item.sampledCharacters) > 0)?.jobName || cache.jobs[0]?.jobName || "");
         renderContributionStats();
         return cache;
       } catch (error) {
@@ -3273,77 +3303,281 @@
 
   function renderContributionStats() {
     const cache = state.contributionData;
-    const dungeons = Array.isArray(cache?.dungeons) ? cache.dungeons : [];
-    if (dungeons.length === 0) {
+    const jobs = Array.isArray(cache?.jobs) ? cache.jobs : [];
+    if (jobs.length === 0) {
       elements["contribution-tabs"].replaceChildren();
       showContributionState("empty");
       return;
     }
 
-    const selected = dungeons.find(item => item.dungeonKey === state.contributionDungeonKey) ||
-      dungeons[0];
-    state.contributionDungeonKey = selected.dungeonKey;
+    const selected = jobs.find(item => item.jobName === state.contributionDungeonKey) ||
+      jobs.find(item => Number(item.sampledCharacters) > 0) || jobs[0];
+    state.contributionDungeonKey = selected.jobName;
     const tabs = document.createDocumentFragment();
-    for (const dungeon of dungeons) {
+    for (const job of jobs) {
       const button = document.createElement("button");
-      const active = dungeon.dungeonKey === selected.dungeonKey;
+      const active = job.jobName === selected.jobName;
       button.type = "button";
       button.className = `contribution-tab${active ? " active" : ""}`;
-      button.dataset.contributionDungeon = dungeon.dungeonKey;
+      button.dataset.contributionDungeon = job.jobName;
       button.setAttribute("aria-pressed", String(active));
-      button.textContent = localizeGameName(dungeon.dungeonName, "mob");
+      button.append(createJobIcon(job.jobName));
+      const label = document.createElement("span");
+      label.textContent = jobName(job.jobName);
+      const count = document.createElement("small");
+      count.textContent = `${formatInteger(job.sampledCharacters)}/${formatInteger(job.targetRankers || cache.rankLimit || 20)}`;
+      button.append(label, count);
       tabs.append(button);
     }
     elements["contribution-tabs"].replaceChildren(tabs);
 
-    const jobs = (Array.isArray(selected.jobs) ? selected.jobs : [])
-      .filter(row => Number(row.playerSampleCount) > 0)
-      .sort((left, right) =>
-        Number(right.lowContributionRatePercent) - Number(left.lowContributionRatePercent) ||
-        Number(right.lowContributionCount) - Number(left.lowContributionCount) ||
-        JOB_ORDER.indexOf(left.jobName) - JOB_ORDER.indexOf(right.jobName));
-    if (jobs.length === 0) {
+    if (Number(selected.sampledCharacters) <= 0) {
       showContributionState("empty");
       return;
     }
 
-    const contributionRange = parseWeeklyRange(cache.periodLabel);
-    elements["contribution-period"].textContent = contributionRange
-      ? formatWeeklyRange(contributionRange)
-      : t("thisWeek");
-    elements["contribution-records"].textContent = t("contributionCountValue", {
-      value: formatInteger(selected.recordCount),
+    const target = Number(selected.targetRankers || cache.rankLimit || 20);
+    elements["contribution-period"].textContent = formatDateTime(cache.generatedAt);
+    elements["contribution-records"].textContent = t("setupGuideSampleValue", {
+      sample: formatInteger(selected.sampledCharacters),
+      target: formatInteger(target),
     });
-    elements["contribution-samples"].textContent = formatInteger(selected.playerSampleCount);
-    elements["contribution-low-samples"].textContent = formatInteger(selected.lowContributionCount);
-    elements["contribution-dungeon-title"].textContent = localizeGameName(selected.dungeonName, "mob");
-    elements["contribution-boss-title"].textContent = t("contributionBoss", {
-      boss: localizeGameName(selected.bossName, "mob"),
+    elements["contribution-samples"].textContent = t("setupGuideCandidatesValue", {
+      count: formatInteger(selected.inspectedCandidates),
+    });
+    elements["contribution-low-samples"].textContent = setupGuideConfidence(selected.confidence);
+    elements["contribution-dungeon-title"].replaceChildren(createJobIcon(selected.jobName));
+    const selectedJobName = document.createElement("span");
+    selectedJobName.textContent = jobName(selected.jobName);
+    elements["contribution-dungeon-title"].append(selectedJobName);
+    elements["contribution-boss-title"].textContent = t("setupGuideMedianCp", {
+      value: formatCombatPower(selected.medianCombatPower),
     });
 
     const rows = document.createDocumentFragment();
-    for (const row of jobs) {
-      const article = document.createElement("article");
-      article.className = "contribution-row";
-      article.style.setProperty("--contribution-rate", `${Math.min(100, Math.max(0, Number(row.lowContributionRatePercent) || 0))}%`);
-      const identity = document.createElement("div");
-      identity.className = "contribution-row-identity";
-      identity.append(createJobIcon(row.jobName));
-      const name = document.createElement("strong");
-      name.textContent = jobName(row.jobName);
-      identity.append(name);
-      const low = document.createElement("strong");
-      low.textContent = formatInteger(row.lowContributionCount);
-      const total = document.createElement("span");
-      total.textContent = formatInteger(row.playerSampleCount);
-      const rate = document.createElement("strong");
-      rate.className = "contribution-row-rate";
-      rate.textContent = formatPercent(row.lowContributionRatePercent, 1);
-      article.append(identity, low, total, rate);
-      rows.append(article);
-    }
+    rows.append(renderSetupGuideQuick(selected));
+    rows.append(renderSetupGuideEquipment(selected.equipment));
+    rows.append(renderSetupGuideStats("setupGuideManastoneTitle", selected.manastones, "manastone"));
+    rows.append(renderSetupGuideSoul(selected.soulEngravings));
+    rows.append(renderSetupGuideArcana(selected.arcana));
+    rows.append(renderSetupGuideSkills(selected.skills));
     elements["contribution-rows"].replaceChildren(rows);
     showContributionState("content");
+  }
+
+  function setupGuideConfidence(value) {
+    const normalized = String(value || "insufficient");
+    return t(normalized === "high" ? "setupGuideConfidenceHigh" :
+      normalized === "medium" ? "setupGuideConfidenceMedium" :
+      normalized === "low" ? "setupGuideConfidenceLow" : "setupGuideConfidenceInsufficient");
+  }
+
+  function createSetupGuideSection(titleKey, modifier = "") {
+    const section = document.createElement("section");
+    section.className = `setup-guide-section ${modifier}`.trim();
+    const title = document.createElement("h3");
+    title.textContent = t(titleKey);
+    const body = document.createElement("div");
+    body.className = "setup-guide-section-body";
+    section.append(title, body);
+    return { section, body };
+  }
+
+  function setupGuideMeta(...values) {
+    return values.filter(value => String(value || "").length > 0);
+  }
+
+  function createSetupGuideCard(name, icon, meta = [], rank = 0) {
+    const card = document.createElement("article");
+    card.className = "setup-guide-card";
+    if (rank > 0) {
+      const badge = document.createElement("b");
+      badge.className = "setup-guide-rank";
+      badge.textContent = String(rank);
+      card.append(badge);
+    }
+    const visual = document.createElement("span");
+    visual.className = "setup-guide-card-icon";
+    const source = String(icon || "").trim();
+    if (/^(https:\/\/|\.\/|\/)/i.test(source)) {
+      const image = document.createElement("img");
+      image.src = source;
+      image.alt = "";
+      image.loading = "lazy";
+      image.decoding = "async";
+      visual.append(image);
+    } else {
+      visual.textContent = String(name || "?").slice(0, 1);
+    }
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = String(name || "—");
+    const details = document.createElement("div");
+    details.className = "setup-guide-card-meta";
+    for (const value of meta) {
+      const chip = document.createElement("span");
+      chip.textContent = value;
+      details.append(chip);
+    }
+    copy.append(title, details);
+    card.append(visual, copy);
+    return card;
+  }
+
+  function appendSetupGuideEmpty(body) {
+    const empty = document.createElement("p");
+    empty.className = "setup-guide-inline-empty";
+    empty.textContent = t("setupGuideNoData");
+    body.append(empty);
+  }
+
+  function renderSetupGuideQuick(job) {
+    const { section, body } = createSetupGuideSection("setupGuideQuickTitle", "setup-guide-quick");
+    body.classList.add("setup-guide-card-grid");
+    const choices = [
+      job.manastones?.[0] ? [job.manastones[0], "setupGuideManastoneTitle"] : null,
+      job.skills?.active?.[0] ? [job.skills.active[0], "setupGuideActive"] : null,
+      job.skills?.passive?.[0] ? [job.skills.passive[0], "setupGuidePassive"] : null,
+      job.arcana?.sets?.[0] ? [job.arcana.sets[0], "setupGuideArcanaSets"] : null,
+    ].filter(Boolean);
+    for (const [choice, labelKey] of choices) {
+      body.append(createSetupGuideCard(choice.name, choice.icon, setupGuideMeta(
+        t(labelKey),
+        t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+        Number(choice.medianLevel) > 0
+          ? t("setupGuideMedianLevel", { value: formatInteger(choice.medianLevel) })
+          : "")));
+    }
+    if (choices.length === 0) appendSetupGuideEmpty(body);
+    return section;
+  }
+
+  function renderSetupGuideEquipment(equipment) {
+    const { section, body } = createSetupGuideSection("setupGuideEquipmentTitle");
+    body.classList.add("setup-guide-slot-grid");
+    for (const slot of Array.isArray(equipment) ? equipment : []) {
+      const group = document.createElement("div");
+      group.className = "setup-guide-slot";
+      const title = document.createElement("h4");
+      title.textContent = slot.slotName || "—";
+      group.append(title);
+      for (const [index, choice] of (slot.choices || []).entries()) {
+        group.append(createSetupGuideCard(choice.name, choice.icon, setupGuideMeta(
+          t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+          Number(choice.medianEnchantLevel) > 0
+            ? t("setupGuideMedianEnhance", { value: formatInteger(choice.medianEnchantLevel) }) : "",
+          Number(choice.medianExceedLevel) > 0
+            ? t("setupGuideMedianExceed", { value: formatInteger(choice.medianExceedLevel) }) : ""), index + 1));
+      }
+      body.append(group);
+    }
+    if (!body.childElementCount) appendSetupGuideEmpty(body);
+    return section;
+  }
+
+  function renderSetupGuideStats(titleKey, stats, modifier = "") {
+    const { section, body } = createSetupGuideSection(titleKey, modifier);
+    body.classList.add("setup-guide-card-grid");
+    for (const [index, stat] of (Array.isArray(stats) ? stats : []).entries()) {
+      const medianValue = `${formatDecimal(stat.medianTotalValue, Number(stat.medianTotalValue) % 1 ? 1 : 0)}${stat.isPercent ? "%" : ""}`;
+      body.append(createSetupGuideCard(stat.name, stat.icon, setupGuideMeta(
+        t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }),
+        t("setupGuideTotalSlots", { value: formatInteger(stat.totalCount) }),
+        t("setupGuideMedianValue", { value: medianValue })), index + 1));
+    }
+    if (!body.childElementCount) appendSetupGuideEmpty(body);
+    return section;
+  }
+
+  function renderSetupGuideSoul(slots) {
+    const { section, body } = createSetupGuideSection("setupGuideSoulTitle");
+    body.classList.add("setup-guide-slot-grid");
+    for (const slot of Array.isArray(slots) ? slots : []) {
+      const group = document.createElement("div");
+      group.className = "setup-guide-slot setup-guide-soul-slot";
+      const title = document.createElement("h4");
+      title.textContent = slot.slotName || "—";
+      group.append(title);
+      for (const [index, skill] of (slot.skills || []).entries()) {
+        group.append(createSetupGuideCard(skill.name, skill.icon, setupGuideMeta(
+          t("setupGuideUsage", { value: formatPercent(skill.usageRatePercent, 0) }),
+          t("setupGuideMedianLevel", { value: formatInteger(skill.medianLevel) })), index + 1));
+      }
+      for (const stat of slot.stats || []) {
+        group.append(createSetupGuideCard(stat.name, stat.icon, setupGuideMeta(
+          t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }))));
+      }
+      body.append(group);
+    }
+    if (!body.childElementCount) appendSetupGuideEmpty(body);
+    return section;
+  }
+
+  function renderSetupGuideArcana(arcana) {
+    const { section, body } = createSetupGuideSection("setupGuideArcanaTitle");
+    const groups = [
+      ["setupGuideArcanaCards", arcana?.cards, choice => setupGuideMeta(
+        t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+        Number(choice.medianEnchantLevel) > 0
+          ? t("setupGuideMedianEnhance", { value: formatInteger(choice.medianEnchantLevel) }) : "")],
+      ["setupGuideArcanaSets", arcana?.sets, choice => setupGuideMeta(
+        t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+        t("setupGuideTotalSlots", { value: formatInteger(choice.medianEquippedCount) }))],
+      ["setupGuideArcanaSkills", arcana?.skills, choice => setupGuideMeta(
+        t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+        t("setupGuideMedianLevel", { value: formatInteger(choice.medianLevel) }))],
+      ["setupGuideArcanaStats", arcana?.stats, choice => setupGuideMeta(
+        t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+        t("setupGuideMedianValue", { value: `${formatDecimal(choice.medianTotalValue, 1)}${choice.isPercent ? "%" : ""}` }))],
+    ];
+    for (const [labelKey, choices, meta] of groups) {
+      if (!Array.isArray(choices) || choices.length === 0) continue;
+      const group = document.createElement("div");
+      group.className = "setup-guide-subgroup";
+      const title = document.createElement("h4");
+      title.textContent = t(labelKey);
+      const grid = document.createElement("div");
+      grid.className = "setup-guide-card-grid";
+      choices.forEach((choice, index) => grid.append(
+        createSetupGuideCard(choice.name, choice.icon, meta(choice), index + 1)));
+      group.append(title, grid);
+      body.append(group);
+    }
+    if (!body.childElementCount) appendSetupGuideEmpty(body);
+    return section;
+  }
+
+  function renderSetupGuideSkills(skills) {
+    const { section, body } = createSetupGuideSection("setupGuideSkillTitle");
+    const groups = [
+      ["setupGuideActive", skills?.active],
+      ["setupGuideStigma", skills?.stigma],
+      ["setupGuidePassive", skills?.passive],
+    ];
+    for (const [labelKey, choices] of groups) {
+      if (!Array.isArray(choices) || choices.length === 0) continue;
+      const group = document.createElement("div");
+      group.className = "setup-guide-subgroup";
+      const title = document.createElement("h4");
+      title.textContent = t(labelKey);
+      const grid = document.createElement("div");
+      grid.className = "setup-guide-skill-grid";
+      choices.forEach((choice, index) => grid.append(createSetupGuideCard(
+        choice.name,
+        choice.icon,
+        setupGuideMeta(
+          t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+          t("setupGuideMedianLevel", { value: formatInteger(choice.medianLevel) }),
+          t("setupGuideLevelRange", {
+            low: formatInteger(choice.p25Level),
+            high: formatInteger(choice.p75Level),
+          })),
+        index + 1)));
+      group.append(title, grid);
+      body.append(group);
+    }
+    if (!body.childElementCount) appendSetupGuideEmpty(body);
+    return section;
   }
 
   async function fetchCompressedJson(urls, force, accept = null, revision = "") {
