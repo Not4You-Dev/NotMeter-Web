@@ -38,7 +38,7 @@ globalThis.NotMeterStatsCopyZhTw = Object.freeze({
   setupGuideSoulSkills: "技能", setupGuideSoulStats: "選項",
   setupGuideArcanaTitle: "阿爾卡納", setupGuideSkillTitle: "技能投資優先順序",
   setupGuideActive: "技能", setupGuideStigma: "烙印", setupGuidePassive: "被動",
-  setupGuideUsage: "採用 {value}", setupGuideMedianLevel: "中位 Lv.{value}",
+  setupGuideUsage: "採用 {value}", setupGuideArcanaSkillLevel: "Lv.{value}", setupGuideMedianLevel: "中位 Lv.{value}",
   setupGuideLevelRange: "常見區間 Lv.{low}～{high}", setupGuideMedianEnhance: "強化中位 +{value}",
   setupGuideMedianExceed: "突破中位 {value}", setupGuideTotalSlots: "共 {value} 個",
   setupGuideMedianValue: "每人中位 {value}", setupGuideArcanaSlots: "各欄位卡片",

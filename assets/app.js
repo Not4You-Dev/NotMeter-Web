@@ -250,7 +250,7 @@
       setupGuideSoulSkills: "스킬", setupGuideSoulStats: "옵션",
       setupGuideArcanaTitle: "아르카나", setupGuideSkillTitle: "스킬 투자 우선순위",
       setupGuideActive: "스킬", setupGuideStigma: "스티그마", setupGuidePassive: "패시브",
-      setupGuideUsage: "사용 {value}", setupGuideMedianLevel: "중앙 Lv.{value}",
+      setupGuideUsage: "사용 {value}", setupGuideArcanaSkillLevel: "Lv.{value}", setupGuideMedianLevel: "중앙 Lv.{value}",
       setupGuideLevelRange: "주요 구간 Lv.{low}~{high}", setupGuideMedianEnhance: "강화 중앙 +{value}",
       setupGuideMedianExceed: "돌파 중앙 {value}", setupGuideTotalSlots: "총 {value}개",
       setupGuideMedianValue: "1인 중앙 {value}", setupGuideArcanaSlots: "슬롯별 카드",
@@ -671,7 +671,7 @@
       setupGuideSoulSkills: "Skills", setupGuideSoulStats: "Options",
       setupGuideArcanaTitle: "Arcana", setupGuideSkillTitle: "Skill investment priority",
       setupGuideActive: "Skills", setupGuideStigma: "Stigma", setupGuidePassive: "Passive",
-      setupGuideUsage: "Used by {value}", setupGuideMedianLevel: "Median Lv.{value}",
+      setupGuideUsage: "Used by {value}", setupGuideArcanaSkillLevel: "Lv.{value}", setupGuideMedianLevel: "Median Lv.{value}",
       setupGuideLevelRange: "Typical Lv.{low}–{high}", setupGuideMedianEnhance: "Median +{value}",
       setupGuideMedianExceed: "Median breakthrough {value}", setupGuideTotalSlots: "{value} total",
       setupGuideMedianValue: "Median per character {value}", setupGuideArcanaSlots: "Cards by slot",
@@ -3562,7 +3562,10 @@
           ["setupGuideArcanaCards", slot.choices, choice => setupGuideMeta(
             t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }))],
           ["setupGuideArcanaSkills", slot.skills, choice => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }))],
+            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+            Number(choice.medianLevel) > 0
+              ? t("setupGuideArcanaSkillLevel", { value: formatInteger(choice.medianLevel) })
+              : "")],
         ];
         for (const [labelKey, choices, meta] of categories) {
           if (!Array.isArray(choices) || choices.length === 0) continue;
