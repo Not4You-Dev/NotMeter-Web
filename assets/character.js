@@ -1446,11 +1446,11 @@
     const slot = String(value || "").trim();
     const labels = {
       ko: {
-        MainHand: "주무기", SubHand: "보조무기", Helmet: "투구", Shoulder: "견갑",
+        MainHand: "무기", SubHand: "가더", Helmet: "투구", Head: "투구", Shoulder: "견갑",
         Torso: "상의", Pants: "하의", Gloves: "장갑", Boots: "장화", Cape: "망토",
         Pendant: "펜던트", Necklace: "목걸이", Earring1: "귀걸이 1", Earring2: "귀걸이 2",
         Ring1: "반지 1", Ring2: "반지 2", Bracelet1: "팔찌 1", Bracelet2: "팔찌 2",
-        Belt: "허리띠", Brooch1: "브로치 1", Brooch2: "브로치 2", Amulet: "아뮬렛",
+        Belt: "허리띠", Waist: "허리띠", Shoes: "장화", Brooch1: "브로치 1", Brooch2: "브로치 2", Amulet: "아뮬렛",
         Rune1: "룬 1", Rune2: "룬 2",
       },
       en: {

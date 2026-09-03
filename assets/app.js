@@ -3476,6 +3476,51 @@
     return section;
   }
 
+  const SETUP_GUIDE_EQUIPMENT_SLOT_NAMES = Object.freeze({
+    1: "무기",
+    2: "가더",
+    3: "투구",
+    4: "견갑",
+    5: "상의",
+    6: "하의",
+    7: "장갑",
+    8: "장화",
+    9: "펜던트",
+    10: "목걸이",
+    11: "귀걸이",
+    12: "귀걸이",
+    13: "반지",
+    14: "반지",
+    15: "팔찌",
+    16: "팔찌",
+    17: "허리띠",
+    18: "브로치",
+    19: "망토",
+    20: "브로치",
+    22: "아뮬렛",
+    23: "룬",
+    24: "룬",
+  });
+
+  function setupGuideEquipmentSlotName(slot) {
+    const position = Number(slot?.slotPos);
+    if (Number.isInteger(position) && SETUP_GUIDE_EQUIPMENT_SLOT_NAMES[position]) {
+      return SETUP_GUIDE_EQUIPMENT_SLOT_NAMES[position];
+    }
+
+    const name = String(slot?.slotName || "").trim();
+    return ({
+      주무기: "무기",
+      보조무기: "가더",
+      머리: "투구",
+      어깨: "견갑",
+      신발: "장화",
+      귀고리: "귀걸이",
+      "귀고리 1": "귀걸이",
+      "귀고리 2": "귀걸이",
+    })[name] || name || "—";
+  }
+
   function renderSetupGuideSoul(slots) {
     const { section, body } = createSetupGuideSection(
       "setupGuideSoulTitle",
@@ -3501,7 +3546,7 @@
         const group = document.createElement("div");
         group.className = "setup-guide-slot setup-guide-soul-slot";
         const title = document.createElement("h4");
-        title.textContent = slot.slotName || "—";
+        title.textContent = setupGuideEquipmentSlotName(slot);
         group.append(title);
         const columns = document.createElement("div");
         columns.className = "setup-guide-soul-columns";
