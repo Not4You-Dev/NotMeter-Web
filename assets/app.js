@@ -3593,9 +3593,6 @@
       ["setupGuideArcanaSets", arcana?.sets, choice => setupGuideMeta(
         t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
         t("setupGuideTotalSlots", { value: formatInteger(choice.medianEquippedCount) }))],
-      ["setupGuideArcanaStats", arcana?.stats, choice => setupGuideMeta(
-        t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
-        t("setupGuideMedianValue", { value: `${formatDecimal(choice.medianTotalValue, 1)}${choice.isPercent ? "%" : ""}` }))],
     ];
     for (const [labelKey, choices, meta] of groups) {
       if (!Array.isArray(choices) || choices.length === 0) continue;
