@@ -79,3 +79,7 @@ globalThis.NotMeterFieldBossCatalog = [
     ],
   },
 ];
+
+globalThis.NotMeterFieldBossFixedSchedules = {
+  2600089: { koreaStartHour: 1, intervalHours: 4 },
+};

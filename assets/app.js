@@ -188,6 +188,7 @@
     ? globalThis.NotMeterFieldBossCatalog
     : [];
   const FIELD_BOSS_KIBELISKS = globalThis.NotMeterFieldBossKibeliskCatalog || {};
+  const FIELD_BOSS_FIXED_SCHEDULES = globalThis.NotMeterFieldBossFixedSchedules || {};
   const DETAIL_METRICS = [
     ["specialization", "specialization"],
     ["hits", "hits"],
@@ -2684,6 +2685,32 @@
     return held ? { ...cache, servers } : cache;
   }
 
+  function resolveFieldBossTargetAt(bossCode, candidateTargetAt, now = Date.now()) {
+    const candidate = Number(candidateTargetAt);
+    const schedule = FIELD_BOSS_FIXED_SCHEDULES[Number(bossCode)];
+    const koreaStartHour = Number(schedule?.koreaStartHour);
+    const intervalHours = Number(schedule?.intervalHours);
+    const currentTime = Number(now);
+    if (!schedule || !Number.isInteger(koreaStartHour) ||
+        koreaStartHour < 0 || koreaStartHour > 23 ||
+        !Number.isInteger(intervalHours) || intervalHours <= 0 ||
+        !Number.isFinite(currentTime)) {
+      return candidate;
+    }
+
+    const hourMilliseconds = 60 * 60 * 1_000;
+    const dayMilliseconds = 24 * hourMilliseconds;
+    const koreaOffsetMilliseconds = 9 * hourMilliseconds;
+    const koreaTime = currentTime + koreaOffsetMilliseconds;
+    const koreaDayStart = Math.floor(koreaTime / dayMilliseconds) * dayMilliseconds;
+    const anchor = koreaDayStart + koreaStartHour * hourMilliseconds;
+    const interval = intervalHours * hourMilliseconds;
+    const target = koreaTime < anchor
+      ? anchor
+      : anchor + (Math.floor((koreaTime - anchor) / interval) + 1) * interval;
+    return target - koreaOffsetMilliseconds;
+  }
+
   function validateFieldBossCache(cache) {
     if (!cache || cache.schema !== FIELD_BOSS_CACHE_SCHEMA ||
         Number(cache.version) !== 1 || Number(cache.maximumRegions) !== 6 ||
@@ -2980,13 +3007,20 @@
       region => Number(region.region) === state.fieldBossRegion);
     const entries = new Map((cachedRegion?.entries || []).map(
       entry => [Number(entry.bossCode), entry]));
-    const orderedBosses = catalog.bosses.map((boss, index) => ({
-      code: Number(boss[0]),
-      name: String(boss[1]),
-      kibelisk: FIELD_BOSS_KIBELISKS[Number(boss[0])] || null,
-      index,
-      entry: entries.get(Number(boss[0])) || null,
-    })).sort((left, right) =>
+    const orderedBosses = catalog.bosses.map((boss, index) => {
+      const code = Number(boss[0]);
+      const cachedEntry = entries.get(code) || null;
+      const entry = cachedEntry
+        ? { ...cachedEntry, targetAt: resolveFieldBossTargetAt(code, cachedEntry.targetAt) }
+        : null;
+      return {
+        code,
+        name: String(boss[1]),
+        kibelisk: FIELD_BOSS_KIBELISKS[code] || null,
+        index,
+        entry,
+      };
+    }).sort((left, right) =>
       Number(!left.entry) - Number(!right.entry) ||
       Number(left.entry?.targetAt || Number.MAX_SAFE_INTEGER) -
         Number(right.entry?.targetAt || Number.MAX_SAFE_INTEGER) ||
@@ -3028,7 +3062,11 @@
       remaining.className = "field-boss-remaining";
       if (boss.entry) {
         const targetAt = Number(boss.entry.targetAt);
-        state.fieldBossCountdownElements.set(remaining, targetAt);
+        state.fieldBossCountdownElements.set(remaining, {
+          bossCode: boss.code,
+          targetAt,
+          targetText: target,
+        });
         updateFieldBossCountdownElement(remaining, targetAt);
       } else {
         remaining.classList.add("no-time");
@@ -3045,16 +3083,27 @@
     if (state.surfaceMode !== "fieldBoss") {
       return;
     }
-    for (const [element, targetAt] of state.fieldBossCountdownElements) {
-      updateFieldBossCountdownElement(element, targetAt);
+    const now = Date.now();
+    for (const [element, countdown] of state.fieldBossCountdownElements) {
+      const targetAt = resolveFieldBossTargetAt(
+        countdown.bossCode,
+        countdown.targetAt,
+        now);
+      if (targetAt !== countdown.targetAt) {
+        countdown.targetAt = targetAt;
+        countdown.targetText.textContent = t("fieldBossExpected", {
+          time: formatFieldBossTargetTime(targetAt),
+        });
+      }
+      updateFieldBossCountdownElement(element, targetAt, now);
     }
     if (state.fieldBossData) {
       elements["field-boss-cache-age"].textContent = fieldBossCacheAgeText();
     }
   }
 
-  function updateFieldBossCountdownElement(element, targetAt) {
-    const remaining = Number(targetAt) - Date.now();
+  function updateFieldBossCountdownElement(element, targetAt, now = Date.now()) {
+    const remaining = Number(targetAt) - now;
     element.textContent = formatFieldBossRemaining(remaining);
     element.classList.remove("warning", "soon", "reached");
     if (remaining <= 0) {
