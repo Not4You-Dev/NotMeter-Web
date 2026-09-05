@@ -48,6 +48,7 @@
   const EXPECTED_CLASS_RANKING_SCHEMA = "notmeter-web-class-ranking-v1";
   const EXPECTED_VIEW_RANKING_SCHEMA = "notmeter-web-view-ranking-v1";
   const EXPECTED_CLASS_OVERALL_SCHEMA = "notmeter-web-class-overall-v1";
+  const EXPECTED_CHARACTER_RANKING_SCHEMA = "notmeter-web-character-ranking-v1";
   const EXPECTED_CONTRIBUTION_SCHEMA = "notmeter-setup-guide-v1";
   const EXPECTED_CUSTOM_CP_SCHEMA = "notmeter-web-custom-cp-v4";
   const EXPECTED_CUSTOM_CP_RANK_SCHEMA = "notmeter-web-custom-cp-rank-v1";
@@ -1719,6 +1720,9 @@
 
   globalThis.NotMeterPublicRankingCache = Object.freeze({
     async load(force = false) {
+      await refreshGitHubRankingRevision(Boolean(force)).catch(error => {
+        console.warn("GitHub cache manifest unavailable; using stable fallback", error);
+      });
       const cache = await fetchRankingCache(Boolean(force));
       validateCache(cache);
       if (!shouldApplyRankingCache(cache, state.data)) {
@@ -1741,6 +1745,25 @@
         dungeonKey,
         String(expectedGeneratedAt || ""),
         Boolean(force));
+    },
+    async loadCharacterRankings(expectedGeneratedAt, force = false) {
+      const generation = String(expectedGeneratedAt || "");
+      if (!generation) {
+        throw new Error(t("cacheUnavailable"));
+      }
+      return fetchCompressedJson(
+        rankingCacheCandidates(
+          "data/notmeter-character-rankings.json.gz",
+          `${GITHUB_RANKING_CACHE_ROOT}/notmeter-character-rankings.json.gz`),
+        Boolean(force),
+        candidate => candidate?.schema === EXPECTED_CHARACTER_RANKING_SCHEMA &&
+          Number(candidate.version) === 1 &&
+          String(candidate.generatedAt || "") === generation &&
+          Array.isArray(candidate.dungeons) &&
+          Array.isArray(candidate.cpTiers) &&
+          Array.isArray(candidate.rankers) &&
+          Array.isArray(candidate.weeklyRankers),
+        generation);
     },
   });
 

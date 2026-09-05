@@ -4,9 +4,6 @@
   const API_ROOT = ["localhost", "127.0.0.1"].includes(window.location.hostname)
     ? "http://127.0.0.1:5080/character/v1"
     : "https://notmeter.112-168-140-142.sslip.io/character/v1";
-  const CHARACTER_RANKING_API_ROOT = ["localhost", "127.0.0.1"].includes(window.location.hostname)
-    ? "http://127.0.0.1:5080/ranking/v1/character"
-    : "https://notmeter.112-168-140-142.sslip.io/ranking/v1/character";
   const RECENT_KEY = "notmeter-character-recent-v1";
   const FAVORITE_KEY = "notmeter-character-favorites-v1";
   const OFFICIAL_NAME_CATALOG_URL = "./assets/game-data.zh-TW.json?v=20260824-1";
@@ -63,7 +60,7 @@
       skills: "스킬", activeSkills: "스킬", stigmaSkills: "스티그마", passiveSkills: "패시브",
       collection: "탈것 · 날개 · 타이틀",
       ranking: "랭킹", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "구간별 TOP 20",
-      rankingNote: "현재 PVE 장비 전투력이 속한 동일 직업·25K 구간의 전체 기간과 이번 주 TOP 20을 나눠 표시합니다. 각 기간에서 던전별 최고 기록 한 건만 보여줍니다.",
+      rankingNote: "현재 PVE 장비 전투력이 속한 동일 직업·25K 구간의 전체 기간과 이번 주 TOP 20을 보스별로 표시합니다.",
       rankingAllTime: "전체 기간", rankingWeekly: "이번 주",
       rankingLoading: "공개 랭킹을 확인하고 있습니다.",
       rankingEmpty: "현재 PVE 장비 전투력이 속한 동일 직업·25K 구간에 공개 TOP 20 기록이 없습니다.",
@@ -139,7 +136,7 @@
       arcana: "Arcana", skills: "Skills", activeSkills: "Skills", stigmaSkills: "Stigma", passiveSkills: "Passive",
       collection: "Mount · Wings · Titles",
       ranking: "Ranking", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "Top 20 by CP bracket",
-      rankingNote: "Shows all-time and current-week Top 20 records for the same class and 25K bracket as the current PVE loadout, keeping only the best record per dungeon in each period.",
+      rankingNote: "Shows all-time and current-week Top 20 records by boss for the same class and 25K bracket as the current PVE loadout.",
       rankingAllTime: "All-time", rankingWeekly: "This week",
       rankingLoading: "Checking public rankings.", rankingEmpty: "No public Top 20 record was found for the same class and 25K bracket as the current PVE loadout.",
       rankingError: "Could not load ranking data.", rank: "Rank", dungeon: "Dungeon", boss: "Boss", dps: "DPS",
@@ -211,7 +208,7 @@
       equipment: "裝備", arcana: "阿爾卡納", skills: "技能", activeSkills: "技能", stigmaSkills: "烙印技能",
       passiveSkills: "被動技能",
       ranking: "排名", rankingEyebrow: "NOTMETER PUBLIC RANKING", rankingTitle: "區間 TOP 20",
-      rankingNote: "依目前 PVE 裝備戰鬥力所屬的同職業 25K 區間，分別顯示全部期間與本週 TOP 20；每個期間只保留各副本的最高紀錄。",
+      rankingNote: "依目前 PVE 裝備戰鬥力所屬的同職業 25K 區間，按首領分別顯示全部期間與本週 TOP 20。",
       rankingAllTime: "全部期間", rankingWeekly: "本週",
       rankingLoading: "正在確認公開排名。", rankingEmpty: "目前 PVE 裝備戰鬥力所屬的同職業 25K 區間，沒有公開暱稱的 TOP 20 紀錄。",
       rankingError: "無法載入排名資料。", rank: "名次", dungeon: "副本", boss: "首領", dps: "DPS",
@@ -1038,50 +1035,125 @@
     const serverId = Number(profile?.serverId) || queryServerId;
     const jobName = canonicalJobName(profile?.className);
     if (!characterName || !serverId || !jobName || !pveCombatPower) return [];
-
-    const query = new URLSearchParams({
-      name: characterName,
-      serverId: String(serverId),
-      job: jobName,
-      combatPower: String(pveCombatPower),
-    });
     const characterId = String(profile?.characterId || params.get("characterId") || "").trim();
-    if (characterId) query.set("characterId", characterId);
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 12_000);
-    let response;
-    try {
-      response = await fetch(`${CHARACTER_RANKING_API_ROOT}?${query}`, {
-        cache: "no-store",
-        signal: controller.signal,
-      });
-    } finally {
-      window.clearTimeout(timeout);
+    const rankingCacheApi = globalThis.NotMeterPublicRankingCache;
+    if (typeof rankingCacheApi?.load !== "function" ||
+        typeof rankingCacheApi?.loadCharacterRankings !== "function") {
+      throw new Error("public ranking cache unavailable");
     }
-    if (!response.ok) throw new Error(`character ranking ${response.status}`);
-    const payload = await response.json();
-    const results = (Array.isArray(payload?.rows) ? payload.rows : []).map(row => ({
-      rank: Number(row?.rank),
-      dps: number(row?.dps),
-      dungeonKey: String(row?.dungeonKey || ""),
-      dungeonName: localizeGameName(row?.dungeonName || row?.dungeonKey || "—"),
-      bossName: cleanBossName(localizeGameName(row?.bossName || "—", "mob")),
-      cpTierLabel: String(row?.cpTierLabel || ""),
-      dungeonOrder: Number(row?.dungeonIndex) || 0,
-      bossIndex: Number(row?.bossIndex) || 0,
-      periodKey: row?.periodKey === "weekly" ? "weekly" : "allTime",
-    })).filter(row => row.rank >= 1 && row.rank <= 20 && row.dps > 0 && row.dungeonKey);
-    const bestByPeriodAndDungeon = new Map();
+    const metadata = await rankingCacheApi.load(false);
+    const payload = await rankingCacheApi.loadCharacterRankings(metadata.generatedAt, false);
+    const [nameToken, officialToken] = await Promise.all([
+      buildPublicRankerLookupToken(characterName, serverId, jobName, pveCombatPower),
+      buildPublicOfficialRankerLookupToken(characterId, jobName, pveCombatPower),
+    ]);
+    const results = [
+      ...resolveCharacterRankingRows(payload.rankers, "allTime", nameToken, officialToken, payload),
+      ...resolveCharacterRankingRows(payload.weeklyRankers, "weekly", nameToken, officialToken, payload),
+    ];
+    const bestByPeriodDungeonAndBoss = new Map();
     for (const row of results) {
-      const key = `${row.periodKey}|${row.dungeonKey}`;
-      const current = bestByPeriodAndDungeon.get(key);
-      if (!current || row.dps > current.dps || (row.dps === current.dps && row.rank < current.rank)) {
-        bestByPeriodAndDungeon.set(key, row);
+      const key = `${row.periodKey}|${row.dungeonKey}|${row.bossIndex}`;
+      const current = bestByPeriodDungeonAndBoss.get(key);
+      if (!current || row.rank < current.rank || (row.rank === current.rank && row.dps > current.dps)) {
+        bestByPeriodDungeonAndBoss.set(key, row);
       }
     }
-    return [...bestByPeriodAndDungeon.values()].sort((left, right) =>
+    return [...bestByPeriodDungeonAndBoss.values()].sort((left, right) =>
       (left.periodKey === right.periodKey ? 0 : left.periodKey === "allTime" ? -1 : 1) ||
-      left.dungeonOrder - right.dungeonOrder || right.dps - left.dps);
+      left.dungeonOrder - right.dungeonOrder || left.bossIndex - right.bossIndex ||
+      left.rank - right.rank || right.dps - left.dps);
+  }
+
+  function resolveCharacterRankingRows(entries, periodKey, nameToken, officialToken, metadata) {
+    if (!nameToken && !officialToken) return [];
+    const matched = (Array.isArray(entries) ? entries : []).filter(entry =>
+      String(entry?.T || "") === nameToken ||
+      (officialToken && String(entry?.O || "") === officialToken));
+    const dungeons = Array.isArray(metadata?.dungeons) ? metadata.dungeons : [];
+    const cpTiers = Array.isArray(metadata?.cpTiers) ? metadata.cpTiers : [];
+    const rows = [];
+    for (const entry of matched) {
+      for (const placement of [entry, ...(Array.isArray(entry?.A) ? entry.A : [])]) {
+        const dungeonOrder = Number(placement?.D);
+        const bossIndex = Number(placement?.B);
+        const dungeon = dungeons[dungeonOrder];
+        const dungeonKey = String(dungeon?.key || "");
+        const rank = Number(placement?.R);
+        const dps = number(placement?.P);
+        if (!dungeonKey || !Number.isInteger(bossIndex) || bossIndex < 1 ||
+            rank < 1 || rank > 20 || dps <= 0) continue;
+        const combatPower = Math.max(0, Math.trunc(number(placement?.C)));
+        const tierIndex = resolveRankerCombatPowerTierIndex(combatPower);
+        const cpTier = cpTiers.find(tier => Number(tier?.index) === tierIndex);
+        rows.push({
+          rank,
+          dps,
+          dungeonKey,
+          dungeonName: localizeGameName(dungeon?.displayName || dungeonKey),
+          bossName: cleanBossName(localizeGameName(dungeon?.bossNames?.[bossIndex - 1] || "—", "mob")),
+          cpTierLabel: String(cpTier?.label || ""),
+          dungeonOrder,
+          bossIndex,
+          periodKey,
+        });
+      }
+    }
+    return rows;
+  }
+
+  function resolveRankerCombatPowerTierIndex(combatPower) {
+    const value = Math.trunc(Number(combatPower) || 0);
+    if (value <= 0) return -1;
+    if (value < 400_000) return 100;
+    if (value >= 2_000_000) return 165;
+    return 101 + Math.floor((value - 400_000) / 25_000);
+  }
+
+  async function buildPublicRankerLookupToken(characterName, serverId, jobName, combatPower) {
+    const normalizedName = String(characterName || "").trim().normalize("NFC").toUpperCase();
+    const normalizedJob = canonicalJobName(jobName).normalize("NFC");
+    const tierIndex = resolveRankerCombatPowerTierIndex(combatPower);
+    if (!normalizedName || !normalizedJob || Number(serverId) <= 0 || tierIndex < 0) return "";
+    return publicRankerToken([
+      "notmeter-public-ranker-identity-v1",
+      String(Math.trunc(Number(serverId))),
+      normalizedName,
+      normalizedJob,
+      String(tierIndex),
+    ].join("\n"));
+  }
+
+  async function buildPublicOfficialRankerLookupToken(characterId, jobName, combatPower) {
+    const normalizedCharacterId = normalizeOfficialCharacterId(characterId);
+    const normalizedJob = canonicalJobName(jobName).normalize("NFC");
+    const tierIndex = resolveRankerCombatPowerTierIndex(combatPower);
+    if (!normalizedCharacterId || !normalizedJob || tierIndex < 0) return "";
+    return publicRankerToken([
+      "notmeter-public-ranker-character-id-v1",
+      normalizedCharacterId,
+      normalizedJob,
+      String(tierIndex),
+    ].join("\n"));
+  }
+
+  function normalizeOfficialCharacterId(value) {
+    try {
+      const normalized = decodeURIComponent(String(value || "").trim());
+      return normalized.length >= 16 && normalized.length <= 128 &&
+        /^[A-Za-z0-9_+\/=\-]+$/.test(normalized) ? normalized : "";
+    } catch {
+      return "";
+    }
+  }
+
+  async function publicRankerToken(canonical) {
+    if (!globalThis.crypto?.subtle) throw new Error("secure hash unavailable");
+    const digest = new Uint8Array(await globalThis.crypto.subtle.digest(
+      "SHA-256", new TextEncoder().encode(canonical)));
+    let binary = "";
+    for (const value of digest.subarray(0, 16)) binary += String.fromCharCode(value);
+    return btoa(binary).replace(/=+$/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   }
 
   function cleanBossName(value) {
@@ -2351,6 +2423,9 @@
       "劍星": "검성", "殺星": "살성", "弓星": "궁성", "魔道星": "마도성",
       "精靈星": "정령성", "守護星": "수호성", "治癒星": "치유성",
       "護法星": "호법성", "拳星": "권성",
+      "Gladiator": "검성", "Templar": "수호성", "Assassin": "살성",
+      "Ranger": "궁성", "Sorcerer": "마도성", "Spiritmaster": "정령성",
+      "Cleric": "치유성", "Chanter": "호법성", "Brawler": "권성",
     };
     return aliases[value] || value;
   }
