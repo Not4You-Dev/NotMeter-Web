@@ -65,7 +65,6 @@ globalThis.NotMeterFieldBossCatalog = [
     bosses: [
       [2600068, "정령왕 아그로"], [2600089, "감시자 카이라"],
       [2600084, "수호신장 나흐마"], [2600096, "집행자 타마사"],
-      [2600097, "집행자 아그로"], [2600098, "집행자 카이라"],
     ],
   },
   {
@@ -86,5 +85,7 @@ globalThis.NotMeterFieldBossFixedSchedules = {
 globalThis.NotMeterFieldBossAliases = {
   2600093: 2600084,
   2600094: 2600084,
+  2600097: 2600068,
+  2600098: 2600089,
   2600156: 2600150,
 };
