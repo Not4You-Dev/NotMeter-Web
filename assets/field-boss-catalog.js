@@ -64,8 +64,7 @@ globalThis.NotMeterFieldBossCatalog = [
     names: { ko: "어비스 하층", en: "Abyss Lower", "zh-TW": "深淵下層" },
     bosses: [
       [2600068, "정령왕 아그로"], [2600089, "감시자 카이라"],
-      [2600084, "수호신장 나흐마"], [2600093, "수호신장 나흐마"],
-      [2600094, "수호신장 나흐마"], [2600096, "집행자 타마사"],
+      [2600084, "수호신장 나흐마"], [2600096, "집행자 타마사"],
       [2600097, "집행자 아그로"], [2600098, "집행자 카이라"],
     ],
   },
@@ -73,8 +72,8 @@ globalThis.NotMeterFieldBossCatalog = [
     key: "abyss-middle",
     names: { ko: "어비스 중층", en: "Abyss Middle", "zh-TW": "深淵中層" },
     bosses: [
-      [2600150, "분노한 수호신장 나흐마"], [2600156, "분노한 수호신장 나흐마"],
-      [2600520, "처형관 드라모스"], [2600521, "반역자 듀칼"],
+      [2600150, "분노한 수호신장 나흐마"], [2600520, "처형관 드라모스"],
+      [2600521, "반역자 듀칼"],
       [2600522, "파멸자 마라카"],
     ],
   },
@@ -82,4 +81,10 @@ globalThis.NotMeterFieldBossCatalog = [
 
 globalThis.NotMeterFieldBossFixedSchedules = {
   2600089: { koreaStartHour: 1, intervalHours: 4 },
+};
+
+globalThis.NotMeterFieldBossAliases = {
+  2600093: 2600084,
+  2600094: 2600084,
+  2600156: 2600150,
 };

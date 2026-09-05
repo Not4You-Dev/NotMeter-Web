@@ -189,6 +189,7 @@
     : [];
   const FIELD_BOSS_KIBELISKS = globalThis.NotMeterFieldBossKibeliskCatalog || {};
   const FIELD_BOSS_FIXED_SCHEDULES = globalThis.NotMeterFieldBossFixedSchedules || {};
+  const FIELD_BOSS_ALIASES = globalThis.NotMeterFieldBossAliases || {};
   const DETAIL_METRICS = [
     ["specialization", "specialization"],
     ["hits", "hits"],
@@ -2592,9 +2593,9 @@
     for (const baseUrl of FIELD_BOSS_CACHE_URLS) {
       try {
         const separator = baseUrl.includes("?") ? "&" : "?";
-        const cache = await fetchFieldBossCacheJson(
+        const cache = normalizeFieldBossCache(await fetchFieldBossCacheJson(
           `${baseUrl}${separator}v=${Date.now()}`,
-          force ? "reload" : "no-cache");
+          force ? "reload" : "no-cache"));
         validateFieldBossCache(cache);
         if (!Array.isArray(cache.servers) || cache.servers.length === 0) {
           throw new Error("empty cache");
@@ -2709,6 +2710,50 @@
       ? anchor
       : anchor + (Math.floor((koreaTime - anchor) / interval) + 1) * interval;
     return target - koreaOffsetMilliseconds;
+  }
+
+  function normalizeFieldBossCode(bossCode) {
+    const code = Number(bossCode);
+    const canonical = Number(FIELD_BOSS_ALIASES[code]);
+    return Number.isInteger(canonical) && canonical > 0 ? canonical : code;
+  }
+
+  function normalizeFieldBossCache(cache, now = Date.now()) {
+    if (!cache || !Array.isArray(cache.servers)) {
+      return cache;
+    }
+
+    return {
+      ...cache,
+      servers: cache.servers.map(server => ({
+        ...server,
+        regions: Array.isArray(server?.regions)
+          ? server.regions.map(region => {
+              const normalizedEntries = new Map();
+              for (const entry of Array.isArray(region?.entries) ? region.entries : []) {
+                const originalBossCode = Number(entry?.bossCode);
+                const bossCode = normalizeFieldBossCode(originalBossCode);
+                const candidate = {
+                  ...entry,
+                  bossCode,
+                  targetAt: resolveFieldBossTargetAt(bossCode, entry?.targetAt, now),
+                };
+                const priority = originalBossCode === bossCode ? 0 : 1;
+                const current = normalizedEntries.get(bossCode);
+                if (!current || priority < current.priority ||
+                    (priority === current.priority &&
+                      Number(candidate.targetAt) < Number(current.entry.targetAt))) {
+                  normalizedEntries.set(bossCode, { entry: candidate, priority });
+                }
+              }
+              return {
+                ...region,
+                entries: Array.from(normalizedEntries.values(), item => item.entry),
+              };
+            })
+          : server?.regions,
+      })),
+    };
   }
 
   function validateFieldBossCache(cache) {
