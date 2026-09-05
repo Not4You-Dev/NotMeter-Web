@@ -958,14 +958,51 @@
       context.textAlign = "left"; context.fillStyle = foreground; context.font = "900 23px Pretendard, sans-serif";
       context.fillText(snapshotArtifactName(entry.name), itemX + 51, itemY + 36, 115);
     });
-    context.textAlign = "left"; context.fillStyle = "#dce9ed"; context.font = "850 19px Pretendard, sans-serif";
-    const cumulativeText = cumulative.count > 0
-      ? `${text("cumulativeScore")} ${cumulative.west}:${cumulative.east} · ${text("cumulativeCoverage", { count: cumulative.count, total: cumulative.total })}`
-      : `${text("cumulativeScore")} · ${text("cumulativePending")}`;
-    context.fillText(cumulativeText, x + 20, y + 184, 650);
+    drawSnapshotCumulative(context, cumulative, x + 16, y + 150);
     context.textAlign = "right"; context.fillStyle = "#fff3b9"; context.font = "900 20px Pretendard, sans-serif";
     const timeText = battleAt ? (historical ? formatHistoryMoment(battleAt) : formatCountdown(Math.max(0, battleAt - Date.now()))) : "—";
-    context.fillText(`${historical ? text("historyRecord") : text("next")} ${timeText}`, x + 1138, y + 184, 450);
+    context.fillText(`${historical ? text("historyRecord") : text("next")} ${timeText}`, x + 1138, y + 179, 360);
+  }
+
+  function drawSnapshotCumulative(context, cumulative, x, y) {
+    const width = 720;
+    const height = 43;
+    roundedRect(context, x, y, width, height, 11, "rgba(8,34,45,.98)", "#67cbd5", 2);
+    context.fillStyle = "#f5dc8c";
+    context.fillRect(x + 3, y + 10, 4, 23);
+    context.textAlign = "left";
+    context.fillStyle = "#fff0b5";
+    context.font = "900 18px Pretendard, sans-serif";
+    context.fillText(text("cumulativeScore"), x + 17, y + 28, 145);
+
+    if (cumulative.count > 0) {
+      const westText = String(cumulative.west);
+      const eastText = String(cumulative.east);
+      context.font = "950 30px Pretendard, sans-serif";
+      const westWidth = context.measureText(westText).width;
+      const colonWidth = context.measureText(":").width;
+      const eastWidth = context.measureText(eastText).width;
+      const totalWidth = westWidth + colonWidth + eastWidth + 14;
+      let scoreX = x + 338 - totalWidth / 2;
+      context.fillStyle = "#67edf7";
+      context.fillText(westText, scoreX, y + 32);
+      scoreX += westWidth + 7;
+      context.fillStyle = "#a9bdc6";
+      context.fillText(":", scoreX, y + 32);
+      scoreX += colonWidth + 7;
+      context.fillStyle = "#ed9cf8";
+      context.fillText(eastText, scoreX, y + 32);
+      context.textAlign = "right";
+      context.fillStyle = "#d9e8ec";
+      context.font = "850 17px Pretendard, sans-serif";
+      context.fillText(text("cumulativeCoverage", { count: cumulative.count, total: cumulative.total }), x + width - 16, y + 28, 180);
+      return;
+    }
+
+    context.textAlign = "center";
+    context.fillStyle = "#e6f2f5";
+    context.font = "900 21px Pretendard, sans-serif";
+    context.fillText(text("cumulativePending"), x + 420, y + 29, 450);
   }
 
   function snapshotArtifactName(name) {
