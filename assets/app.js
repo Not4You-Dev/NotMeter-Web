@@ -319,9 +319,13 @@
       classPerformancePageTitle: "NotMeter CP 보정 직업 DPS 통계",
       classPerformancePageSubtitle: "이번 주 동일 보스·동일 CP 기준 실전 성능 지표",
       classPerformanceTitle: "CP 보정 직업 DPS 통계",
+      classPerformanceKicker800: "CP 800K+ · PARTY GAP ≤100K · SHARE >10%",
+      classPerformanceKicker900: "CP 900K+ · PARTY GAP ≤100K · SHARE >10%",
       classPerformanceDescription: "이번 주 검증 기록 중 CP 800K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 표본을 같은 보스·10K CP 조건으로 맞춘 상대 지표입니다. 원시 DPS 순위가 아닙니다.",
+      classPerformanceDescription900: "이번 주 검증 기록 중 CP 900K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 표본만 같은 보스·10K CP 조건으로 맞춘 고CP 상대 지표입니다. 원시 DPS 순위가 아닙니다.",
       classPerformanceCpTitle: "검증 기록만 수집",
       classPerformanceCpText: "이번 주 통계 검증을 통과한 보스 처치 중 서버·캐릭터·직업이 확인되고 CP가 800K 이상인 기록만 사용합니다. 최대 CP 제한은 없습니다.",
+      classPerformanceCpText900: "이번 주 통계 검증을 통과한 보스 처치 중 서버·캐릭터·직업이 확인되고 CP가 900K 이상인 기록만 사용합니다. 최대 CP 제한은 없습니다.",
       classPerformancePartyTitle: "파티 표본 정제",
       classPerformancePartyText: "파티원 정보가 모두 확인되고 CP 최고·최저 차이가 100K 이하인 전투만 사용하며, 파티 총 피해 기여도가 10%를 초과한 캐릭터만 표본에 포함합니다.",
       classPerformanceDedupeTitle: "캐릭터별 대표 기록",
@@ -356,6 +360,11 @@
       classPerformanceCompositionExcluded: "{jobs} 제외 파티 · 대표 기록 {samples}개 · 고유 캐릭터 {characters}명",
       classPerformanceCompositionUnavailable: "선택한 직업 제외 조건의 표본이 아직 부족합니다.",
       classPerformanceExclusionDifference: "전체 대비 {value}점",
+      classPerformanceScopeAria: "직업 성능 집계 CP 기준 선택",
+      classPerformanceScope800: "800K+ 기본",
+      classPerformanceScope900: "900K+만",
+      classPerformanceScopeSummary800: "CP 800K 이상",
+      classPerformanceScopeSummary900: "CP 900K 이상",
       classPerformanceMetricsAria: "직업 성능 백분위 선택",
       classPerformanceP50Title: "P50 · 중앙값",
       classPerformanceP50Text: "전체 기록을 낮은 순으로 정렬했을 때 정확히 가운데인 지점으로, 일반적인 실전 성능을 비교합니다.",
@@ -367,7 +376,8 @@
       classPerformanceEmpty: "신뢰도 기준을 충족한 직업 표본이 아직 없습니다.",
       classPerformanceNoticeTitle: "이 통계를 어디까지 신뢰할 수 있나요?",
       classPerformanceNoticeText: "CP 800K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 조건과 보스·중복 캐릭터·표본 부족 보정을 적용한 이번 주 실전 비교 지표입니다. A가 가장 안정적이고 C는 참고 가능한 최소 기준입니다. 파티 버프·보스별 역할·숙련도 차이까지 완전히 제거할 수는 없으므로 밸런스의 절대 판정이나 이론상 최대 DPS가 아니라, 실제 수집 기록에서 반복 관측된 경향으로 해석해 주세요.",
-      classPerformanceSummary: "{period} · 순위 {jobs}개 직업 · 고유 캐릭터 {characters}명 · 콘텐츠 {contents}개",
+      classPerformanceNoticeText900: "CP 900K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 조건과 보스·중복 캐릭터·표본 부족 보정을 적용한 이번 주 고CP 실전 비교 지표입니다. A가 가장 안정적이고 C는 참고 가능한 최소 기준입니다. 파티 버프·보스별 역할·숙련도 차이까지 완전히 제거할 수는 없으므로 밸런스의 절대 판정이나 이론상 최대 DPS가 아니라, 실제 수집 기록에서 반복 관측된 경향으로 해석해 주세요.",
+      classPerformanceSummary: "{scope} · {period} · 순위 {jobs}개 직업 · 고유 캐릭터 {characters}명 · 콘텐츠 {contents}개",
       classPerformanceInsufficient: "표본 부족",
       classPerformanceGrade: "표본 신뢰도 {grade}",
       classPerformanceBaseline: "기준 100",
@@ -743,9 +753,13 @@
       classPerformancePageTitle: "NotMeter CP-Normalized Class DPS",
       classPerformancePageSubtitle: "This week's real-world performance at the same boss and CP",
       classPerformanceTitle: "CP-Normalized Class DPS",
+      classPerformanceKicker800: "CP 800K+ · PARTY GAP ≤100K · SHARE >10%",
+      classPerformanceKicker900: "CP 900K+ · PARTY GAP ≤100K · SHARE >10%",
       classPerformanceDescription: "A relative index using this week's verified samples with 800K+ CP, a party CP spread of 100K or less, and over 10% damage contribution, matched by boss and 10K CP bracket. It is not a raw-DPS leaderboard.",
+      classPerformanceDescription900: "A high-CP relative index using only this week's verified samples with 900K+ CP, a party CP spread of 100K or less, and over 10% damage contribution, matched by boss and 10K CP bracket. It is not a raw-DPS leaderboard.",
       classPerformanceCpTitle: "Verified runs only",
       classPerformanceCpText: "Only accepted boss kills with a known server, character, and class and record-time CP of at least 800K are used. There is no maximum CP limit.",
+      classPerformanceCpText900: "Only accepted boss kills with a known server, character, and class and record-time CP of at least 900K are used. There is no maximum CP limit.",
       classPerformancePartyTitle: "Party-sample filtering",
       classPerformancePartyText: "Only fights with every party member verified and at most a 100K gap between the party's highest and lowest CP are used; only characters contributing over 10% of party damage enter the sample.",
       classPerformanceDedupeTitle: "One representative run",
@@ -780,6 +794,11 @@
       classPerformanceCompositionExcluded: "Parties excluding {jobs} · {samples} representative runs · {characters} unique characters",
       classPerformanceCompositionUnavailable: "The selected class-exclusion condition does not yet have enough samples.",
       classPerformanceExclusionDifference: "vs all parties {value} pts",
+      classPerformanceScopeAria: "Select the class-performance CP threshold",
+      classPerformanceScope800: "800K+ Default",
+      classPerformanceScope900: "900K+ Only",
+      classPerformanceScopeSummary800: "CP 800K+",
+      classPerformanceScopeSummary900: "CP 900K+",
       classPerformanceMetricsAria: "Select class-performance percentile",
       classPerformanceP50Title: "P50 · Median",
       classPerformanceP50Text: "The midpoint after sorting all runs from low to high, representing typical real-world performance.",
@@ -791,7 +810,8 @@
       classPerformanceEmpty: "No class sample meets the confidence threshold yet.",
       classPerformanceNoticeTitle: "How far should this result be trusted?",
       classPerformanceNoticeText: "This weekly comparison applies 800K+ CP, a party CP spread of 100K or less, over 10% damage contribution, boss matching, character deduplication, and small-sample controls. A is the most stable grade, while C is the minimum useful reference. Party buffs, encounter roles, and player skill cannot be removed completely, so this is a repeatedly observed trend rather than an absolute balance verdict or theoretical maximum DPS.",
-      classPerformanceSummary: "{period} · {jobs} ranked classes · {characters} unique characters · {contents} encounters",
+      classPerformanceNoticeText900: "This high-CP weekly comparison applies 900K+ CP, a party CP spread of 100K or less, over 10% damage contribution, boss matching, character deduplication, and small-sample controls. A is the most stable grade, while C is the minimum useful reference. Party buffs, encounter roles, and player skill cannot be removed completely, so this is a repeatedly observed trend rather than an absolute balance verdict or theoretical maximum DPS.",
+      classPerformanceSummary: "{scope} · {period} · {jobs} ranked classes · {characters} unique characters · {contents} encounters",
       classPerformanceInsufficient: "Small sample",
       classPerformanceGrade: "Sample confidence {grade}",
       classPerformanceBaseline: "Baseline 100",
@@ -1176,6 +1196,7 @@
     selectedJob: "",
     selectedOverallJob: "",
     performanceMetric: localStorage.getItem("notmeter-class-performance-metric") || "p75Score",
+    performanceMinimumCombatPower: 800_000,
     performanceExclusionMask: decodeClassPerformanceExclusionMask(),
     rankingNavigationBlockedUntil: 0,
     selectedDetail: null,
@@ -1294,6 +1315,8 @@
       "stat-efficiency-button", "stat-efficiency-surface", "stat-efficiency-back-button",
       "class-performance-button", "class-performance-surface",
       "class-performance-back-button", "class-performance-summary",
+      "class-performance-kicker", "class-performance-description", "class-performance-cp-text",
+      "class-performance-notice-text",
       "class-performance-metric-title", "class-performance-metric-description",
       "class-performance-composition-jobs", "class-performance-composition-reset",
       "class-performance-composition-status",
@@ -1421,6 +1444,16 @@
       state.performanceExclusionMask ^= 1 << index;
       saveClassPerformanceExclusion();
       renderClassPerformanceInPlace();
+    });
+    document.querySelectorAll("[data-performance-minimum-cp]").forEach(button => {
+      button.addEventListener("click", () => {
+        const minimumCombatPower = Number(button.dataset.performanceMinimumCp);
+        if (minimumCombatPower !== 800_000 && minimumCombatPower !== 900_000) {
+          return;
+        }
+        state.performanceMinimumCombatPower = minimumCombatPower;
+        renderClassPerformance();
+      });
     });
     document.querySelectorAll("[data-performance-metric]").forEach(button => {
       button.addEventListener("click", () => {
@@ -1998,6 +2031,7 @@
       if (isMatchingClassOverallCache(classOverallCache, cache.generatedAt)) {
         cache.classOverall = classOverallCache.classOverall;
         cache.classPerformance = classOverallCache.classPerformance;
+        cache.classPerformance900K = classOverallCache.classPerformance900K;
         cache.classOverallGeneratedAt = classOverallCache.generatedAt;
       }
       if (cache.classOverall && !cache.classOverallGeneratedAt) {
@@ -4941,8 +4975,35 @@
     return { exclusionMask, exclusion };
   }
 
+  function syncClassPerformanceScope() {
+    const highCombatPower = state.performanceMinimumCombatPower === 900_000;
+    document.querySelectorAll("[data-performance-minimum-cp]").forEach(button => {
+      const active = Number(button.dataset.performanceMinimumCp) ===
+        state.performanceMinimumCombatPower;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    elements["class-performance-kicker"].textContent = t(
+      highCombatPower ? "classPerformanceKicker900" : "classPerformanceKicker800");
+    elements["class-performance-description"].textContent = t(
+      highCombatPower ? "classPerformanceDescription900" : "classPerformanceDescription");
+    elements["class-performance-cp-text"].textContent = t(
+      highCombatPower ? "classPerformanceCpText900" : "classPerformanceCpText");
+    elements["class-performance-notice-text"].textContent = t(
+      highCombatPower ? "classPerformanceNoticeText900" : "classPerformanceNoticeText");
+    return {
+      snapshot: highCombatPower
+        ? state.data?.classPerformance900K
+        : state.data?.classPerformance,
+      summaryKey: highCombatPower
+        ? "classPerformanceScopeSummary900"
+        : "classPerformanceScopeSummary800",
+    };
+  }
+
   function renderClassPerformance() {
-    const snapshot = state.data?.classPerformance;
+    const scope = syncClassPerformanceScope();
+    const snapshot = scope.snapshot;
     const available = snapshot && Array.isArray(snapshot.rows);
     elements["class-performance-pending"].hidden = available;
     elements["class-performance-empty"].hidden = true;
@@ -4991,6 +5052,7 @@
       .sort((left, right) => Number(right.uniqueCharacters) - Number(left.uniqueCharacters));
     const weeklyRange = parseWeeklyRange(snapshot.periodLabel);
     elements["class-performance-summary"].textContent = t("classPerformanceSummary", {
+      scope: t(scope.summaryKey),
       period: weeklyRange ? formatWeeklyRange(weeklyRange) : t("thisWeek"),
       jobs: ranked.length,
       characters: formatInteger(ranked.reduce(

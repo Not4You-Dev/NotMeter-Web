@@ -1,9 +1,16 @@
 (() => {
   "use strict";
 
-  const API_ROOT = ["localhost", "127.0.0.1"].includes(window.location.hostname)
-    ? "http://127.0.0.1:5080/character/v1"
-    : "https://notmeter.112-168-140-142.sslip.io/character/v1";
+  const LOCAL_CHARACTER_API_ROOT = "http://127.0.0.1:5080/character/v1";
+  const CURRENT_HOME_CHARACTER_API_ROOTS = Object.freeze([
+    "https://notmeter.59-27-108-81.sslip.io/character/v1",
+    "https://notmeter.59-27-108-81.nip.io/character/v1",
+  ]);
+  const RETIRED_CHARACTER_API_HOSTS = new Set([
+    "notmeter.112-168-140-142.sslip.io",
+    "notmeter.112-168-140-142.nip.io",
+  ]);
+  const TRANSIENT_CHARACTER_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
   const RECENT_KEY = "notmeter-character-recent-v1";
   const FAVORITE_KEY = "notmeter-character-favorites-v1";
   const OFFICIAL_NAME_CATALOG_URL = "./assets/game-data.zh-TW.json?v=20260824-1";
@@ -27,6 +34,8 @@
   const PROFILE_SESSION_TTL_MS = 10 * 60_000;
   const SESSION_PROFILE_LIMIT = 4;
   const PROFILE_SESSION_INDEX_KEY = "notmeter-character-profile-session-index-v1";
+  let discoveredCharacterApiRoots = [];
+  let characterEndpointRefresh = null;
   const CORE_STAT_TYPES = new Set(["STR", "DEX", "INT", "CON", "AGI", "WIS"]);
   const DIVINE_STAT_TYPES = new Set([
     "Justice", "Freedom", "Illusion", "Life", "Time", "Destruction",
@@ -377,8 +386,8 @@
     const sessionPayload = readSessionPayload(sessionKey, SEARCH_SESSION_TTL_MS);
     if (sessionPayload) applySearchPayload(sessionPayload, region);
     try {
-      const data = await fetchJson(
-        `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1`);
+      const data = await fetchCharacterJson(
+        `/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1`);
       if (requestId !== state.searchRequest) return;
       const preserveCompleteSession = sessionPayload?.complete !== false && data?.complete === false;
       if (!preserveCompleteSession) {
@@ -413,8 +422,8 @@
       await new Promise(resolve => window.setTimeout(resolve, attempt < 8 ? 500 : 1250));
       if (requestId !== state.searchRequest) return;
       try {
-        const data = await fetchJson(
-          `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1&_=${Date.now()}`,
+        const data = await fetchCharacterJson(
+          `/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1&_=${Date.now()}`,
           { cache: "no-store" },
         );
         if (requestId !== state.searchRequest) return;
@@ -589,8 +598,8 @@
     showProfileState("loading");
     try {
       const region = currentOfficialRegion();
-      const data = await fetchJson(
-        `${API_ROOT}/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1`);
+      const data = await fetchCharacterJson(
+        `/search?name=${encodeURIComponent(name)}&region=${region}&lang=${officialLanguage()}&fast=1`);
       const candidates = Array.isArray(data.results) ? data.results : [];
       const normalizedName = name.normalize("NFC").toLocaleLowerCase();
       const match = candidates.find(item =>
@@ -627,8 +636,8 @@
     const refreshSuffix = refreshOfficial ? "&refresh=1" : "";
     const fastSuffix = refreshOfficial ? "" : "&fast=1";
     const requestId = ++state.profileRequest;
-    state.profileLoad = fetchJson(
-      `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&lang=${officialLanguage()}${refreshSuffix}${fastSuffix}`,
+    state.profileLoad = fetchCharacterJson(
+      `/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&lang=${officialLanguage()}${refreshSuffix}${fastSuffix}`,
       { cache: "no-store" },
     ).then(data => {
       writeProfileSessionPayload(sessionKey, data);
@@ -648,8 +657,8 @@
       await new Promise(resolve => window.setTimeout(resolve, attempt < 6 ? 600 : 1250));
       if (requestId !== state.profileRequest) return;
       try {
-        const data = await fetchJson(
-          `${API_ROOT}/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&lang=${officialLanguage()}&fast=1&_=${Date.now()}`,
+        const data = await fetchCharacterJson(
+          `/profile?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}&region=${region}&lang=${officialLanguage()}&fast=1&_=${Date.now()}`,
           { cache: "no-store" },
         );
         if (requestId !== state.profileRequest) return;
@@ -2128,6 +2137,71 @@
     return { name, value: String(value) };
   }
 
+  function normalizeCharacterApiRoot(value) {
+    try {
+      const endpoint = new URL(String(value || "").trim());
+      if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password ||
+          (endpoint.port && endpoint.port !== "443") || RETIRED_CHARACTER_API_HOSTS.has(endpoint.hostname.toLowerCase())) {
+        return "";
+      }
+      return `${endpoint.protocol}//${endpoint.hostname}/character/v1`;
+    } catch {
+      return "";
+    }
+  }
+
+  function currentCharacterApiRoots() {
+    if (["localhost", "127.0.0.1"].includes(window.location.hostname)) return [LOCAL_CHARACTER_API_ROOT];
+    return [...new Set([...discoveredCharacterApiRoots, ...CURRENT_HOME_CHARACTER_API_ROOTS])];
+  }
+
+  async function refreshCharacterApiRoots(force = false) {
+    if (["localhost", "127.0.0.1"].includes(window.location.hostname)) return currentCharacterApiRoots();
+    if (characterEndpointRefresh) return characterEndpointRefresh;
+    characterEndpointRefresh = (async () => {
+      const resolver = globalThis.NotMeterControlEndpoint;
+      if (!resolver?.getEndpoints) return currentCharacterApiRoots();
+      try {
+        if (force && resolver.refresh) await resolver.refresh(true);
+        const endpoints = await resolver.getEndpoints();
+        const roots = Array.isArray(endpoints) ? endpoints.map(normalizeCharacterApiRoot).filter(Boolean) : [];
+        if (roots.length) discoveredCharacterApiRoots = [...new Set(roots)];
+      } catch {
+        // The current home aliases remain available if the signed manifest cannot be refreshed.
+      }
+      return currentCharacterApiRoots();
+    })().finally(() => { characterEndpointRefresh = null; });
+    return characterEndpointRefresh;
+  }
+
+  function isTransientCharacterError(error) {
+    return !Number.isInteger(error?.status) || TRANSIENT_CHARACTER_STATUS_CODES.has(error.status);
+  }
+
+  async function fetchCharacterJson(path, options = {}) {
+    const attempted = new Set();
+    let lastError = null;
+    const attempt = async roots => {
+      for (const root of roots) {
+        if (!root || attempted.has(root)) continue;
+        attempted.add(root);
+        try {
+          return await fetchJson(`${root}${path}`, options);
+        } catch (error) {
+          lastError = error;
+          if (!isTransientCharacterError(error)) throw error;
+        }
+      }
+      return null;
+    };
+
+    const initial = await attempt(currentCharacterApiRoots());
+    if (initial !== null) return initial;
+    const refreshed = await attempt(await refreshCharacterApiRoots(true));
+    if (refreshed !== null) return refreshed;
+    throw lastError || new Error(currentCopy().loadError);
+  }
+
   async function fetchJson(url, options = {}) {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -2135,12 +2209,18 @@
       const response = await fetch(url, {
         cache: options.cache || "default", headers: { Accept: "application/json" }, signal: controller.signal,
       });
-      if (!response.ok) throw new Error(response.status === 404 ? currentCopy().noResults : currentCopy().loadError);
+      if (!response.ok) {
+        const error = new Error(response.status === 404 ? currentCopy().noResults : currentCopy().loadError);
+        error.status = response.status;
+        throw error;
+      }
       return await response.json();
     } finally {
       window.clearTimeout(timer);
     }
   }
+
+  void refreshCharacterApiRoots();
 
   function searchSessionKey(name, region) {
     const normalizedName = String(name || "").trim().normalize("NFC").toLocaleLowerCase();

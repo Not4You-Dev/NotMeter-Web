@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260906-1">
+  <link rel="stylesheet" href="./assets/app.css?v=20260906-2">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
@@ -208,13 +208,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260905-4" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260906-1" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260906-2" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260904-1" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
-  <script src="./assets/character.js?v=20260905-1" defer></script>
+  <script src="./assets/character.js?v=20260906-1" defer></script>
   <script src="./assets/artifact.js?v=20260905-1" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260906-1" defer></script>
+  <script src="./assets/app.js?v=20260906-2" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -805,9 +805,9 @@
     <section class="class-performance-surface" id="class-performance-surface" hidden>
       <div class="class-performance-heading">
         <div>
-          <span class="class-performance-kicker">CP 800K+ · PARTY GAP ≤100K · SHARE &gt;10%</span>
+          <span class="class-performance-kicker" id="class-performance-kicker">CP 800K+ · PARTY GAP ≤100K · SHARE &gt;10%</span>
           <h2 data-i18n="classPerformanceTitle">CP 보정 직업 DPS 통계</h2>
-          <p data-i18n="classPerformanceDescription">이번 주 검증 기록 중 CP 800K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 표본을 같은 보스·10K CP 조건으로 맞춘 상대 지표입니다. 원시 DPS 순위가 아닙니다.</p>
+          <p id="class-performance-description" data-i18n="classPerformanceDescription">이번 주 검증 기록 중 CP 800K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 표본을 같은 보스·10K CP 조건으로 맞춘 상대 지표입니다. 원시 DPS 순위가 아닙니다.</p>
         </div>
         <button class="ranking-back-button" id="class-performance-back-button" type="button">
           <span class="ranking-back-button-icon" aria-hidden="true">←</span>
@@ -820,7 +820,7 @@
           <span class="class-performance-method-index">01</span>
           <div>
             <strong data-i18n="classPerformanceCpTitle">검증 기록만 수집</strong>
-            <p data-i18n="classPerformanceCpText">이번 주 통계 검증을 통과한 보스 처치 중 서버·캐릭터·직업이 확인되고 CP가 800K 이상인 기록만 사용합니다. 최대 CP 제한은 없습니다.</p>
+            <p id="class-performance-cp-text" data-i18n="classPerformanceCpText">이번 주 통계 검증을 통과한 보스 처치 중 서버·캐릭터·직업이 확인되고 CP가 800K 이상인 기록만 사용합니다. 최대 CP 제한은 없습니다.</p>
           </div>
         </article>
         <article>
@@ -900,10 +900,16 @@
 
       <div class="class-performance-toolbar">
         <div class="class-performance-metric-selector">
-          <div class="class-performance-metrics" role="group" aria-label="성능 지표" data-i18n-aria-label="classPerformanceMetricsAria">
-            <button type="button" data-performance-metric="p50Score">P50</button>
-            <button type="button" data-performance-metric="p75Score" class="active">P75</button>
-            <button type="button" data-performance-metric="p90Score">P90</button>
+          <div class="class-performance-controls">
+            <div class="class-performance-cp-scopes" role="group" aria-label="집계 CP 기준" data-i18n-aria-label="classPerformanceScopeAria">
+              <button type="button" data-performance-minimum-cp="800000" class="active" aria-pressed="true" data-i18n="classPerformanceScope800">800K+ 기본</button>
+              <button type="button" data-performance-minimum-cp="900000" aria-pressed="false" data-i18n="classPerformanceScope900">900K+만</button>
+            </div>
+            <div class="class-performance-metrics" role="group" aria-label="성능 지표" data-i18n-aria-label="classPerformanceMetricsAria">
+              <button type="button" data-performance-metric="p50Score">P50</button>
+              <button type="button" data-performance-metric="p75Score" class="active">P75</button>
+              <button type="button" data-performance-metric="p90Score">P90</button>
+            </div>
           </div>
           <div class="class-performance-metric-guide" aria-live="polite">
             <strong id="class-performance-metric-title" data-i18n="classPerformanceP75Title">P75 · 상위 25% 기준</strong>
@@ -924,7 +930,7 @@
 
       <details class="class-performance-notice" open>
         <summary data-i18n="classPerformanceNoticeTitle">이 통계를 어디까지 신뢰할 수 있나요?</summary>
-        <p data-i18n="classPerformanceNoticeText">CP 800K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 조건과 보스·중복 캐릭터·표본 부족 보정을 적용한 이번 주 실전 비교 지표입니다. A가 가장 안정적이고 C는 참고 가능한 최소 기준입니다. 파티 버프·보스별 역할·숙련도 차이까지 완전히 제거할 수는 없으므로 밸런스의 절대 판정이나 이론상 최대 DPS가 아니라, 실제 수집 기록에서 반복 관측된 경향으로 해석해 주세요.</p>
+        <p id="class-performance-notice-text" data-i18n="classPerformanceNoticeText">CP 800K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 조건과 보스·중복 캐릭터·표본 부족 보정을 적용한 이번 주 실전 비교 지표입니다. A가 가장 안정적이고 C는 참고 가능한 최소 기준입니다. 파티 버프·보스별 역할·숙련도 차이까지 완전히 제거할 수는 없으므로 밸런스의 절대 판정이나 이론상 최대 DPS가 아니라, 실제 수집 기록에서 반복 관측된 경향으로 해석해 주세요.</p>
       </details>
     </section>
 

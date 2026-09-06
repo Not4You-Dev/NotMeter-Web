@@ -3771,11 +3771,24 @@ button:focus-visible,
   gap: 11px;
 }
 
+.class-performance-controls,
+.class-performance-cp-scopes,
 .class-performance-metrics {
   display: inline-flex;
   gap: 5px;
 }
 
+.class-performance-controls {
+  align-items: center;
+  gap: 8px;
+}
+
+.class-performance-cp-scopes {
+  padding-right: 8px;
+  border-right: 1px solid #244552;
+}
+
+.class-performance-cp-scopes button,
 .class-performance-metrics button {
   min-width: 58px;
   height: 32px;
@@ -3789,11 +3802,23 @@ button:focus-visible,
   font-weight: 900;
 }
 
+.class-performance-cp-scopes button {
+  min-width: 82px;
+}
+
+.class-performance-cp-scopes button:hover,
+.class-performance-cp-scopes button.active,
 .class-performance-metrics button:hover,
 .class-performance-metrics button.active {
   border-color: #36bdb6;
   background: #10383e;
   color: #bffcf7;
+}
+
+.class-performance-cp-scopes button:focus-visible,
+.class-performance-metrics button:focus-visible {
+  outline: 2px solid #62ebe2;
+  outline-offset: 2px;
 }
 
 .class-performance-metric-guide {
@@ -7193,11 +7218,24 @@ tr:nth-child(3) .rank-badge {
     gap: 7px;
   }
 
+  .class-performance-controls {
+    display: grid;
+    gap: 6px;
+  }
+
+  .class-performance-cp-scopes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-right: 0;
+    border-right: 0;
+  }
+
   .class-performance-metrics {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .class-performance-cp-scopes button,
   .class-performance-metrics button {
     min-width: 0;
   }
