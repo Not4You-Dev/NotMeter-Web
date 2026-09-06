@@ -1502,19 +1502,21 @@
       populateFilters();
       render();
     });
-    elements["ranking-metric-choice"].addEventListener("click", event => {
-      const button = event.target.closest("[data-ranking-metric]");
-      if (!button || button.disabled) {
-        return;
-      }
-      const metric = button.dataset.rankingMetric === "ndps" ? "ndps" : "dps";
-      if (metric === state.rankingMetric) {
-        return;
-      }
-      state.rankingMetric = metric;
-      closeCombatDetail();
-      leaveClassView();
-      render();
+    document.querySelectorAll("[data-ranking-metric-control]").forEach(control => {
+      control.addEventListener("click", event => {
+        const button = event.target.closest("[data-ranking-metric]");
+        if (!button || button.disabled) {
+          return;
+        }
+        const metric = button.dataset.rankingMetric === "ndps" ? "ndps" : "dps";
+        if (metric === state.rankingMetric) {
+          return;
+        }
+        state.rankingMetric = metric;
+        closeCombatDetail();
+        leaveClassView();
+        render();
+      });
     });
     elements["dungeon-filter-buttons"].addEventListener("click", event => {
       const button = event.target.closest("[data-dungeon-key]");
@@ -5656,18 +5658,25 @@
   function syncRankingMetricControl() {
     const requestedNormalized = state.rankingMetric === "ndps";
     const normalized = usesNormalizedRanking();
-    elements["ranking-metric-dps"].classList.toggle("is-active", !requestedNormalized);
-    elements["ranking-metric-dps"].setAttribute("aria-checked", String(!requestedNormalized));
-    elements["ranking-metric-ndps"].classList.toggle("is-active", requestedNormalized);
-    elements["ranking-metric-ndps"].setAttribute("aria-checked", String(requestedNormalized));
-    elements["ranking-metric-ndps"].disabled = false;
-    elements["ranking-metric-description"].textContent = t(usesCombatTimeRanking()
+    document.querySelectorAll('[data-ranking-metric="dps"]').forEach(button => {
+      button.classList.toggle("is-active", !requestedNormalized);
+      button.setAttribute("aria-checked", String(!requestedNormalized));
+    });
+    document.querySelectorAll('[data-ranking-metric="ndps"]').forEach(button => {
+      button.classList.toggle("is-active", requestedNormalized);
+      button.setAttribute("aria-checked", String(requestedNormalized));
+      button.disabled = false;
+    });
+    const description = t(usesCombatTimeRanking()
       ? "ndpsRankingUnavailableCombatTime"
       : requestedNormalized && usesDpsFallbackRanking()
         ? "ndpsRankingFallbackDps"
         : normalized
           ? "ndpsRankingDescription"
           : "dpsRankingDescription");
+    document.querySelectorAll(".ranking-metric-description").forEach(element => {
+      element.textContent = description;
+    });
   }
 
   function projectSummaryRowForMetric(row) {

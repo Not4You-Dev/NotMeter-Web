@@ -2682,6 +2682,23 @@ button:focus-visible,
   border-top: 1px solid rgba(46, 93, 108, 0.7);
 }
 
+.weekly-ranking-metric-choice {
+  grid-column: auto;
+  margin: 0 13px 12px 47px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.weekly-ranking-metric-choice::before {
+  display: none;
+}
+
+.weekly-ranking-metric-choice .ranking-metric-buttons {
+  width: 190px;
+  min-width: 190px;
+}
+
 .weekly-guide-legend {
   display: flex;
   flex-wrap: wrap;

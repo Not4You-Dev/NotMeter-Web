@@ -3497,3 +3497,23 @@ a:focus-visible {
     max-height: min(44vh, 520px) !important;
   }
 }
+
+.weekly-guide > .weekly-ranking-metric-choice {
+  margin: 0 13px 12px 47px;
+  padding: 10px 0 0;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.065) !important;
+  border-bottom: 0 !important;
+  background: transparent !important;
+}
+
+@media (max-width: 600px) {
+  .weekly-guide > .weekly-ranking-metric-choice {
+    margin: 0 12px 12px;
+  }
+
+  .weekly-guide > .weekly-ranking-metric-choice .ranking-metric-buttons {
+    width: 100%;
+    min-width: 0;
+  }
+}
