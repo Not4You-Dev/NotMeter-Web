@@ -4063,4 +4063,18 @@ body.class-performance-view .class-performance-grade {
   body.class-performance-view .class-performance-method {
     margin-top: 18px;
   }
+
+  .sponsor-mobile {
+    margin: 24px 0 28px;
+  }
+}
+
+@media (min-width: 1900px) {
+  .sponsor-rail {
+    left: calc(50% + 656px);
+  }
+}
+
+body > .google-auto-placed {
+  margin-block: 24px !important;
 }
