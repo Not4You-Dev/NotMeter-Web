@@ -3485,3 +3485,14 @@ a:focus-visible {
     align-items: center !important;
   }
 }
+
+.filter-panel {
+  overflow: visible !important;
+  backdrop-filter: none !important;
+}
+
+@media (min-width: 601px) {
+  .cp-filter-menu {
+    max-height: min(44vh, 520px) !important;
+  }
+}
