@@ -275,6 +275,16 @@
       optimizationFrameTitle: "아이온2 그래픽 최적화 설정 생성기",
       discord: "디스코드",
       download: "다운로드",
+      downloadModalKicker: "처음 설치 안내",
+      downloadModalTitle: "NotMeter 설치하기",
+      downloadModalDescription: "아래 순서대로 설치하면 바로 사용할 수 있습니다.",
+      downloadStepNpcapTitle: "Npcap 먼저 설치",
+      downloadStepNpcapDescription: "다운로드한 EXE를 실행하고 Windows 권한 요청에서 ‘예’를 누른 뒤, 기본 옵션 그대로 Install을 누르세요.",
+      downloadStepNpcapHint: "Npcap이 이미 설치되어 있다면 이 단계는 건너뛰세요.",
+      downloadNpcapButton: "Npcap 설치 파일 다운로드",
+      downloadStepMeterTitle: "딜미터기 다운로드",
+      downloadStepMeterDescription: "ZIP 파일의 압축을 푼 뒤 NotMeter.exe를 실행하세요.",
+      downloadMeterButton: "NotMeter 다운로드",
       taiwanServer: "대만 서버",
       enhancedBuff: "상위 버프",
       peopleValue: "{value}명",
@@ -712,6 +722,16 @@
       optimizationFrameTitle: "AION2 graphics optimization settings generator",
       discord: "Discord",
       download: "Download",
+      downloadModalKicker: "First-time setup",
+      downloadModalTitle: "Install NotMeter",
+      downloadModalDescription: "Install these two items in order to get started.",
+      downloadStepNpcapTitle: "Install Npcap first",
+      downloadStepNpcapDescription: "Run the downloaded EXE, select Yes when Windows asks for permission, then keep the default options and select Install.",
+      downloadStepNpcapHint: "Skip this step if Npcap is already installed.",
+      downloadNpcapButton: "Download Npcap installer",
+      downloadStepMeterTitle: "Download the damage meter",
+      downloadStepMeterDescription: "Extract the ZIP file, then run NotMeter.exe.",
+      downloadMeterButton: "Download NotMeter",
       taiwanServer: "Taiwan server",
       enhancedBuff: "Enhanced buff",
       peopleValue: "{value}",
@@ -1238,6 +1258,7 @@
   };
 
   const elements = {};
+  let downloadModalReturnFocus = null;
 
   document.addEventListener("DOMContentLoaded", () => {
     bindElements();
@@ -1306,6 +1327,7 @@
   function bindElements() {
     for (const id of [
       "page-title", "page-subtitle", "daily-user-count", "language-button",
+      "download-button", "download-modal", "download-modal-close",
       "character-surface", "character-back-button",
       "optimization-button", "optimization-surface", "optimization-back-button",
       "optimization-frame",
@@ -1382,6 +1404,16 @@
   }
 
   function bindEvents() {
+    elements["download-button"].addEventListener("click", event => {
+      event.preventDefault();
+      openDownloadModal();
+    });
+    elements["download-modal-close"].addEventListener("click", closeDownloadModal);
+    elements["download-modal"].addEventListener("click", event => {
+      if (event.target === elements["download-modal"]) {
+        closeDownloadModal();
+      }
+    });
     elements["language-button"].addEventListener("change", event => {
       const openDetail = state.selectedDetail;
       state.locale = normalizeLocale(event.currentTarget.value);
@@ -1654,6 +1686,10 @@
       }
     });
     document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !elements["download-modal"].hidden) {
+        closeDownloadModal();
+        return;
+      }
       if (event.key === "Escape" && !elements["cp-filter-menu"].hidden) {
         closeCpFilterMenu(true);
         return;
@@ -1662,6 +1698,25 @@
         closeCombatDetail();
       }
     });
+  }
+
+  function openDownloadModal() {
+    downloadModalReturnFocus = document.activeElement;
+    elements["download-modal"].hidden = false;
+    document.body.classList.add("download-open");
+    elements["download-modal-close"].focus({ preventScroll: true });
+  }
+
+  function closeDownloadModal() {
+    if (elements["download-modal"].hidden) {
+      return;
+    }
+    elements["download-modal"].hidden = true;
+    document.body.classList.remove("download-open");
+    if (downloadModalReturnFocus instanceof HTMLElement) {
+      downloadModalReturnFocus.focus({ preventScroll: true });
+    }
+    downloadModalReturnFocus = null;
   }
 
   async function ensureLocaleGameData() {

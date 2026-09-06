@@ -18,11 +18,11 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260907-1">
+  <link rel="stylesheet" href="./assets/app.css?v=20260907-2">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
-  <link rel="stylesheet" href="./assets/theme-purchased.css?v=20260907-10">
+  <link rel="stylesheet" href="./assets/theme-purchased.css?v=20260907-11">
   <script>
     (() => {
       const rawView = new URLSearchParams(window.location.search).get("view") || "ranking";
@@ -209,13 +209,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260905-4" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260907-1" defer></script>
-  <script src="./assets/stats-copy.zh-TW.js?v=20260904-1" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260907-2" defer></script>
+  <script src="./assets/stats-copy.zh-TW.js?v=20260907-1" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
   <script src="./assets/character.js?v=20260906-2" defer></script>
   <script src="./assets/artifact.js?v=20260905-1" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260907-1" defer></script>
+  <script src="./assets/app.js?v=20260907-2" defer></script>
   <script src="./assets/theme-purchased-icons.js?v=20260907-7" defer></script>
 </head>
 <body>
@@ -306,7 +306,9 @@
             </span>
             <span class="service-link-label" data-i18n="discord">디스코드</span>
           </a>
-          <a class="service-link download-link" href="https://github.com/Not4You-Dev/NotMeter-Releases/releases/latest/download/NotMeter.zip">
+          <a class="service-link download-link" id="download-button"
+            href="https://github.com/Not4You-Dev/NotMeter-Releases/releases/latest/download/NotMeter.zip"
+            aria-haspopup="dialog" aria-controls="download-modal">
             <span class="service-link-icon download-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
                 <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14"/>
@@ -1440,6 +1442,50 @@
         loading="lazy" decoding="async" alt="사종키나 키나 직접 최저가 판매 광고">
     </a>
   </aside>
+
+  <div class="download-modal" id="download-modal" hidden>
+    <section class="download-panel" role="dialog" aria-modal="true" aria-labelledby="download-modal-title"
+      aria-describedby="download-modal-description">
+      <header class="download-modal-header">
+        <div>
+          <span class="download-modal-kicker" data-i18n="downloadModalKicker">처음 설치 안내</span>
+          <h2 id="download-modal-title" data-i18n="downloadModalTitle">NotMeter 설치하기</h2>
+          <p id="download-modal-description" data-i18n="downloadModalDescription">아래 순서대로 설치하면 바로 사용할 수 있습니다.</p>
+        </div>
+        <button class="download-modal-close" id="download-modal-close" type="button"
+          aria-label="닫기" data-i18n-aria-label="closeAria">×</button>
+      </header>
+
+      <ol class="download-steps">
+        <li class="download-step">
+          <span class="download-step-number" aria-hidden="true">1</span>
+          <div class="download-step-content">
+            <h3 data-i18n="downloadStepNpcapTitle">Npcap 먼저 설치</h3>
+            <p data-i18n="downloadStepNpcapDescription">다운로드한 EXE를 실행하고 Windows 권한 요청에서 ‘예’를 누른 뒤, 기본 옵션 그대로 Install을 누르세요.</p>
+            <a class="download-action download-action-primary" id="npcap-download-link"
+              href="https://npcap.com/dist/npcap-1.88.exe" download="npcap-1.88.exe">
+              <span data-i18n="downloadNpcapButton">Npcap 설치 파일 다운로드</span>
+              <span class="download-file-type">.EXE</span>
+            </a>
+            <small data-i18n="downloadStepNpcapHint">Npcap이 이미 설치되어 있다면 이 단계는 건너뛰세요.</small>
+          </div>
+        </li>
+        <li class="download-step">
+          <span class="download-step-number" aria-hidden="true">2</span>
+          <div class="download-step-content">
+            <h3 data-i18n="downloadStepMeterTitle">딜미터기 다운로드</h3>
+            <p data-i18n="downloadStepMeterDescription">ZIP 파일의 압축을 푼 뒤 NotMeter.exe를 실행하세요.</p>
+            <a class="download-action download-action-secondary" id="meter-download-link"
+              href="https://github.com/Not4You-Dev/NotMeter-Releases/releases/latest/download/NotMeter.zip"
+              download="NotMeter.zip">
+              <span data-i18n="downloadMeterButton">NotMeter 다운로드</span>
+              <span class="download-file-type">.ZIP</span>
+            </a>
+          </div>
+        </li>
+      </ol>
+    </section>
+  </div>
 
   <div class="detail-modal" id="combat-detail-modal" hidden>
     <section class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title">
