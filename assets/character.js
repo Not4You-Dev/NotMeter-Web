@@ -30,6 +30,8 @@
   const RECENT_LIMIT = 10;
   const FAVORITE_LIMIT = 30;
   const REQUEST_TIMEOUT_MS = 45_000;
+  const TRANSIENT_RETRY_DELAY_MS = 1_000;
+  const MAX_RETRY_AFTER_MS = 3_000;
   const SEARCH_SESSION_TTL_MS = 5 * 60_000;
   const PROFILE_SESSION_TTL_MS = 10 * 60_000;
   const SESSION_PROFILE_LIMIT = 4;
@@ -2190,6 +2192,15 @@
         } catch (error) {
           lastError = error;
           if (!isTransientCharacterError(error)) throw error;
+          if (error?.status === 429) {
+            await waitForCharacterRetry(error);
+            try {
+              return await fetchJson(`${root}${path}`, options);
+            } catch (retryError) {
+              lastError = retryError;
+              if (!isTransientCharacterError(retryError)) throw retryError;
+            }
+          }
         }
       }
       return null;
@@ -2199,7 +2210,23 @@
     if (initial !== null) return initial;
     const refreshed = await attempt(await refreshCharacterApiRoots(true));
     if (refreshed !== null) return refreshed;
+    const status = Number(lastError?.status);
+    if ([429, 500, 502, 503, 504].includes(status)) {
+      const recoveryRoot = currentCharacterApiRoots().find(Boolean);
+      if (recoveryRoot) {
+        await waitForCharacterRetry(lastError);
+        return fetchJson(`${recoveryRoot}${path}`, options);
+      }
+    }
     throw lastError || new Error(currentCopy().loadError);
+  }
+
+  function waitForCharacterRetry(error) {
+    const requestedDelay = Number(error?.retryAfterMs);
+    const delay = Number.isFinite(requestedDelay) && requestedDelay > 0
+      ? Math.min(MAX_RETRY_AFTER_MS, Math.max(TRANSIENT_RETRY_DELAY_MS, requestedDelay))
+      : TRANSIENT_RETRY_DELAY_MS;
+    return new Promise(resolve => window.setTimeout(resolve, delay));
   }
 
   async function fetchJson(url, options = {}) {
@@ -2212,6 +2239,10 @@
       if (!response.ok) {
         const error = new Error(response.status === 404 ? currentCopy().noResults : currentCopy().loadError);
         error.status = response.status;
+        const retryAfterSeconds = Number(response.headers.get("Retry-After"));
+        if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+          error.retryAfterMs = retryAfterSeconds * 1000;
+        }
         throw error;
       }
       return await response.json();
