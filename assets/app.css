@@ -3763,6 +3763,22 @@ button:focus-visible,
   background: rgba(10, 36, 43, 0.78);
 }
 
+body.class-performance-view .class-performance-scope-bar {
+  animation: class-performance-scope-reveal 1.15s ease-out 3;
+}
+
+@keyframes class-performance-scope-reveal {
+  0%, 100% {
+    border-color: rgba(54, 189, 182, 0.34);
+    box-shadow: 0 0 0 0 rgba(56, 224, 212, 0);
+  }
+
+  45% {
+    border-color: rgba(102, 244, 233, 0.86);
+    box-shadow: 0 0 0 3px rgba(56, 224, 212, 0.12), 0 0 18px rgba(35, 207, 194, 0.18);
+  }
+}
+
 .class-performance-scope-bar > strong {
   color: #bffcf7;
   font-size: 12px;
@@ -3824,6 +3840,12 @@ button:focus-visible,
 
 .class-performance-cp-scopes button {
   min-width: 64px;
+  position: relative;
+}
+
+.class-performance-cp-scopes .feature-new-badge {
+  top: -11px;
+  right: -9px;
 }
 
 .class-performance-cp-scopes button:hover,
@@ -6982,6 +7004,14 @@ tr:nth-child(3) .rank-badge {
 
   .class-performance-summary {
     text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.class-performance-view .class-performance-scope-bar {
+    animation: none;
+    border-color: rgba(102, 244, 233, 0.68);
+    box-shadow: 0 0 0 2px rgba(56, 224, 212, 0.08);
   }
 }
 
