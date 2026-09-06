@@ -62,6 +62,8 @@
   ];
   const DETAIL_CACHE_NAME = "notmeter-ranking-details-v1";
   const DETAIL_MEMORY_LIMIT = 48;
+  const RANK_MOVEMENT_STORAGE_KEY = "notmeter-class-rank-movement-v1";
+  const RANK_MOVEMENT_CONTEXT_LIMIT = 64;
   const DETAIL_REQUEST_TIMEOUT_MS = 12_000;
   const DETAIL_RETRY_DELAY_MS = 350;
   const CACHE_REQUEST_TIMEOUT_MS = 60_000;
@@ -294,6 +296,9 @@
       ndpsEmpty: "선택한 조건에 검증된 nDPS 기록이 아직 없습니다",
       classNdps: "{job} nDPS 1~{count}위",
       uniqueNormalizedRankers: "표시 캐릭터 {count}명 · 검증된 nDPS가 있는 기록 중 가장 높은 기록만 표시",
+      rankMovementUp: "직전 확인보다 {count}명 추월",
+      rankMovementDown: "직전 확인보다 {count}명에게 추월당함",
+      rankMovementNew: "직전 확인 이후 TOP 20 진입",
       totalDpsShort: "DPS",
       languageSwitchAria: "언어 전환",
       advertisementAria: "광고",
@@ -715,6 +720,9 @@
       ndpsEmpty: "No verified nDPS records match the selected filters yet",
       classNdps: "{job} nDPS — Top {count}",
       uniqueNormalizedRankers: "{count} characters shown · only each character's highest verified nDPS is shown",
+      rankMovementUp: "Passed {count} characters since your previous view",
+      rankMovementDown: "Passed by {count} characters since your previous view",
+      rankMovementNew: "Entered the Top 20 since your previous view",
       totalDpsShort: "DPS",
       languageSwitchAria: "Switch language",
       advertisementAria: "Advertisement",
@@ -1098,6 +1106,9 @@
     ndpsEmpty: "所選條件目前沒有已驗證的 nDPS 紀錄",
     classNdps: "{job} nDPS 第 1～{count} 名",
     uniqueNormalizedRankers: "顯示 {count} 名角色 · 僅顯示每名角色最高的已驗證 nDPS 紀錄",
+    rankMovementUp: "比上次查看超越 {count} 名角色",
+    rankMovementDown: "比上次查看被 {count} 名角色超越",
+    rankMovementNew: "自上次查看後進入前 20 名",
     totalDpsShort: "DPS",
     sampleBasisTitle: "為什麼樣本數變少",
     sampleBasisDescription: "在相同副本、首領、職業、25K CP 區間與期間下，每名角色依時間取最近最多 40 場。滿 10 場時排除最高與最低各 10%，以中間 80% 的平均值作為代表；不足 10 場則使用中位數。全期間也只使用最近 40 場，每名角色只計一次；少於 30 名角色的區間會以最接近的 25K 區間樣本校正。並非紀錄遭刪除或遺失。",
@@ -5706,6 +5717,10 @@
       .sort(compareClassRankingPlayers)
       .slice(0, 20)
       .map((player, index) => ({ ...player, rank: index + 1 }));
+    const rankMovements = resolveClassRankMovements(sorted, view);
+    sorted.forEach(player => {
+      player.rankMovement = rankMovements.get(rankMovementIdentity(player)) || null;
+    });
 
     elements["class-heading"].hidden = false;
     elements["class-title"].textContent = t(
@@ -5811,7 +5826,7 @@
       });
       tr.addEventListener("mouseleave", () => window.clearTimeout(hoverTimer));
     }
-    tr.append(cellWithRank(player.rank));
+    tr.append(cellWithRank(player.rank, player.rankMovement));
 
     const dungeon = currentDungeon();
     const bossIndex = Number(player.B ?? player.bossIndex ?? state.bossIndex);
@@ -7738,13 +7753,181 @@
     return badge;
   }
 
-  function cellWithRank(rank) {
+  function rankMovementIdentity(player) {
+    const participantKey = String(player?.G ?? player?.participantKey ?? "").trim();
+    if (participantKey) {
+      return `key:${participantKey}`;
+    }
+    const name = String(player?.N ?? player?.name ?? "").trim().normalize("NFC");
+    const serverId = Number(player?.S ?? player?.serverId) || 0;
+    if (!name || serverId <= 0) {
+      return "";
+    }
+    return `character:${serverId}:${name.toLocaleLowerCase("ko-KR")}`;
+  }
+
+  function rankMovementContextKey(view) {
+    const metric = usesCombatTimeRanking()
+      ? "combat-time"
+      : usesNormalizedRanking() ? "ndps" : "dps";
+    const cpRange = state.cpFilterMode === "custom"
+      ? state.customCpPresetTierIndex > 0
+        ? `preset:${state.customCpPresetTierIndex}`
+        : `custom:${state.customCpMinK}-${state.customCpMaxK}`
+      : `standard:${state.cpTierIndex}`;
+    return JSON.stringify([
+      state.dungeonKey,
+      Number(state.bossIndex) || 0,
+      cpRange,
+      state.period,
+      String(view?.periodLabel || view?.period || ""),
+      state.selectedJob,
+      metric,
+    ]);
+  }
+
+  function buildRankMovementSnapshot(players) {
+    const ranks = {};
+    const ambiguous = new Set();
+    for (const player of players) {
+      const identity = rankMovementIdentity(player);
+      const rank = Number(player?.rank) || 0;
+      if (!identity || rank <= 0 || ambiguous.has(identity)) {
+        continue;
+      }
+      if (Object.prototype.hasOwnProperty.call(ranks, identity)) {
+        delete ranks[identity];
+        ambiguous.add(identity);
+      } else {
+        ranks[identity] = rank;
+      }
+    }
+    return ranks;
+  }
+
+  function loadRankMovementStore() {
+    try {
+      const value = JSON.parse(localStorage.getItem(RANK_MOVEMENT_STORAGE_KEY) || "null");
+      if (value?.version === 1 && value.contexts && typeof value.contexts === "object") {
+        return value;
+      }
+    } catch {
+      // Private browsing and storage limits must not block ranking rendering.
+    }
+    return { version: 1, contexts: {} };
+  }
+
+  function saveRankMovementStore(store) {
+    try {
+      const contexts = Object.fromEntries(
+        Object.entries(store.contexts || {})
+          .sort((left, right) => Number(right[1]?.updatedAt || 0) - Number(left[1]?.updatedAt || 0))
+          .slice(0, RANK_MOVEMENT_CONTEXT_LIMIT));
+      localStorage.setItem(RANK_MOVEMENT_STORAGE_KEY, JSON.stringify({ version: 1, contexts }));
+    } catch {
+      // Ranking remains usable when local storage is unavailable.
+    }
+  }
+
+  function compareRankMovementGeneration(left, right) {
+    const leftTime = Date.parse(String(left || ""));
+    const rightTime = Date.parse(String(right || ""));
+    return Number.isFinite(leftTime) && Number.isFinite(rightTime)
+      ? leftTime - rightTime
+      : String(left || "").localeCompare(String(right || ""));
+  }
+
+  function calculateRankMovements(players, previousRanks) {
+    const movements = new Map();
+    if (!previousRanks || typeof previousRanks !== "object" ||
+        Object.keys(previousRanks).length === 0) {
+      return movements;
+    }
+    const currentRanks = buildRankMovementSnapshot(players);
+    for (const player of players) {
+      const identity = rankMovementIdentity(player);
+      const currentRank = Number(player?.rank) || 0;
+      if (!identity || Number(currentRanks[identity]) !== currentRank) {
+        continue;
+      }
+      const previousRank = Number(previousRanks[identity]) || 0;
+      if (previousRank <= 0) {
+        movements.set(identity, { direction: "new", count: 0 });
+        continue;
+      }
+      const difference = previousRank - currentRank;
+      if (difference !== 0) {
+        movements.set(identity, {
+          direction: difference > 0 ? "up" : "down",
+          count: Math.abs(difference),
+        });
+      }
+    }
+    return movements;
+  }
+
+  function resolveClassRankMovements(players, view) {
+    const generation = String(state.data?.generatedAt || view?.generatedAt || "").trim();
+    if (!generation) {
+      return new Map();
+    }
+    const contextKey = rankMovementContextKey(view);
+    const currentRanks = buildRankMovementSnapshot(players);
+    const store = loadRankMovementStore();
+    const stored = store.contexts[contextKey];
+    if (!stored || typeof stored !== "object") {
+      store.contexts[contextKey] = {
+        generation,
+        currentRanks,
+        previousRanks: null,
+        updatedAt: Date.now(),
+      };
+      saveRankMovementStore(store);
+      return new Map();
+    }
+
+    if (String(stored.generation || "") === generation) {
+      return calculateRankMovements(players, stored.previousRanks);
+    }
+    if (compareRankMovementGeneration(generation, stored.generation) < 0) {
+      return new Map();
+    }
+
+    const previousRanks = stored.currentRanks;
+    store.contexts[contextKey] = {
+      generation,
+      currentRanks,
+      previousRanks,
+      updatedAt: Date.now(),
+    };
+    saveRankMovementStore(store);
+    return calculateRankMovements(players, previousRanks);
+  }
+
+  function cellWithRank(rank, movement = null) {
     const td = document.createElement("td");
     td.className = "rank-column";
+    const stack = document.createElement("span");
+    stack.className = "rank-position-stack";
     const badge = document.createElement("span");
     badge.className = "rank-badge";
     badge.textContent = String(rank);
-    td.append(badge);
+    stack.append(badge);
+    if (movement?.direction) {
+      const indicator = document.createElement("span");
+      indicator.className = `rank-movement ${movement.direction}`;
+      indicator.textContent = movement.direction === "new"
+        ? "NEW"
+        : `${movement.direction === "up" ? "▲" : "▼"} ${movement.count}`;
+      indicator.title = t(
+        movement.direction === "new"
+          ? "rankMovementNew"
+          : movement.direction === "up" ? "rankMovementUp" : "rankMovementDown",
+        { count: movement.count });
+      indicator.setAttribute("aria-label", indicator.title);
+      stack.append(indicator);
+    }
+    td.append(stack);
     return td;
   }
 

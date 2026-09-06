@@ -4267,6 +4267,46 @@ button:focus-visible,
   font-weight: 900;
 }
 
+.rank-position-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  line-height: 1;
+}
+
+.rank-movement {
+  display: inline-flex;
+  min-width: 30px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.rank-movement.up {
+  background: rgba(49, 188, 153, 0.14);
+  color: #69e3bf;
+}
+
+.rank-movement.down {
+  background: rgba(220, 99, 111, 0.14);
+  color: #f08a96;
+}
+
+.rank-movement.new {
+  background: rgba(209, 166, 68, 0.14);
+  color: #f2ca70;
+  font-size: 7.5px;
+}
+
 tr:nth-child(1) .rank-badge {
   border-color: #a48a32;
   background: rgba(164, 138, 50, 0.2);
