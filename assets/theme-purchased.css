@@ -3560,6 +3560,11 @@ a:focus-visible {
   --line-soft: rgba(255, 255, 255, 0.075);
 }
 
+html {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 body {
   background:
     linear-gradient(180deg, rgba(35, 23, 45, 0.2), transparent 320px),
