@@ -361,8 +361,11 @@
       classPerformanceCompositionUnavailable: "선택한 직업 제외 조건의 표본이 아직 부족합니다.",
       classPerformanceExclusionDifference: "전체 대비 {value}점",
       classPerformanceScopeAria: "직업 성능 집계 CP 기준 선택",
-      classPerformanceScope800: "800K+ 기본",
-      classPerformanceScope900: "900K+만",
+      classPerformanceScopeLabel: "집계 CP 기준",
+      classPerformanceScope800: "800K+",
+      classPerformanceScope900: "900K+",
+      classPerformanceScopeStatus800: "현재 CP 800K 이상 전체 표본",
+      classPerformanceScopeStatus900: "현재 CP 900K 이상 표본만",
       classPerformanceScopeSummary800: "CP 800K 이상",
       classPerformanceScopeSummary900: "CP 900K 이상",
       classPerformanceMetricsAria: "직업 성능 백분위 선택",
@@ -795,8 +798,11 @@
       classPerformanceCompositionUnavailable: "The selected class-exclusion condition does not yet have enough samples.",
       classPerformanceExclusionDifference: "vs all parties {value} pts",
       classPerformanceScopeAria: "Select the class-performance CP threshold",
-      classPerformanceScope800: "800K+ Default",
-      classPerformanceScope900: "900K+ Only",
+      classPerformanceScopeLabel: "CP threshold",
+      classPerformanceScope800: "800K+",
+      classPerformanceScope900: "900K+",
+      classPerformanceScopeStatus800: "Showing all samples at CP 800K+",
+      classPerformanceScopeStatus900: "Showing only samples at CP 900K+",
       classPerformanceScopeSummary800: "CP 800K+",
       classPerformanceScopeSummary900: "CP 900K+",
       classPerformanceMetricsAria: "Select class-performance percentile",
@@ -1316,7 +1322,7 @@
       "class-performance-button", "class-performance-surface",
       "class-performance-back-button", "class-performance-summary",
       "class-performance-kicker", "class-performance-description", "class-performance-cp-text",
-      "class-performance-notice-text",
+      "class-performance-notice-text", "class-performance-scope-status",
       "class-performance-metric-title", "class-performance-metric-description",
       "class-performance-composition-jobs", "class-performance-composition-reset",
       "class-performance-composition-status",
@@ -4991,6 +4997,8 @@
       highCombatPower ? "classPerformanceCpText900" : "classPerformanceCpText");
     elements["class-performance-notice-text"].textContent = t(
       highCombatPower ? "classPerformanceNoticeText900" : "classPerformanceNoticeText");
+    elements["class-performance-scope-status"].textContent = t(
+      highCombatPower ? "classPerformanceScopeStatus900" : "classPerformanceScopeStatus800");
     return {
       snapshot: highCombatPower
         ? state.data?.classPerformance900K
