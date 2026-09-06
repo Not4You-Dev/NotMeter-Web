@@ -2652,6 +2652,7 @@ body {
 }
 
 .global-character-search {
+  overflow: visible !important;
   padding-inline: 2px !important;
   border: 0 !important;
   border-radius: 0 !important;
