@@ -11,6 +11,7 @@
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
   <link rel="stylesheet" href="./assets/app.css?v=20260825-1">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
+  <link rel="stylesheet" href="./assets/theme-purchased.css?v=20260907-4">
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -20,11 +21,14 @@
     <header class="legal-header">
       <img src="./assets/notmeter-icon.png" alt="">
       <h1 data-privacy-i18n="title">개인정보처리방침</h1>
-      <select class="ghost-button language-select legal-language-button" id="privacy-language" aria-label="Select language">
-        <option value="ko">한국어</option>
-        <option value="en">English</option>
-        <option value="zh-TW">繁體中文</option>
-      </select>
+      <span class="language-select-wrap" data-language="ko">
+        <span class="language-flag-icon" aria-hidden="true"></span>
+        <select class="ghost-button language-select legal-language-button" id="privacy-language" aria-label="Select language">
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+          <option value="zh-TW">繁體中文</option>
+        </select>
+      </span>
     </header>
 
     <article class="legal-card">
@@ -52,5 +56,6 @@
     <a class="legal-back" href="./" data-privacy-i18n="back">← NotMeter 통계로 돌아가기</a>
   </main>
   <script src="./assets/privacy.js?v=20260824-1"></script>
+  <script src="./assets/theme-purchased-icons.js?v=20260907-4"></script>
 </body>
 </html>

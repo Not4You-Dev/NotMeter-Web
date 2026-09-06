@@ -1,0 +1,408 @@
+:root {
+  --bg: #0b1020;
+  --panel: rgba(15, 23, 40, 0.78);
+  --panel-strong: rgba(18, 27, 47, 0.94);
+  --line: rgba(255, 255, 255, 0.075);
+  --line-strong: rgba(244, 114, 182, 0.34);
+  --text: #f6f3f7;
+  --muted: #a49eab;
+  --dim: #817b8a;
+  --cyan: #e77ca7;
+  --gold: #e6bb6b;
+  --green: #7ec8a4;
+  --danger: #ee7f91;
+  --font: "Pretendard Variable", Pretendard, "Noto Sans KR", "Segoe UI", sans-serif;
+  --mono: "Cascadia Mono", Consolas, monospace;
+}
+
+html,
+body {
+  background:
+    radial-gradient(circle at 6% 5%, rgba(217, 70, 131, 0.1), transparent 24rem),
+    #0b1020;
+  color: var(--text);
+  font-family: var(--font);
+  letter-spacing: -0.018em;
+}
+
+.optimization-embed,
+.optimization-embed body {
+  background: transparent;
+}
+
+.optimization-embed .optimizer-page {
+  gap: 14px;
+  padding: 0 0 28px;
+}
+
+.optimizer-title {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 18px 16px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.optimizer-title h1 {
+  margin: 7px 0 10px;
+  color: #f5a3c2;
+  font-size: clamp(28px, 4vw, 42px);
+  letter-spacing: -0.045em;
+}
+
+.eyebrow,
+.panel-head span,
+.section-title span,
+.result-head span,
+.code-head span,
+.quick-setup-head > div > span,
+.engine-location-title > span {
+  color: #df769f;
+  font-family: var(--font);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.lead {
+  max-width: 860px;
+  color: #ada7b3;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+code {
+  border: 0;
+  background: rgba(255, 255, 255, 0.055);
+  color: #efb4ca;
+}
+
+.policy-note {
+  padding: 13px 0 0;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 0;
+  background: transparent;
+}
+
+.quick-setup,
+.engine-location-card,
+.profile-panel,
+.builder-panel,
+.result-card,
+.code-card,
+.advanced-settings,
+.problem-guide {
+  border: 0 !important;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.026) !important;
+  box-shadow: none !important;
+}
+
+.quick-setup-head,
+.quick-setup-footer,
+.panel-head,
+.section-title,
+.result-head,
+.code-head {
+  border-color: rgba(255, 255, 255, 0.065) !important;
+  background: transparent !important;
+}
+
+.quick-setup-badge,
+.quick-step-title > b,
+.engine-location-steps b,
+.quick-steps b,
+.tuning-summary b,
+.problem-guide b {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #e787ad !important;
+  box-shadow: none !important;
+}
+
+.quick-setup-badge {
+  padding: 0;
+  color: #9e98a5 !important;
+}
+
+.quick-setup-step,
+.control-section,
+.engine-readonly-alert,
+.result-help,
+.legacy-box,
+.rollback-box,
+.tuning-summary article,
+.problem-guide article {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.quick-setup-step + .quick-setup-step,
+.control-section + .control-section,
+.problem-guide article + article {
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.profile-button,
+.goal-button,
+.issue-button,
+.quick-advanced-button,
+.reset-button,
+.engine-path-row button,
+.code-head button {
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: #b8b2bf !important;
+  box-shadow: none !important;
+}
+
+.profile-button:hover,
+.profile-button.is-active,
+.goal-button:hover,
+.goal-button.is-active,
+.issue-button:hover,
+.issue-button.is-active,
+.quick-advanced-button:hover,
+.quick-advanced-button[aria-expanded="true"] {
+  background: rgba(217, 70, 131, 0.12) !important;
+  color: #f1b3ca !important;
+}
+
+.copy-primary,
+.quick-setup-footer button {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, #dc4c88, #c82e6f) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+select,
+input[type="text"],
+input[type="number"],
+.profile-select-label select,
+.select-control select {
+  border: 0 !important;
+  border-radius: 8px !important;
+  background-color: #171f33 !important;
+  color: #eeeaf0 !important;
+  box-shadow: inset 0 -1px rgba(255, 255, 255, 0.075) !important;
+}
+
+select:focus,
+input:focus {
+  outline: 0 !important;
+  box-shadow: inset 0 -2px #d94683 !important;
+}
+
+input[type="range"] {
+  accent-color: #d94683;
+}
+
+.advanced-settings > summary,
+.result-help summary {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.advanced-settings > summary::after,
+.result-help summary::after {
+  border-color: #d27a9e !important;
+  color: #d27a9e !important;
+}
+
+.code-card pre {
+  border: 0;
+  background: #080d19;
+}
+
+@media (max-width: 720px) {
+  .optimizer-title {
+    padding-inline: 4px;
+  }
+
+  .quick-setup,
+  .engine-location-card,
+  .result-card,
+  .code-card,
+  .builder-panel {
+    border-radius: 10px;
+  }
+}
+
+.optimizer-title h1 {
+  background: none !important;
+  color: #f2eef3 !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.eyebrow,
+.quick-setup-head > div > span {
+  font-size: 0 !important;
+}
+
+.eyebrow::after {
+  color: #d97a9f;
+  font-size: 10px;
+  content: "아이온2 그래픽 설정";
+}
+
+.quick-setup-head > div > span::after {
+  color: #d97a9f;
+  font-size: 10px;
+  content: "빠른 설정";
+}
+
+.policy-note strong,
+.engine-location-title > span,
+.config-safety-status {
+  color: #cda9b6 !important;
+}
+
+.quick-setup,
+.engine-location-card,
+.profile-panel,
+.builder-panel,
+.result-card,
+.code-card,
+.advanced-settings,
+.problem-guide {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.quick-setup,
+.engine-location-card,
+.result-panel,
+.advanced-settings {
+  border-top: 1px solid rgba(255, 255, 255, 0.065) !important;
+}
+
+.quick-setup-head,
+.quick-setup-footer,
+.panel-head,
+.section-title,
+.result-head,
+.code-head {
+  padding-inline: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.quick-setup-step,
+.control-section,
+.engine-readonly-alert,
+.result-help,
+.legacy-box,
+.rollback-box,
+.tuning-summary article,
+.problem-guide article {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.quick-setup-step + .quick-setup-step,
+.control-section + .control-section,
+.problem-guide article + article {
+  border-top: 1px solid rgba(255, 255, 255, 0.055) !important;
+}
+
+.quick-step-title > b,
+.engine-location-steps b,
+.quick-steps b,
+.tuning-summary b,
+.problem-guide b {
+  min-width: 20px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #d986a6 !important;
+  box-shadow: none !important;
+}
+
+.quick-step-title > b::after,
+.engine-location-steps b::after,
+.quick-steps b::after {
+  margin-left: 4px;
+  color: rgba(217, 134, 166, 0.5);
+  content: "/";
+}
+
+.quick-setup-badge {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #948e9b !important;
+}
+
+.profile-button,
+.goal-button,
+.issue-button,
+.quick-advanced-button,
+.reset-button,
+.engine-path-row button,
+.code-head button,
+.copy-primary,
+.quick-setup-footer button {
+  border: 0 !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+
+.copy-primary,
+.quick-setup-footer button {
+  background: #aa2f62 !important;
+  color: #fff !important;
+}
+
+select,
+.profile-select-label select,
+.select-control select {
+  appearance: none;
+  padding-right: 34px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background-color: #171f33 !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #c987a0 50%),
+    linear-gradient(135deg, #c987a0 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 16px) calc(50% - 2px),
+    calc(100% - 11px) calc(50% - 2px) !important;
+  background-size: 5px 5px, 5px 5px !important;
+  background-repeat: no-repeat !important;
+  color: #eeeaf0 !important;
+  color-scheme: dark;
+  box-shadow: inset 0 -1px rgba(255, 255, 255, 0.075) !important;
+}
+
+.code-card pre {
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: #080d19 !important;
+}
+
+@media (max-width: 720px) {
+  .quick-setup,
+  .engine-location-card,
+  .result-card,
+  .code-card,
+  .builder-panel {
+    border-radius: 0 !important;
+  }
+}

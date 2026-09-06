@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
+  <link rel="stylesheet" href="./assets/theme-purchased.css?v=20260907-4">
   <script>
     (() => {
       const rawView = new URLSearchParams(window.location.search).get("view") || "ranking";
@@ -215,6 +216,7 @@
   <script src="./assets/artifact.js?v=20260905-1" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
   <script src="./assets/app.js?v=20260906-4" defer></script>
+  <script src="./assets/theme-purchased-icons.js?v=20260907-4" defer></script>
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -226,7 +228,7 @@
         <img class="brand-icon" src="./assets/notmeter-icon.png" width="44" height="44" alt="">
         <div>
           <h1 id="page-title">NotMeter 던전 통계</h1>
-          <p id="page-subtitle">직업별 상위 25% DPS 기준으로 정렬합니다</p>
+          <p id="page-subtitle">선택한 DPS / nDPS의 직업별 상위 25% 기준으로 정렬합니다</p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -318,11 +320,14 @@
           <span data-i18n="dailyUsers">일일 사용자</span>
           <strong id="daily-user-count">—</strong>
         </div>
-        <select class="ghost-button language-select" id="language-button" aria-label="언어 선택" data-i18n-aria-label="languageSwitchAria">
-          <option value="ko">한국어</option>
-          <option value="en">English</option>
-          <option value="zh-TW">繁體中文</option>
-        </select>
+        <span class="language-select-wrap" data-language="ko">
+          <span class="language-flag-icon" aria-hidden="true"></span>
+          <select class="ghost-button language-select" id="language-button" aria-label="언어 선택" data-i18n-aria-label="languageSwitchAria">
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+            <option value="zh-TW">繁體中文</option>
+          </select>
+        </span>
       </div>
     </header>
 
@@ -1008,14 +1013,13 @@
       <div class="ranking-metric-choice" id="ranking-metric-choice">
         <div class="ranking-metric-copy">
           <span data-i18n="rankingMetric">DPS / nDPS 랭킹 기준</span>
-          <strong id="ranking-metric-description" data-i18n="dpsRankingDescription">파티 버프를 포함한 기존 총 DPS 순위입니다.</strong>
+          <strong id="ranking-metric-description" data-i18n="ndpsRankingDescription">파티 버프 기여도를 보정한 nDPS 순위입니다.</strong>
         </div>
         <div class="ranking-metric-buttons" role="radiogroup" aria-label="랭킹 기준 선택" data-i18n-aria-label="rankingMetricAria">
-          <button class="ranking-metric-button is-active" id="ranking-metric-dps" type="button"
-            data-ranking-metric="dps" role="radio" aria-checked="true">DPS</button>
-          <button class="ranking-metric-button ranking-metric-ndps" id="ranking-metric-ndps" type="button"
-            data-ranking-metric="ndps" role="radio" aria-checked="false">
-            <span class="ranking-metric-test" data-i18n="testBadge">TEST</span>
+          <button class="ranking-metric-button" id="ranking-metric-dps" type="button"
+            data-ranking-metric="dps" role="radio" aria-checked="false">DPS</button>
+          <button class="ranking-metric-button ranking-metric-ndps is-active" id="ranking-metric-ndps" type="button"
+            data-ranking-metric="ndps" role="radio" aria-checked="true">
             <span>nDPS</span>
           </button>
         </div>
@@ -1165,7 +1169,7 @@
             </div>
             <div>
               <strong data-i18n="rankingEntryRankerDisplayTitle">딜미터기 랭커 표시</strong>
-              <p data-i18n="rankingEntryRankerDisplay">상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주 기록을 비교합니다. 랭커 표시와 랭커 권한 닉네임 효과는 800K 이상만 적용하며, 유효한 쿠폰 효과는 CP 제한이 없습니다.</p>
+              <p data-i18n="rankingEntryRankerDisplay">상위 %는 nDPS 우선 설정에서 800K 미만은 전체 기간 nDPS, 800K 이상은 이번 주 nDPS를 우선 사용합니다. 랭커 표시와 랭커 권한 닉네임 효과는 800K 이상에서 전체 기간 DPS 또는 이번 주 nDPS 순위로 판정합니다.</p>
             </div>
           </div>
           <p class="weekly-guide-note" data-i18n="rankingEntryNote">CP를 알 수 없는 파티원은 차이 계산에서 제외됩니다. 일반 던전 기록은 확정 처치와 파티원 5인 이상 조건을 충족해야 하며, 1인 콘텐츠인 악몽은 1인 이상 확정 처치부터 집계합니다. 훈련용 허수아비는 별도 기준을 사용합니다.</p>
@@ -1195,13 +1199,13 @@
           <div class="ranker-guide-answer-grid">
             <article class="ranker-guide-answer-card ranker-guide-answer-marker">
               <span data-i18n="rankerDungeonGuideMarkerLabel">랭커 마크</span>
-              <strong data-i18n="rankerDungeonGuideMarkerTitle">전체 기간 또는 이번 주 구간 TOP 20</strong>
-              <p data-i18n="rankerDungeonGuideMarkerBody">전투력 800K 이상에서 두 기간 중 하나만 충족하면 표시됩니다. 같은 보스·직업·25K CP 구간의 개별 순위로 판정합니다.</p>
+              <strong data-i18n="rankerDungeonGuideMarkerTitle">전체 기간 DPS 또는 이번 주 nDPS 구간 TOP 20</strong>
+              <p data-i18n="rankerDungeonGuideMarkerBody">전투력 800K 이상에서 두 기준 중 하나만 충족하면 표시됩니다. 같은 보스·직업·25K CP 구간의 개별 순위로 판정합니다.</p>
             </article>
             <article class="ranker-guide-answer-card ranker-guide-answer-effect">
               <span data-i18n="rankerDungeonGuideEffectLabel">닉네임 효과</span>
-              <strong data-i18n="rankerDungeonGuideEffectTitle">전체 기간 또는 이번 주 구간 TOP 3</strong>
-              <p data-i18n="rankerDungeonGuideEffectBody">전투력 800K 이상에서 두 기간 중 한 곳의 TOP 3를 달성하면 랭커 닉네임 효과를 사용할 수 있습니다. 유효한 쿠폰 효과는 CP 제한이 없습니다.</p>
+              <strong data-i18n="rankerDungeonGuideEffectTitle">전체 기간 DPS 또는 이번 주 nDPS 구간 TOP 3</strong>
+              <p data-i18n="rankerDungeonGuideEffectBody">전투력 800K 이상에서 전체 기간 DPS와 이번 주 nDPS 중 한 곳의 TOP 3를 달성하면 랭커 닉네임 효과를 사용할 수 있습니다.</p>
             </article>
           </div>
 
@@ -1239,42 +1243,42 @@
             <span data-i18n="rankerDungeonGuideIntro">아래 7개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.</span>
           </div>
           <div class="ranker-dungeon-list">
-            <article class="ranker-dungeon-item" data-dungeon-key="deus-research-hard" data-ranking-basis="dps">
+            <article class="ranker-dungeon-item" data-dungeon-key="deus-research-hard" data-ranking-basis="dps-alltime-ndps-weekly">
               <span class="ranker-dungeon-number" aria-hidden="true">01</span>
               <div>
                 <strong data-i18n="rankerDungeonDeusTitle">잠식된 데우스 연구기지(어려움)</strong>
                 <p data-i18n="rankerDungeonDeusBosses">감독관 그롬카스 · 연구소장 자일러스 · 오만의 아티엘</p>
               </div>
             </article>
-            <article class="ranker-dungeon-item" data-dungeon-key="noiran-legacy-4" data-ranking-basis="dps">
+            <article class="ranker-dungeon-item" data-dungeon-key="noiran-legacy-4" data-ranking-basis="dps-alltime-ndps-weekly">
               <span class="ranker-dungeon-number" aria-hidden="true">02</span>
               <div>
                 <strong data-i18n="rankerDungeonNoiranTitle">노이란의 숨겨진 유산(4단계)</strong>
                 <p data-i18n="rankerDungeonNoiranBosses">불완전한 브라운트 · 광기의 클로민스터 · 아스크란</p>
               </div>
             </article>
-            <article class="ranker-dungeon-item" data-dungeon-key="bakron-trial" data-ranking-basis="dps">
+            <article class="ranker-dungeon-item" data-dungeon-key="bakron-trial" data-ranking-basis="dps-alltime-ndps-weekly">
               <span class="ranker-dungeon-number" aria-hidden="true">03</span>
               <div>
                 <strong data-i18n="rankerDungeonBakronTitle">시련: 바크론의 공중섬</strong>
                 <p data-i18n="rankerDungeonBakronBosses">티에 · 타몬 · 바크론</p>
               </div>
             </article>
-            <article class="ranker-dungeon-item" data-dungeon-key="musphel-hard" data-ranking-basis="dps">
+            <article class="ranker-dungeon-item" data-dungeon-key="musphel-hard" data-ranking-basis="dps-alltime-ndps-weekly">
               <span class="ranker-dungeon-number" aria-hidden="true">04</span>
               <div>
                 <strong data-i18n="rankerDungeonMusphelTitle">무스펠의 성배(어려움)</strong>
                 <p data-i18n="rankerDungeonMusphelBosses">이스카리엘 · 칼드릭스</p>
               </div>
             </article>
-            <article class="ranker-dungeon-item" data-dungeon-key="fallen-deva-hard" data-ranking-basis="dps">
+            <article class="ranker-dungeon-item" data-dungeon-key="fallen-deva-hard" data-ranking-basis="dps-alltime-ndps-weekly">
               <span class="ranker-dungeon-number" aria-hidden="true">05</span>
               <div>
                 <strong data-i18n="rankerDungeonFallenDevaTitle">타락한 데바의 성(어려움)</strong>
                 <p data-i18n="rankerDungeonFallenDevaBosses">의지의 투르겐 · 금기의 마수 그리오사 · 위악의 바실루스</p>
               </div>
             </article>
-            <article class="ranker-dungeon-item" data-dungeon-key="abyss-horn-4" data-ranking-basis="dps">
+            <article class="ranker-dungeon-item" data-dungeon-key="abyss-horn-4" data-ranking-basis="dps-alltime-ndps-weekly">
               <span class="ranker-dungeon-number" aria-hidden="true">06</span>
               <div>
                 <strong data-i18n="rankerDungeonAbyssHornTitle">심연의 뿔 암굴(4단계)</strong>
@@ -1290,10 +1294,10 @@
             </article>
           </div>
           <div class="ranker-dungeon-guide-notes">
-            <p data-i18n="rankerDungeonGuideScope">일반 던전 6개는 높은 DPS 순, 악몽은 짧은 전투 시간 순으로 집계합니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.</p>
+            <p data-i18n="rankerDungeonGuideScope">일반 던전 6개는 전체 기간은 DPS, 이번 주는 nDPS 순으로 집계합니다. 악몽은 두 기간 모두 짧은 전투 시간 순입니다.</p>
             <p data-i18n="rankerDungeonGuideBakronRewardExcluded">시련: 바크론의 공중섬은 랭커 마크에는 반영되지만, 랭커 권한 닉네임 효과 대상에서는 임시 제외됩니다.</p>
             <p data-i18n="rankerDungeonGuideDummy">훈련용 허수아비(1분)는 홈페이지 랭킹만 제공하며, 딜미터기 전투 종료 구간 순위·상위% 배지와 실시간 랭커 마크 대상에서는 제외됩니다.</p>
-            <p data-i18n="rankerDungeonGuidePeriod">상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주 기록을 사용합니다. 이번 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.</p>
+            <p data-i18n="rankerDungeonGuidePeriod">상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주를 사용하며 nDPS 우선 설정에서는 각 기간의 nDPS를 우선합니다.</p>
           </div>
         </div>
       </details>
@@ -1305,7 +1309,7 @@
           <span class="weekly-guide-icon" aria-hidden="true">i</span>
           <span class="weekly-guide-heading">
             <strong data-i18n="weeklyGuideTitle">▲▼ 이번 주 변화 표시 안내</strong>
-            <span data-i18n="weeklyGuideSubtitle">직전 주 동일 조건의 직업별 상위 25% DPS와 비교합니다</span>
+            <span data-i18n="weeklyGuideSubtitle">기본 nDPS로 직전 주 동일 조건의 직업별 상위 25%와 비교합니다</span>
           </span>
           <span class="weekly-guide-toggle" aria-hidden="true">⌄</span>
         </summary>
@@ -1322,7 +1326,7 @@
             </div>
             <div>
               <strong data-i18n="weeklyGuideBasisTitle">비교 기준</strong>
-              <p data-i18n="weeklyGuideBasis">상위 25% DPS는 직업별 전체 표본에서 상위 25%가 시작되는 경계값(P75)입니다. 현재 선택한 던전·보스·CP 구간을 동일하게 맞춰 이번 주와 직전 주의 P75를 비교하며, 한 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.</p>
+              <p data-i18n="weeklyGuideBasis">상위 25% nDPS는 직업별 전체 표본에서 상위 25%가 시작되는 경계값(P75)입니다. 같은 던전·보스·CP 구간의 이번 주와 직전 주를 비교합니다.</p>
             </div>
             <div>
               <strong data-i18n="weeklyGuideMeaningTitle">퍼센트 의미</strong>
@@ -1330,7 +1334,7 @@
             </div>
             <div>
               <strong data-i18n="weeklyGuideRankingTitle">랭킹 반영 방식</strong>
-              <p data-i18n="weeklyGuideRanking">직업 순서는 이번 주 상위 25% DPS로 정렬합니다. 구간 1~20위와 TOP 3 닉네임 효과 권한은 전투력 800K 이상에서 전체 기간 또는 이번 주 중 하나만 충족해도 인정합니다. 보스 처치 후 상위 %는 800K 미만은 전체 기간, 800K 이상은 이번 주 기록을 사용합니다.</p>
+              <p data-i18n="weeklyGuideRanking">직업 순서는 기본적으로 이번 주 상위 25% nDPS로 정렬합니다. 구간 1~20위와 TOP 3 닉네임 효과 권한은 전체 기간 DPS 또는 이번 주 nDPS 중 하나만 충족해도 인정합니다.</p>
             </div>
           </div>
           <p class="weekly-guide-note" data-i18n="weeklyGuideNote">직전 주에 같은 조건의 기록이 없으면 화살표가 표시되지 않습니다. 화살표에 마우스를 올리면 이전·현재 DPS와 표본 수를 확인할 수 있습니다.</p>
