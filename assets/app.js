@@ -226,7 +226,7 @@
       contributionPageTitle: "NotMeter 직업별 세팅 가이드",
       contributionPageSubtitle: "전체 기간 상위 랭커의 실제 PVE 세팅 통계",
       contributionStatsTitle: "직업별 세팅 가이드",
-      contributionStatsDescription: "상위 랭커의 마석·영석·영혼 각인·아르카나·스킬 선택을 한눈에 확인하세요.",
+      contributionStatsDescription: "상위 랭커의 마석·영석·영혼 각인·아르카나·스킬·액티브 특성 선택을 한눈에 확인하세요.",
       contributionPeriod: "캐시 갱신", contributionRecords: "확보 표본",
       contributionSamples: "확인한 후보", contributionLowSamples: "표본 신뢰도",
       contributionDungeonAria: "세팅 가이드 직업 선택",
@@ -253,10 +253,13 @@
       setupGuideSoulTitle: "부위별 영혼 각인", setupGuideSoulNote: "동일한 좌우 장신구는 한 부위로 합쳐 집계합니다.",
       setupGuideSoulGear: "무기·방어구", setupGuideSoulAccessories: "장신구·특수 장비",
       setupGuideSoulSkills: "스킬", setupGuideSoulStats: "옵션",
-      setupGuideArcanaTitle: "아르카나", setupGuideSkillTitle: "스킬 투자 우선순위",
-      setupGuideActive: "스킬", setupGuideStigma: "스티그마", setupGuidePassive: "패시브",
+      setupGuideArcanaTitle: "아르카나", setupGuideSkillTitle: "스킬 투자 · 액티브 특성",
+      setupGuideSkillNote: "특성은 액티브 스킬만, 전투기록에서 확인된 랭커를 기준으로 집계합니다.",
+      setupGuideActive: "액티브 스킬", setupGuideStigma: "스티그마", setupGuidePassive: "패시브",
       setupGuideUsage: "사용 {value}", setupGuideArcanaSkillLevel: "Lv.{value}", setupGuideMedianLevel: "중앙 Lv.{value}",
       setupGuideLevelRange: "주요 구간 Lv.{low}~{high}", setupGuideMedianEnhance: "강화 중앙 +{value}",
+      setupGuideTraitSamples: "특성 표본 {count}명", setupGuideTraitChoice: "{index}번 {value}",
+      setupGuideTraitNone: "선택 특성 없음",
       setupGuideMedianExceed: "돌파 중앙 {value}", setupGuideTotalSlots: "총 {value}개",
       setupGuideMedianValue: "1인 중앙 {value}", setupGuideArcanaSlots: "슬롯별 카드",
       setupGuideArcanaSets: "세트 구성", setupGuideArcanaCards: "많이 사용하는 카드", setupGuideArcanaSkills: "많이 붙인 스킬",
@@ -674,7 +677,7 @@
       contributionPageTitle: "NotMeter Class Setup Guide",
       contributionPageSubtitle: "Actual PVE setup trends among all-time top rankers",
       contributionStatsTitle: "Class Setup Guide",
-      contributionStatsDescription: "See the manastones, spirit stones, soul engravings, Arcana, and skills used by top rankers.",
+      contributionStatsDescription: "See the manastones, spirit stones, soul engravings, Arcana, skills, and active-skill specializations used by top rankers.",
       contributionPeriod: "Cache updated", contributionRecords: "Valid samples",
       contributionSamples: "Candidates checked", contributionLowSamples: "Confidence",
       contributionDungeonAria: "Select a class setup guide",
@@ -700,10 +703,13 @@
       setupGuideSoulTitle: "Soul engravings by slot", setupGuideSoulNote: "Matching left and right accessories are combined into one slot.",
       setupGuideSoulGear: "Weapons & armor", setupGuideSoulAccessories: "Accessories & special gear",
       setupGuideSoulSkills: "Skills", setupGuideSoulStats: "Options",
-      setupGuideArcanaTitle: "Arcana", setupGuideSkillTitle: "Skill investment priority",
-      setupGuideActive: "Skills", setupGuideStigma: "Stigma", setupGuidePassive: "Passive",
+      setupGuideArcanaTitle: "Arcana", setupGuideSkillTitle: "Skills & active specializations",
+      setupGuideSkillNote: "Specializations are shown only for active skills and use rankers with verified combat records.",
+      setupGuideActive: "Active skills", setupGuideStigma: "Stigma", setupGuidePassive: "Passive",
       setupGuideUsage: "Used by {value}", setupGuideArcanaSkillLevel: "Lv.{value}", setupGuideMedianLevel: "Median Lv.{value}",
       setupGuideLevelRange: "Typical Lv.{low}–{high}", setupGuideMedianEnhance: "Median +{value}",
+      setupGuideTraitSamples: "Specialization sample {count}", setupGuideTraitChoice: "#{index} {value}",
+      setupGuideTraitNone: "No specialization selected",
       setupGuideMedianExceed: "Median breakthrough {value}", setupGuideTotalSlots: "{value} total",
       setupGuideMedianValue: "Median per character {value}", setupGuideArcanaSlots: "Cards by slot",
       setupGuideArcanaSets: "Set combinations", setupGuideArcanaCards: "Most-used cards", setupGuideArcanaSkills: "Most-used attached skills",
@@ -3517,7 +3523,7 @@
       try {
         const cache = await fetchCompressedJson(CONTRIBUTION_CACHE_URLS, force);
         if (cache?.schema !== EXPECTED_CONTRIBUTION_SCHEMA ||
-            Number(cache.version) !== 1 ||
+            ![1, 2].includes(Number(cache.version)) ||
             !Array.isArray(cache.jobs)) {
           throw new Error("invalid setup guide cache schema");
         }
@@ -3647,7 +3653,7 @@
     return values.filter(value => String(value || "").length > 0);
   }
 
-  function createSetupGuideCard(name, icon, meta = [], omitIcon = false) {
+  function createSetupGuideCard(name, icon, meta = [], omitIcon = false, extra = null) {
     const card = document.createElement("article");
     card.className = `setup-guide-card${omitIcon ? " setup-guide-card-no-icon" : ""}`;
     let visual = null;
@@ -3677,9 +3683,53 @@
       details.append(chip);
     }
     copy.append(title, details);
+    if (extra) copy.append(extra);
     if (visual) card.append(visual);
     card.append(copy);
     return card;
+  }
+
+  function createSetupGuideTraits(choice) {
+    const sampleCount = Math.max(0, Math.trunc(Number(choice?.specializationSampleCount) || 0));
+    if (sampleCount === 0 || !Array.isArray(choice?.specializations)) {
+      return null;
+    }
+
+    const traitRows = choice.specializations
+      .map(item => ({
+        index: Math.trunc(Number(item?.index) || 0),
+        count: Math.max(0, Math.trunc(Number(item?.characterCount) || 0)),
+        rate: Math.max(0, Math.min(100, Number(item?.usageRatePercent) || 0)),
+      }))
+      .filter(item => item.index >= 1 && item.index <= 5 && item.count > 0)
+      .sort((left, right) => left.index - right.index);
+    const block = document.createElement("div");
+    block.className = "setup-guide-traits";
+    const summary = document.createElement("span");
+    summary.className = "setup-guide-traits-summary";
+    summary.textContent = t("setupGuideTraitSamples", { count: formatInteger(sampleCount) });
+    const list = document.createElement("span");
+    list.className = "setup-guide-trait-list";
+    if (traitRows.length === 0) {
+      const none = document.createElement("span");
+      none.className = "setup-guide-trait is-empty";
+      none.textContent = t("setupGuideTraitNone");
+      list.append(none);
+    } else {
+      const highestRate = Math.max(...traitRows.map(item => item.rate));
+      for (const trait of traitRows) {
+        const item = document.createElement("span");
+        item.className = `setup-guide-trait${trait.rate === highestRate ? " is-top" : ""}`;
+        item.textContent = t("setupGuideTraitChoice", {
+          index: formatInteger(trait.index),
+          value: formatPercent(trait.rate, 0),
+        });
+        item.title = t("setupGuideTraitSamples", { count: formatInteger(sampleCount) });
+        list.append(item);
+      }
+    }
+    block.append(summary, list);
+    return block;
   }
 
   function appendSetupGuideEmpty(body) {
@@ -3885,7 +3935,10 @@
   }
 
   function renderSetupGuideSkills(skills) {
-    const { section, body } = createSetupGuideSection("setupGuideSkillTitle");
+    const { section, body } = createSetupGuideSection(
+      "setupGuideSkillTitle",
+      "",
+      "setupGuideSkillNote");
     const groups = [
       ["setupGuideActive", skills?.active],
       ["setupGuideStigma", skills?.stigma],
@@ -3899,15 +3952,22 @@
       title.textContent = t(labelKey);
       const grid = document.createElement("div");
       grid.className = "setup-guide-skill-grid";
-      choices.forEach(choice => grid.append(createSetupGuideCard(
-        choice.name,
-        choice.icon,
-        setupGuideMeta(
-          t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
-          t("setupGuideLevelRange", {
-            low: formatInteger(choice.p25Level),
-            high: formatInteger(choice.p75Level),
-          })))));
+      choices.forEach(choice => {
+        const traitDetails = labelKey === "setupGuideActive"
+          ? createSetupGuideTraits(choice)
+          : null;
+        grid.append(createSetupGuideCard(
+          choice.name,
+          choice.icon,
+          setupGuideMeta(
+            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+            t("setupGuideLevelRange", {
+              low: formatInteger(choice.p25Level),
+              high: formatInteger(choice.p75Level),
+            })),
+          false,
+          traitDetails));
+      });
       group.append(title, grid);
       body.append(group);
     }
