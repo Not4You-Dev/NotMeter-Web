@@ -3701,8 +3701,12 @@
         count: Math.max(0, Math.trunc(Number(item?.characterCount) || 0)),
         rate: Math.max(0, Math.min(100, Number(item?.usageRatePercent) || 0)),
       }))
-      .filter(item => item.index >= 1 && item.index <= 5 && item.count > 0)
-      .sort((left, right) => left.index - right.index);
+      .filter(item => item.index >= 1 && item.index <= 5);
+    const traitsByIndex = new Map(traitRows.map(item => [item.index, item]));
+    const orderedTraits = Array.from({ length: 5 }, (_, offset) => {
+      const index = offset + 1;
+      return traitsByIndex.get(index) || { index, count: 0, rate: 0 };
+    });
     const block = document.createElement("div");
     block.className = "setup-guide-traits";
     const summary = document.createElement("span");
@@ -3710,23 +3714,24 @@
     summary.textContent = t("setupGuideTraitSamples", { count: formatInteger(sampleCount) });
     const list = document.createElement("span");
     list.className = "setup-guide-trait-list";
-    if (traitRows.length === 0) {
-      const none = document.createElement("span");
-      none.className = "setup-guide-trait is-empty";
-      none.textContent = t("setupGuideTraitNone");
-      list.append(none);
-    } else {
-      const highestRate = Math.max(...traitRows.map(item => item.rate));
-      for (const trait of traitRows) {
-        const item = document.createElement("span");
-        item.className = `setup-guide-trait${trait.rate === highestRate ? " is-top" : ""}`;
-        item.textContent = t("setupGuideTraitChoice", {
-          index: formatInteger(trait.index),
-          value: formatPercent(trait.rate, 0),
-        });
-        item.title = t("setupGuideTraitSamples", { count: formatInteger(sampleCount) });
-        list.append(item);
-      }
+    const highestRate = Math.max(...orderedTraits.map(item => item.rate));
+    for (const trait of orderedTraits) {
+      const label = t("setupGuideTraitChoice", {
+        index: formatInteger(trait.index),
+        value: formatPercent(trait.rate, 0),
+      });
+      const item = document.createElement("span");
+      item.className = `setup-guide-trait${trait.rate > 0 && trait.rate === highestRate ? " is-top" : ""}${trait.count === 0 ? " is-empty" : ""}`;
+      item.setAttribute("aria-label", label);
+      item.title = `${label} · ${t("setupGuideTraitSamples", { count: formatInteger(sampleCount) })}`;
+      const number = document.createElement("span");
+      number.className = "setup-guide-trait-index";
+      number.textContent = formatInteger(trait.index);
+      const rate = document.createElement("span");
+      rate.className = "setup-guide-trait-rate";
+      rate.textContent = formatPercent(trait.rate, 0);
+      item.append(number, rate);
+      list.append(item);
     }
     block.append(summary, list);
     return block;
