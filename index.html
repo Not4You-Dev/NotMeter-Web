@@ -18,7 +18,7 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260908-1">
+  <link rel="stylesheet" href="./assets/app.css?v=20260908-2">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
@@ -209,13 +209,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260905-4" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260908-1" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260908-2" defer></script>
   <script src="./assets/stats-copy.zh-TW.js?v=20260907-2" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
   <script src="./assets/character.js?v=20260906-2" defer></script>
   <script src="./assets/artifact.js?v=20260905-1" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260826-2" defer></script>
-  <script src="./assets/app.js?v=20260908-1" defer></script>
+  <script src="./assets/app.js?v=20260908-2" defer></script>
   <script src="./assets/theme-purchased-icons.js?v=20260907-7" defer></script>
 </head>
 <body>
@@ -1242,7 +1242,7 @@
 
           <div class="ranker-dungeon-section-title">
             <strong data-i18n="rankerDungeonGuideDungeonTitle">랭커 마크 대상 던전</strong>
-            <span data-i18n="rankerDungeonGuideIntro">아래 7개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.</span>
+            <span data-i18n="rankerDungeonGuideIntro">아래 6개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.</span>
           </div>
           <div class="ranker-dungeon-list">
             <article class="ranker-dungeon-item" data-dungeon-key="deus-research-hard" data-ranking-basis="dps-alltime-ndps-weekly">
@@ -1266,29 +1266,22 @@
                 <p data-i18n="rankerDungeonBakronBosses">티에 · 타몬 · 바크론</p>
               </div>
             </article>
-            <article class="ranker-dungeon-item" data-dungeon-key="musphel-hard" data-ranking-basis="dps-alltime-ndps-weekly">
-              <span class="ranker-dungeon-number" aria-hidden="true">04</span>
-              <div>
-                <strong data-i18n="rankerDungeonMusphelTitle">무스펠의 성배(어려움)</strong>
-                <p data-i18n="rankerDungeonMusphelBosses">이스카리엘 · 칼드릭스</p>
-              </div>
-            </article>
             <article class="ranker-dungeon-item" data-dungeon-key="fallen-deva-hard" data-ranking-basis="dps-alltime-ndps-weekly">
-              <span class="ranker-dungeon-number" aria-hidden="true">05</span>
+              <span class="ranker-dungeon-number" aria-hidden="true">04</span>
               <div>
                 <strong data-i18n="rankerDungeonFallenDevaTitle">타락한 데바의 성(어려움)</strong>
                 <p data-i18n="rankerDungeonFallenDevaBosses">의지의 투르겐 · 금기의 마수 그리오사 · 위악의 바실루스</p>
               </div>
             </article>
             <article class="ranker-dungeon-item" data-dungeon-key="abyss-horn-4" data-ranking-basis="dps-alltime-ndps-weekly">
-              <span class="ranker-dungeon-number" aria-hidden="true">06</span>
+              <span class="ranker-dungeon-number" aria-hidden="true">05</span>
               <div>
                 <strong data-i18n="rankerDungeonAbyssHornTitle">심연의 뿔 암굴(4단계)</strong>
                 <p data-i18n="rankerDungeonAbyssHornBosses">카푸 · 다칸 · 가르가움</p>
               </div>
             </article>
             <article class="ranker-dungeon-item ranker-dungeon-item-special" data-dungeon-key="nightmare-atheron-10" data-ranking-basis="combat-time">
-              <span class="ranker-dungeon-number" aria-hidden="true">07</span>
+              <span class="ranker-dungeon-number" aria-hidden="true">06</span>
               <div>
                 <strong data-i18n="rankerDungeonNightmareTitle">악몽</strong>
                 <p data-i18n="rankerDungeonNightmareBosses">각성한 아테론 10단계 · DPS가 아닌 빠른 전투 시간 순</p>
@@ -1296,8 +1289,9 @@
             </article>
           </div>
           <div class="ranker-dungeon-guide-notes">
-            <p data-i18n="rankerDungeonGuideScope">일반 던전 6개는 전체 기간은 DPS, 이번 주는 nDPS 순으로 집계합니다. 악몽은 두 기간 모두 짧은 전투 시간 순입니다.</p>
+            <p data-i18n="rankerDungeonGuideScope">일반 던전 5개는 전체 기간은 DPS, 이번 주는 nDPS 순으로 집계합니다. 악몽은 두 기간 모두 짧은 전투 시간 순입니다.</p>
             <p data-i18n="rankerDungeonGuideBakronRewardExcluded">시련: 바크론의 공중섬은 랭커 마크에는 반영되지만, 랭커 권한 닉네임 효과 대상에서는 임시 제외됩니다.</p>
+            <p data-i18n="rankerDungeonGuideMusphelArchived">무스펠의 성배(어려움)는 기존 랭킹과 상위%만 보관하며, 신규 수집·랭커 마크·닉네임 효과 대상에서는 제외됩니다.</p>
             <p data-i18n="rankerDungeonGuideDummy">훈련용 허수아비(1분)는 홈페이지 랭킹만 제공하며, 딜미터기 전투 종료 구간 순위·상위% 배지와 실시간 랭커 마크 대상에서는 제외됩니다.</p>
             <p data-i18n="rankerDungeonGuidePeriod">상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주를 사용하며 nDPS 우선 설정에서는 각 기간의 nDPS를 우선합니다.</p>
           </div>
@@ -1359,6 +1353,26 @@
     </section>
 
     <section class="ranking-panel">
+      <details class="top100-panel" id="boss-combat-panel" hidden>
+        <summary class="top100-heading">
+          <span class="top100-heading-copy">
+            <span class="top100-title"><strong data-i18n="bossCombatTitle">네임드별 전투 지표</strong><span class="top100-new">NEW</span></span>
+            <span class="top100-subtitle" id="boss-combat-subtitle"></span>
+          </span>
+          <span class="top100-heading-right"><span class="top100-basis" data-i18n="bossCombatBasis">전체 기간 DPS TOP 100</span><span class="top100-chevron" aria-hidden="true">⌄</span></span>
+        </summary>
+        <div class="top100-content">
+          <p class="top100-meta" data-i18n="bossCombatFixed">직업별 상위 100명 · 전체 CP · DPS/nDPS·기간·CP 선택과 무관한 고정 집계</p>
+          <p class="top100-empty" id="boss-combat-empty" role="status"></p>
+          <div class="top100-table-scroll" id="boss-combat-table" tabindex="0" role="region" aria-label="네임드별 전투 지표" data-i18n-aria-label="bossCombatTitle" hidden>
+            <table class="top100-table">
+              <thead><tr><th scope="col" data-i18n="job">직업</th><th scope="col" data-i18n="doubleDamage">강타</th><th scope="col" data-i18n="perfect">완벽</th><th scope="col" data-i18n="bossCombatCritical">치명타</th><th scope="col" data-i18n="front">전방</th><th scope="col" data-i18n="back">후방</th></tr></thead>
+              <tbody id="boss-combat-rows"></tbody>
+            </table>
+          </div>
+          <div class="top100-footnote"><span data-i18n="bossCombatAverage">캐릭터당 최고 DPS 기록 1개 · 개인별 비율의 산술 평균</span><span data-i18n="bossCombatSamples">100명 미만이면 실제 인원 표시 · 비율 정보가 없는 기록은 평균에서 제외</span></div>
+        </div>
+      </details>
       <div class="view-heading" id="class-heading" hidden>
         <button class="ranking-back-button" id="back-button" type="button">
           <span class="ranking-back-button-icon" aria-hidden="true">←</span>

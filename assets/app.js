@@ -563,7 +563,7 @@
       rankerDungeonGuideRetentionTitle: "랭커 구간을 벗어나면?",
       rankerDungeonGuideRetentionBody: "현재 CP가 자격을 얻은 25K 구간을 벗어나거나 TOP 3 자격을 잃으면 랭커 권한 효과는 숨겨집니다. 선택한 효과는 지워지지 않으며, 같은 구간에서 자격이 다시 확인되면 자동 복원됩니다.",
       rankerDungeonGuideDungeonTitle: "랭커 마크 대상 던전",
-      rankerDungeonGuideIntro: "아래 7개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.",
+      rankerDungeonGuideIntro: "아래 6개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.",
       rankerDungeonDeusTitle: "잠식된 데우스 연구기지(어려움)",
       rankerDungeonDeusBosses: "감독관 그롬카스 · 연구소장 자일러스 · 오만의 아티엘",
       rankerDungeonNoiranTitle: "노이란의 숨겨진 유산(4단계)",
@@ -578,8 +578,9 @@
       rankerDungeonAbyssHornBosses: "카푸 · 다칸 · 가르가움",
       rankerDungeonNightmareTitle: "악몽",
       rankerDungeonNightmareBosses: "각성한 아테론 10단계 · DPS가 아닌 빠른 전투 시간 순",
-      rankerDungeonGuideScope: "일반 던전 6개는 전체 기간은 높은 DPS 순, 이번 주는 높은 nDPS 순으로 집계합니다. 악몽은 두 기간 모두 짧은 전투 시간 순입니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.",
+      rankerDungeonGuideScope: "일반 던전 5개는 전체 기간은 높은 DPS 순, 이번 주는 높은 nDPS 순으로 집계합니다. 악몽은 두 기간 모두 짧은 전투 시간 순입니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.",
       rankerDungeonGuideBakronRewardExcluded: "시련: 바크론의 공중섬은 랭커 마크에는 반영되지만, 랭커 권한 닉네임 효과 대상에서는 임시 제외됩니다.",
+      rankerDungeonGuideMusphelArchived: "무스펠의 성배(어려움)는 기존 랭킹과 상위%만 보관하며, 신규 수집·랭커 마크·닉네임 효과 대상에서는 제외됩니다.",
       rankerDungeonGuideDummy: "훈련용 허수아비(1분)는 홈페이지 랭킹만 제공하며, 딜미터기 전투 종료 구간 순위·상위% 배지와 실시간 랭커 마크 대상에서는 제외됩니다.",
       rankerDungeonGuidePeriod: "상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주를 사용하며 nDPS 우선 설정에서는 각 기간의 nDPS를 우선합니다. 이번 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.",
       weeklyCompare: "▲▼는 직전 주 동일 조건의 직업별 상위 25% DPS 변화",
@@ -1014,7 +1015,7 @@
       rankerDungeonGuideRetentionTitle: "What if I leave the bracket?",
       rankerDungeonGuideRetentionBody: "A rank-granted effect is hidden if your detected CP leaves the qualifying 25K bracket or Top 3 eligibility is lost. The selected effect is kept and returns when eligibility is verified again.",
       rankerDungeonGuideDungeonTitle: "Dungeons with live rank markers",
-      rankerDungeonGuideIntro: "The seven contents below are evaluated separately by boss, class, and CP bracket.",
+      rankerDungeonGuideIntro: "The six contents below are evaluated separately by boss, class, and CP bracket.",
       rankerDungeonDeusTitle: "Corrupted Deus Research Base (Hard)",
       rankerDungeonDeusBosses: "Supervisor Gromkas · Lab Director Xylus · Arrogant Atiel",
       rankerDungeonNoiranTitle: "Noiran's Hidden Legacy (Stage 4)",
@@ -1029,8 +1030,9 @@
       rankerDungeonAbyssHornBosses: "Kapu · Dakan · Gargaum",
       rankerDungeonNightmareTitle: "Nightmare",
       rankerDungeonNightmareBosses: "Awakened Atheron Stage 10 · ranked by fastest combat time, not DPS",
-      rankerDungeonGuideScope: "The six regular dungeons rank all-time records by DPS and current-week records by nDPS. Nightmare ranks shorter combat time first in both periods. All Bosses only combines statistics for viewing—the live rank marker is decided by each boss's individual ranking.",
+      rankerDungeonGuideScope: "The five regular dungeons rank all-time records by DPS and current-week records by nDPS. Nightmare ranks shorter combat time first in both periods. All Bosses only combines statistics for viewing—the live rank marker is decided by each boss's individual ranking.",
       rankerDungeonGuideBakronRewardExcluded: "Trial: Bakron's Sky Island is included in rank markers but remains temporarily excluded from ranker-granted nickname effects.",
+      rankerDungeonGuideMusphelArchived: "Musphel's Holy Grail (Hard) keeps its existing rankings and percentile results, but is excluded from new collection, rank markers, and ranker-granted nickname effects.",
       rankerDungeonGuideDummy: "Training Dummy (1 min) provides website rankings only. It does not show the meter's post-combat bracket-rank or Top % badge, and it does not award a live rank marker.",
       rankerDungeonGuidePeriod: "Top % uses all-time records below 800K CP and current-week records at 800K CP or above; Prefer nDPS prioritizes nDPS in the selected period. The current week runs from Wednesday 05:00 KST to the following Wednesday 05:00 KST.",
       weeklyCompare: "▲▼ shows the change in each class's top-25% DPS under the same filters",
@@ -1188,6 +1190,49 @@
     }
     return detectBrowserLocale();
   }
+
+  Object.assign(COPY.ko, {
+    bossCombatTitle: "네임드별 전투 지표",
+    bossCombatCritical: "치명타",
+    bossCombatBasis: "전체 기간 DPS TOP 100",
+    bossCombatFixed: "직업별 상위 100명 · 전체 CP · DPS/nDPS·기간·CP 선택과 무관한 고정 집계",
+    bossCombatAverage: "캐릭터당 최고 DPS 기록 1개 · 개인별 비율의 산술 평균",
+    bossCombatSamples: "100명 미만이면 실제 인원 표시 · 비율 정보가 없는 기록은 평균에서 제외",
+    bossCombatSelectBoss: "네임드를 선택하면 직업별 평균을 확인할 수 있습니다.",
+    bossCombatPending: "통계 준비 중 · 다음 통계 캐시 생성 후 표시됩니다.",
+    bossCombatNoSamples: "집계 가능한 표본이 없습니다.",
+    bossCombatSubtitle: "{boss} · 직업별 상위 100명 평균",
+    bossCombatSampleCount: "{count}명",
+    bossCombatSampleDetail: "상위 {selected}명 중 비율 정보가 있는 {count}명 집계",
+  });
+  Object.assign(COPY.en, {
+    bossCombatTitle: "Boss combat metrics",
+    bossCombatCritical: "Critical",
+    bossCombatBasis: "All-time DPS TOP 100",
+    bossCombatFixed: "Top 100 per class · All CP · Independent of DPS/nDPS, period and CP filters",
+    bossCombatAverage: "One best-DPS record per character · Arithmetic mean of individual rates",
+    bossCombatSamples: "Actual count shown below 100 · Records without rate data are excluded from the mean",
+    bossCombatSelectBoss: "Select a boss to see the averages by class.",
+    bossCombatPending: "Statistics pending · Available after the next cache generation.",
+    bossCombatNoSamples: "No eligible samples yet.",
+    bossCombatSubtitle: "{boss} · Class TOP 100 averages",
+    bossCombatSampleCount: "{count} players",
+    bossCombatSampleDetail: "{count} players with rate data out of the top {selected}",
+  });
+  Object.assign(COPY["zh-TW"], {
+    bossCombatTitle: "各首領戰鬥指標",
+    bossCombatCritical: "暴擊",
+    bossCombatBasis: "全期間 DPS TOP 100",
+    bossCombatFixed: "各職業前 100 名 · 全 CP · 不受 DPS/nDPS、期間與 CP 篩選影響",
+    bossCombatAverage: "每名角色取最高 DPS 紀錄 1 筆 · 個人比率的算術平均",
+    bossCombatSamples: "不足 100 名顯示實際人數 · 缺少比率資料的紀錄不計入平均",
+    bossCombatSelectBoss: "請選擇首領以查看各職業平均值。",
+    bossCombatPending: "統計準備中 · 下次產生快取後顯示。",
+    bossCombatNoSamples: "尚無可統計的樣本。",
+    bossCombatSubtitle: "{boss} · 各職業前 100 名平均",
+    bossCombatSampleCount: "{count} 人",
+    bossCombatSampleDetail: "前 {selected} 名中，{count} 名有比率資料",
+  });
 
   function detectBrowserLocale() {
     const browserLocales = [
@@ -1378,6 +1423,7 @@
       "custom-cp-panel", "custom-cp-min", "custom-cp-max", "custom-cp-apply", "custom-cp-result",
       "period-filter", "refresh-button", "retry-button", "snapshot-title", "snapshot-caption",
       "sample-meta", "generated-meta", "weekly-guide", "class-heading", "class-title",
+      "boss-combat-panel", "boss-combat-subtitle", "boss-combat-empty", "boss-combat-table", "boss-combat-rows",
       "class-badge", "class-caption", "sample-column-heading", "class-metric-heading",
       "back-button", "loading-state", "error-state", "error-message", "empty-state", "empty-message",
       "summary-view", "summary-rows", "class-view", "class-rows", "cache-age",
@@ -4901,7 +4947,76 @@
     updateDailyUsers();
     updateCacheAge();
     syncRankingMetricControl();
+    renderBossCombatStats();
     state.mode === "class" ? renderClassRanking() : renderSummary();
+  }
+
+  function renderBossCombatStats() {
+    const panel = elements["boss-combat-panel"];
+    if (!panel) return;
+    const dungeon = currentDungeon();
+    panel.hidden = state.surfaceMode !== "ranking" || state.mode !== "summary" ||
+      !dungeon || dungeon.key === "training-dummy-60s";
+    if (panel.hidden) return;
+    const boss = dungeon.bossNames?.[state.bossIndex - 1];
+    elements["boss-combat-subtitle"].textContent = boss
+      ? t("bossCombatSubtitle", { boss: localizeGameName(boss) }) : t("bossCombatSelectBoss");
+    const stats = Array.isArray(state.data?.bossCombatStats)
+      ? state.data.bossCombatStats.find(item => item?.dungeonKey === dungeon.key &&
+        item.bossIndex === state.bossIndex && item.rankingBasis === "all_time_dps_top100_per_character_all_cp")
+      : null;
+    const rows = Array.isArray(stats?.rows) ? stats.rows : [];
+    const available = Boolean(boss && rows.some(row => Number(row?.sampleCount) > 0));
+    elements["boss-combat-table"].hidden = !available;
+    elements["boss-combat-empty"].hidden = available;
+    elements["boss-combat-empty"].textContent = t(!boss ? "bossCombatSelectBoss"
+      : !Array.isArray(state.data?.bossCombatStats) ? "bossCombatPending" : "bossCombatNoSamples");
+    const fragment = document.createDocumentFragment();
+    if (available) {
+      const rateKeys = ["doubleDamageRate", "perfectRate", "criticalRate", "frontAttackRate", "backAttackRate"];
+      const rateFormatter = new Intl.NumberFormat(state.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      for (const job of JOB_ORDER) {
+        const data = rows.find(row => row?.jobName === job);
+        const selected = Math.min(100, Math.max(0, Math.trunc(Number(data?.selectedCount) || 0)));
+        const count = Math.min(selected, Math.max(0, Math.trunc(Number(data?.sampleCount) || 0)));
+        const row = document.createElement("tr");
+        const identity = document.createElement("th");
+        identity.scope = "row";
+        const label = document.createElement("span");
+        label.className = "top100-job";
+        const name = document.createElement("span");
+        name.className = "top100-job-name";
+        name.textContent = jobName(job);
+        const sample = document.createElement("span");
+        sample.className = `top100-count${count < 100 ? " is-limited" : ""}`;
+        sample.textContent = t("bossCombatSampleCount", { count: formatInteger(count) });
+        sample.title = t("bossCombatSampleDetail", { selected, count });
+        label.append(createJobIcon(job), name, sample);
+        identity.append(label);
+        row.append(identity);
+        for (const key of rateKeys) {
+          const cell = document.createElement("td");
+          const value = data?.[key];
+          const valid = count > 0 && typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
+          const number = document.createElement("span");
+          number.className = "top100-value";
+          number.textContent = valid ? `${rateFormatter.format(value)}%` : "—";
+          cell.append(number);
+          if (valid) {
+            const track = document.createElement("span");
+            track.className = "top100-track";
+            track.setAttribute("aria-hidden", "true");
+            const fill = document.createElement("i");
+            fill.style.width = `${value}%`;
+            track.append(fill);
+            cell.append(track);
+          }
+          row.append(cell);
+        }
+        fragment.append(row);
+      }
+    }
+    elements["boss-combat-rows"].replaceChildren(fragment);
   }
 
   function bossResistanceDungeons() {
@@ -7453,7 +7568,12 @@
   }
 
   function customCpWeeklyPeriodLabel() {
-    return String(state.customCpData?.currentWeekPeriodLabel || "") ||
+    return (state.data?.views || [])
+      .find(view =>
+        view.dungeonKey === state.dungeonKey &&
+        parseWeeklyRange(view.periodLabel))
+      ?.periodLabel ||
+      String(state.customCpData?.currentWeekPeriodLabel || "") ||
       (state.customCpData?.views || [])
       .find(view =>
         view.dungeonKey === state.dungeonKey &&
