@@ -150,7 +150,8 @@
     "훈련용 허수아비 (1분)": "訓練用稻草人（1分鐘）",
     "훈련용 허수아비(1분)": "訓練用稻草人（1分鐘）",
   };
-  const FEATURED_DUNGEON_KEYS = ["deus-research-hard", "noiran-legacy-4"];
+  const SNOWFIELD_DUNGEON = Object.freeze({ key: "sorrow-snowfield", displayName: "비탄의 설원" });
+  const FEATURED_DUNGEON_KEYS = [SNOWFIELD_DUNGEON.key, "deus-research-hard", "noiran-legacy-4"];
   // Resolve display order by name so both old and current cache arrays remain compatible.
   const BOSS_PRESENTATION_NAMES = Object.freeze({
     "deus-research-hard": ["감독관 그롬카스", "연구소장 자일러스", "오만의 아티엘"],
@@ -222,6 +223,7 @@
       dailyUsers: "일일 사용자",
       classPerformance: "직업 성능",
       newFeature: "새로 추가된 기능",
+      dungeonComingSoon: "통계 준비 중",
       contributionStats: "세팅 가이드",
       contributionPageTitle: "NotMeter 직업별 세팅 가이드",
       contributionPageSubtitle: "전체 기간 상위 랭커의 실제 PVE 세팅 통계",
@@ -673,6 +675,7 @@
       dailyUsers: "Daily users",
       classPerformance: "Class Performance",
       newFeature: "Newly added feature",
+      dungeonComingSoon: "Statistics coming soon",
       contributionStats: "Setup Guide",
       contributionPageTitle: "NotMeter Class Setup Guide",
       contributionPageSubtitle: "Actual PVE setup trends among all-time top rankers",
@@ -1139,6 +1142,7 @@
     bossResistanceMeasuredEstimate: "實測推估值 {value}",
     bossResistanceSample: "累積樣本 {records} 場",
     bossResistancePending: "樣本收集中",
+    dungeonComingSoon: "統計準備中",
     bossResistanceSamplesGuide: "強擊與完美依全期間累積判定樣本，同時顯示最接近 5% 的遊戲設定值與實測推估值。",
     bossResistanceNoData: "目前沒有可顯示的首領資訊。",
     characterProfile: "角色資料",
@@ -1558,7 +1562,7 @@
     });
     elements["dungeon-filter-buttons"].addEventListener("click", event => {
       const button = event.target.closest("[data-dungeon-key]");
-      if (!button || button.dataset.dungeonKey === state.dungeonKey) {
+      if (!button || button.disabled || button.dataset.dungeonKey === state.dungeonKey) {
         return;
       }
       closeCombatDetail();
@@ -4481,8 +4485,15 @@
     syncRankingMetricControl();
   }
 
+  function dungeonFilterItems() {
+    const dungeons = orderDungeonsForDisplay(state.data?.dungeons);
+    return dungeons.some(dungeon => dungeon.key === SNOWFIELD_DUNGEON.key)
+      ? dungeons
+      : [{ ...SNOWFIELD_DUNGEON, previewOnly: true }, ...dungeons];
+  }
+
   function renderDungeonFilterButtons() {
-    const dungeons = state.data?.dungeons || [];
+    const dungeons = dungeonFilterItems();
     const collapsed = dungeons.slice(0, DUNGEON_BUTTON_COLLAPSED_LIMIT);
     if (!state.dungeonFilterExpanded &&
         state.dungeonKey &&
@@ -4500,7 +4511,20 @@
       button.dataset.dungeonKey = dungeon.key;
       button.setAttribute("role", "radio");
       button.setAttribute("aria-checked", String(selected));
-      button.textContent = dungeonName(dungeon);
+      button.disabled = Boolean(dungeon.previewOnly);
+      if (button.disabled) {
+        button.title = t("dungeonComingSoon");
+      }
+      const label = document.createElement("span");
+      label.textContent = dungeonName(dungeon);
+      button.append(label);
+      if (dungeon.key === SNOWFIELD_DUNGEON.key) {
+        const badge = document.createElement("b");
+        badge.className = "feature-new-badge dungeon-new-badge";
+        badge.textContent = "NEW";
+        badge.title = t("newFeature");
+        button.append(badge);
+      }
       fragment.append(button);
     }
     elements["dungeon-filter-buttons"].replaceChildren(fragment);
