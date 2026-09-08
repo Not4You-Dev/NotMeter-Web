@@ -1,7 +1,6 @@
 (() => {
   "use strict";
 
-  const VPS_RANKING_CACHE_ROOT = "https://notmeter.112-168-140-142.sslip.io/ranking/v1";
   const GITHUB_RANKING_REPOSITORY_ROOT =
     "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web";
   const SAME_ORIGIN_RANKING_CACHE_ROOT = "./data";
@@ -19,30 +18,24 @@
   const CACHE_URLS = [
     `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`,
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`,
-    `${VPS_RANKING_CACHE_ROOT}/web/main?layout=view-shards-v2`,
   ];
   const CLASS_OVERALL_CACHE_URLS = [
     `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`,
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`,
-    `${VPS_RANKING_CACHE_ROOT}/web/class-overall`,
   ];
   const CONTRIBUTION_CACHE_URLS = [
     `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-setting-guide.json.gz`,
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-setting-guide.json.gz`,
-    `${VPS_RANKING_CACHE_ROOT}/web/setup-guide`,
   ];
-  const VPS_CLASS_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/classes`;
-  const VPS_VIEW_RANKING_CACHE_ROOT = `${VPS_RANKING_CACHE_ROOT}/web/views`;
   let GITHUB_CLASS_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/classes`;
   let GITHUB_VIEW_RANKING_CACHE_ROOT = `${GITHUB_RANKING_CACHE_ROOT}/views`;
   const CUSTOM_CP_CACHE_URLS = [
     `${SAME_ORIGIN_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`,
     `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`,
-    `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`,
   ];
   const FIELD_BOSS_CACHE_URLS = [
     "https://raw.githubusercontent.com/Not4You-Dev/NotMeter-Web/main/presence/notmeter-field-boss-public.json",
-    "https://notmeter.112-168-140-142.sslip.io/field-boss/v1/public",
+    "https://notmeter.com/presence/notmeter-field-boss-public.json",
   ];
   const EXPECTED_SCHEMA = "notmeter-web-ranking-v1";
   const EXPECTED_CLASS_RANKING_SCHEMA = "notmeter-web-class-ranking-v1";
@@ -57,9 +50,7 @@
   const FIELD_BOSS_CACHE_SCHEMA = "notmeter-field-boss-public-cache-v1";
   const ZH_TW_GAME_DATA_URL = "./assets/game-data.zh-TW.json?v=20260824-1";
   const SUPPORTED_LOCALES = ["ko", "en", "zh-TW"];
-  const DETAIL_ENDPOINTS = [
-    `${VPS_RANKING_CACHE_ROOT}/details/`,
-  ];
+  const DETAIL_LOCAL_CACHE_ROOT = "https://notmeter.com/__local-cache/ranking-details/";
   const DETAIL_CACHE_NAME = "notmeter-ranking-details-v1";
   const DETAIL_MEMORY_LIMIT = 48;
   const RANK_MOVEMENT_STORAGE_KEY = "notmeter-class-rank-movement-v1";
@@ -126,6 +117,8 @@
     "권성": "Brawler",
   };
   const DUNGEON_NAMES_EN = {
+    "sorrow-snowfield-normal": "Snowfield of Sorrow (Normal)",
+    "sorrow-snowfield-hard": "Snowfield of Sorrow (Hard)",
     "deus-research-hard": "Corrupted Deus Research Base (Hard)",
     "noiran-legacy-4": "Noiran's Hidden Legacy (Stage 4)",
     "training-dummy-60s": "Training Dummy (1 min)",
@@ -136,6 +129,8 @@
     "nightmare-atheron-10": "Nightmare: Awakened Atheron (Stage 10)",
   };
   const DUNGEON_NAMES_ZH_TW = {
+    "sorrow-snowfield-normal": "悲嘆雪原（普通）",
+    "sorrow-snowfield-hard": "悲嘆雪原（困難）",
     "deus-research-hard": "受侵蝕的德烏斯研究基地（困難）",
     "noiran-legacy-4": "諾伊蘭的隱藏遺產（第4階段）",
     "training-dummy-60s": "訓練用稻草人（1分鐘）",
@@ -146,14 +141,19 @@
     "nightmare-atheron-10": "惡夢：覺醒阿特隆（第10階段）",
   };
   const GAME_NAME_OVERRIDES_ZH_TW = {
+    "귀환자 트리톤": "歸來者特里同",
+    "델트라스 (2페이즈)": "德爾特拉斯（第2階段）",
     "각성한 아테론 10단계": "覺醒阿特隆 第10階段",
     "훈련용 허수아비 (1분)": "訓練用稻草人（1分鐘）",
     "훈련용 허수아비(1분)": "訓練用稻草人（1分鐘）",
   };
   const SNOWFIELD_DUNGEON = Object.freeze({ key: "sorrow-snowfield", displayName: "비탄의 설원" });
-  const FEATURED_DUNGEON_KEYS = [SNOWFIELD_DUNGEON.key, "deus-research-hard", "noiran-legacy-4"];
+  const SNOWFIELD_STATISTICS_KEYS = ["sorrow-snowfield-normal", "sorrow-snowfield-hard"];
+  const FEATURED_DUNGEON_KEYS = [...SNOWFIELD_STATISTICS_KEYS, SNOWFIELD_DUNGEON.key, "deus-research-hard", "noiran-legacy-4"];
   // Resolve display order by name so both old and current cache arrays remain compatible.
   const BOSS_PRESENTATION_NAMES = Object.freeze({
+    "sorrow-snowfield-normal": ["귀환자 트리톤", "델트라스 (2페이즈)"],
+    "sorrow-snowfield-hard": ["귀환자 트리톤", "델트라스 (2페이즈)"],
     "deus-research-hard": ["감독관 그롬카스", "연구소장 자일러스", "오만의 아티엘"],
     "noiran-legacy-4": ["불완전한 브라운트", "광기의 클로민스터", "아스크란"],
   });
@@ -566,7 +566,7 @@
       rankerDungeonGuideRetentionTitle: "랭커 구간을 벗어나면?",
       rankerDungeonGuideRetentionBody: "현재 CP가 자격을 얻은 25K 구간을 벗어나거나 TOP 3 자격을 잃으면 랭커 권한 효과는 숨겨집니다. 선택한 효과는 지워지지 않으며, 같은 구간에서 자격이 다시 확인되면 자동 복원됩니다.",
       rankerDungeonGuideDungeonTitle: "랭커 마크 대상 던전",
-      rankerDungeonGuideIntro: "아래 6개 콘텐츠에서 각 보스·직업·CP 구간별로 판정합니다.",
+      rankerDungeonGuideIntro: "아래 콘텐츠에서 각 난이도·보스·직업·CP 구간별로 판정합니다.",
       rankerDungeonDeusTitle: "잠식된 데우스 연구기지(어려움)",
       rankerDungeonDeusBosses: "감독관 그롬카스 · 연구소장 자일러스 · 오만의 아티엘",
       rankerDungeonNoiranTitle: "노이란의 숨겨진 유산(4단계)",
@@ -579,7 +579,7 @@
       rankerDungeonAbyssHornBosses: "카푸 · 다칸 · 가르가움",
       rankerDungeonNightmareTitle: "악몽",
       rankerDungeonNightmareBosses: "각성한 아테론 10단계 · DPS가 아닌 빠른 전투 시간 순",
-      rankerDungeonGuideScope: "일반 던전 5개는 전체 기간은 높은 DPS 순, 이번 주는 높은 nDPS 순으로 집계합니다. 악몽은 두 기간 모두 짧은 전투 시간 순입니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.",
+      rankerDungeonGuideScope: "일반 던전은 전체 기간은 높은 DPS 순, 이번 주는 높은 nDPS 순으로 집계합니다. 악몽은 두 기간 모두 짧은 전투 시간 순입니다. ‘전체 보스’ 조회는 통계를 한 번에 보는 기능이며, 랭커 마크는 각 보스의 개별 순위로 판정합니다.",
       rankerDungeonGuideBakronRewardExcluded: "시련: 바크론의 공중섬은 랭커 마크에는 반영되지만, 랭커 권한 닉네임 효과 대상에서는 임시 제외됩니다.",
       rankerDungeonGuideDummy: "훈련용 허수아비(1분)는 홈페이지 랭킹만 제공하며, 딜미터기 전투 종료 구간 순위·상위% 배지와 실시간 랭커 마크 대상에서는 제외됩니다.",
       rankerDungeonGuidePeriod: "상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주를 사용하며 nDPS 우선 설정에서는 각 기간의 nDPS를 우선합니다. 이번 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.",
@@ -1039,7 +1039,7 @@
       rankerDungeonGuideRetentionTitle: "What if I leave the bracket?",
       rankerDungeonGuideRetentionBody: "A rank-granted effect is hidden if your detected CP leaves the qualifying 25K bracket or Top 3 eligibility is lost. The selected effect is kept and returns when eligibility is verified again.",
       rankerDungeonGuideDungeonTitle: "Dungeons with live rank markers",
-      rankerDungeonGuideIntro: "The six contents below are evaluated separately by boss, class, and CP bracket.",
+      rankerDungeonGuideIntro: "The contents below are evaluated separately by difficulty, boss, class, and CP bracket.",
       rankerDungeonDeusTitle: "Corrupted Deus Research Base (Hard)",
       rankerDungeonDeusBosses: "Supervisor Gromkas · Lab Director Xylus · Arrogant Atiel",
       rankerDungeonNoiranTitle: "Noiran's Hidden Legacy (Stage 4)",
@@ -1052,7 +1052,7 @@
       rankerDungeonAbyssHornBosses: "Kapu · Dakan · Gargaum",
       rankerDungeonNightmareTitle: "Nightmare",
       rankerDungeonNightmareBosses: "Awakened Atheron Stage 10 · ranked by fastest combat time, not DPS",
-      rankerDungeonGuideScope: "The five regular dungeons rank all-time records by DPS and current-week records by nDPS. Nightmare ranks shorter combat time first in both periods. All Bosses only combines statistics for viewing—the live rank marker is decided by each boss's individual ranking.",
+      rankerDungeonGuideScope: "Regular dungeons rank all-time records by DPS and current-week records by nDPS. Nightmare ranks shorter combat time first in both periods. All Bosses only combines statistics for viewing—the live rank marker is decided by each boss's individual ranking.",
       rankerDungeonGuideBakronRewardExcluded: "Trial: Bakron's Sky Island is included in rank markers but remains temporarily excluded from ranker-granted nickname effects.",
       rankerDungeonGuideDummy: "Training Dummy (1 min) provides website rankings only. It does not show the meter's post-combat bracket-rank or Top % badge, and it does not award a live rank marker.",
       rankerDungeonGuidePeriod: "Top % uses all-time records below 800K CP and current-week records at 800K CP or above; Prefer nDPS prioritizes nDPS in the selected period. The current week runs from Wednesday 05:00 KST to the following Wednesday 05:00 KST.",
@@ -1234,6 +1234,13 @@
   }
 
   Object.assign(COPY.ko, {
+    dungeonDifficulty: "난이도",
+    dungeonDifficultyAria: "비탄의 설원 난이도 선택",
+    difficultyNormal: "보통",
+    difficultyHard: "어려움",
+    rankerDungeonSnowfieldTitle: "비탄의 설원(보통·어려움)",
+    rankerDungeonSnowfieldBosses: "귀환자 트리톤 · 델트라스 (2페이즈)",
+    rankerDungeonSnowfieldScope: "보통·어려움은 각각 랭커 표시와 구간 TOP 3 닉네임 효과 대상입니다. 쉬움과 델트라스 1페이즈는 제외됩니다.",
     bossCombatTitle: "네임드별 전투 지표",
     bossCombatCritical: "치명타",
     bossCombatBasis: "전체 기간 DPS TOP 100",
@@ -1248,6 +1255,13 @@
     bossCombatSampleDetail: "상위 {selected}명 중 비율 정보가 있는 {count}명 집계",
   });
   Object.assign(COPY.en, {
+    dungeonDifficulty: "Difficulty",
+    dungeonDifficultyAria: "Select Snowfield of Sorrow difficulty",
+    difficultyNormal: "Normal",
+    difficultyHard: "Hard",
+    rankerDungeonSnowfieldTitle: "Snowfield of Sorrow (Normal · Hard)",
+    rankerDungeonSnowfieldBosses: "Triton the Returned · Deltras (Phase 2)",
+    rankerDungeonSnowfieldScope: "Normal and Hard each qualify for rank markers and bracket TOP 3 nickname effects. Easy and Deltras Phase 1 are excluded.",
     bossCombatTitle: "Boss combat metrics",
     bossCombatCritical: "Critical",
     bossCombatBasis: "All-time DPS TOP 100",
@@ -1262,6 +1276,13 @@
     bossCombatSampleDetail: "{count} players with rate data out of the top {selected}",
   });
   Object.assign(COPY["zh-TW"], {
+    dungeonDifficulty: "難度",
+    dungeonDifficultyAria: "選擇悲嘆雪原難度",
+    difficultyNormal: "普通",
+    difficultyHard: "困難",
+    rankerDungeonSnowfieldTitle: "悲嘆雪原（普通・困難）",
+    rankerDungeonSnowfieldBosses: "歸來者特里同・德爾特拉斯（第2階段）",
+    rankerDungeonSnowfieldScope: "普通與困難各自適用排名標記及區間前 3 名暱稱特效。簡單與德爾特拉斯第 1 階段不列入。",
     bossCombatTitle: "各首領戰鬥指標",
     bossCombatCritical: "暴擊",
     bossCombatBasis: "全期間 DPS TOP 100",
@@ -1458,6 +1479,7 @@
       "field-boss-error-state", "field-boss-error-message", "field-boss-empty-state",
       "field-boss-content", "field-boss-tabs", "field-boss-list",
       "dungeon-filter", "dungeon-filter-buttons", "dungeon-filter-more",
+      "dungeon-difficulty", "dungeon-difficulty-buttons",
       "ranking-metric-choice", "ranking-metric-description", "ranking-metric-dps", "ranking-metric-ndps",
       "boss-filter", "boss-filter-buttons", "cp-filter", "cp-filter-toggle",
       "cp-filter-current", "cp-filter-menu", "cp-filter-menu-close",
@@ -1661,6 +1683,24 @@
     elements["dungeon-filter-more"].addEventListener("click", () => {
       state.dungeonFilterExpanded = !state.dungeonFilterExpanded;
       renderDungeonFilterButtons();
+    });
+    elements["dungeon-difficulty-buttons"].addEventListener("click", event => {
+      const button = event.target.closest("[data-difficulty-key]");
+      if (!button || button.disabled || button.dataset.difficultyKey === state.dungeonKey) return;
+      closeCombatDetail();
+      applyDungeonSelection(button.dataset.difficultyKey);
+      populateFilters();
+      render();
+    });
+    elements["dungeon-difficulty-buttons"].addEventListener("keydown", event => {
+      const buttons = [...elements["dungeon-difficulty-buttons"].querySelectorAll("button:not(:disabled)")];
+      const index = buttons.indexOf(event.target);
+      if (index < 0 || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1
+        : (index + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+      buttons[next].focus();
+      buttons[next].click();
     });
     elements["boss-filter"].addEventListener("change", event => {
       state.bossIndex = Number(event.target.value);
@@ -1884,6 +1924,10 @@
 
   function localizeGameName(value, type = "", ...codes) {
     const original = String(value || "").trim();
+    if (state.locale === "en") {
+      if (original === "귀환자 트리톤") return "Triton the Returned";
+      if (original === "델트라스 (2페이즈)") return "Deltras (Phase 2)";
+    }
     if (state.locale !== "ko" && state.locale !== "zh-TW") {
       return original;
     }
@@ -1974,6 +2018,10 @@
   });
 
   function applyDungeonSelection(dungeonKey) {
+    if (dungeonKey === SNOWFIELD_DUNGEON.key) {
+      dungeonKey = ["sorrow-snowfield-hard", "sorrow-snowfield-normal"]
+        .find(key => state.data?.dungeons?.some(dungeon => dungeon.key === key)) || dungeonKey;
+    }
     state.dungeonKey = dungeonKey;
     state.bossIndex = 0;
     resetClassSelection();
@@ -2062,23 +2110,19 @@
     CACHE_URLS.splice(0, CACHE_URLS.length,
       ...rankingCacheCandidates(
         "data/notmeter-ranking.json.gz",
-        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`),
-      `${VPS_RANKING_CACHE_ROOT}/web/main?layout=view-shards-v2`);
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking.json.gz`));
     CLASS_OVERALL_CACHE_URLS.splice(0, CLASS_OVERALL_CACHE_URLS.length,
       ...rankingCacheCandidates(
         "data/notmeter-ranking-class-overall.json.gz",
-        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`),
-      `${VPS_RANKING_CACHE_ROOT}/web/class-overall`);
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-class-overall.json.gz`));
     CONTRIBUTION_CACHE_URLS.splice(0, CONTRIBUTION_CACHE_URLS.length,
       ...rankingCacheCandidates(
         "data/notmeter-setting-guide.json.gz",
-        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-setting-guide.json.gz`),
-      `${VPS_RANKING_CACHE_ROOT}/web/setup-guide`);
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-setting-guide.json.gz`));
     CUSTOM_CP_CACHE_URLS.splice(0, CUSTOM_CP_CACHE_URLS.length,
       ...rankingCacheCandidates(
         "data/notmeter-ranking-custom-cp.json.gz",
-        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`),
-      `${VPS_RANKING_CACHE_ROOT}/custom-cp/summary`);
+        `${GITHUB_RANKING_CACHE_ROOT}/notmeter-ranking-custom-cp.json.gz`));
   }
 
   async function refreshGitHubRankingRevision(force = false) {
@@ -2805,7 +2849,7 @@
         if (!Array.isArray(cache.servers) || cache.servers.length === 0) {
           throw new Error("empty cache");
         }
-        const source = baseUrl.includes("raw.githubusercontent.com") ? "github" : "vps";
+        const source = baseUrl.includes("raw.githubusercontent.com") ? "github" : "pages";
         return { cache, revision: `${source}:${Number(cache.generatedAt) || 0}` };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -3509,7 +3553,6 @@
         ...rankingCacheCandidates(
           `data/classes/${normalizedDungeonKey}.json.gz`,
           `${GITHUB_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`),
-        `${VPS_CLASS_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
       ],
       force,
       candidate => candidate?.schema === EXPECTED_CLASS_RANKING_SCHEMA &&
@@ -3532,7 +3575,6 @@
         ...rankingCacheCandidates(
           `data/views/${normalizedDungeonKey}.json.gz`,
           `${GITHUB_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`),
-        `${VPS_VIEW_RANKING_CACHE_ROOT}/${encodeURIComponent(normalizedDungeonKey)}.json.gz`,
       ],
       force,
       candidate => candidate?.schema === EXPECTED_VIEW_RANKING_SCHEMA &&
@@ -4306,13 +4348,6 @@
     return `${String(dungeonKey || "").toLowerCase()}|${Math.max(0, Number(bossIndex) || 0)}`;
   }
 
-  function legacyCustomCpRankCacheUrls(dungeonKey) {
-    const safeKey = String(dungeonKey || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
-    return [
-      `${VPS_RANKING_CACHE_ROOT}/custom-cp/${safeKey}`,
-    ];
-  }
-
   function customCpRankChunkUrls(dungeonKey, bossIndex) {
     const safeKey = String(dungeonKey || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const normalizedBossIndex = Math.max(0, Number(bossIndex) || 0);
@@ -4326,7 +4361,6 @@
   function customCpRankCacheUrls(dungeonKey, bossIndex) {
     return [
       ...customCpRankChunkUrls(dungeonKey, bossIndex),
-      ...legacyCustomCpRankCacheUrls(dungeonKey),
     ];
   }
 
@@ -4587,7 +4621,12 @@
   }
 
   function dungeonFilterItems() {
-    const dungeons = orderDungeonsForDisplay(state.data?.dungeons);
+    const dungeons = orderDungeonsForDisplay(state.data?.dungeons)
+      .filter(dungeon => dungeon.key !== "sorrow-snowfield-easy");
+    if (dungeons.some(dungeon => SNOWFIELD_STATISTICS_KEYS.includes(dungeon.key))) {
+      return [SNOWFIELD_DUNGEON, ...dungeons.filter(dungeon =>
+        dungeon.key !== SNOWFIELD_DUNGEON.key && !SNOWFIELD_STATISTICS_KEYS.includes(dungeon.key))];
+    }
     return dungeons.some(dungeon => dungeon.key === SNOWFIELD_DUNGEON.key)
       ? dungeons
       : [{ ...SNOWFIELD_DUNGEON, previewOnly: true }, ...dungeons];
@@ -4595,16 +4634,18 @@
 
   function renderDungeonFilterButtons() {
     const dungeons = dungeonFilterItems();
+    const selectedKey = SNOWFIELD_STATISTICS_KEYS.includes(state.dungeonKey)
+      ? SNOWFIELD_DUNGEON.key : state.dungeonKey;
     const collapsed = dungeons.slice(0, DUNGEON_BUTTON_COLLAPSED_LIMIT);
     if (!state.dungeonFilterExpanded &&
         state.dungeonKey &&
-        !collapsed.some(item => item.key === state.dungeonKey)) {
-      collapsed[collapsed.length - 1] = dungeons.find(item => item.key === state.dungeonKey);
+        !collapsed.some(item => item.key === selectedKey)) {
+      collapsed[collapsed.length - 1] = dungeons.find(item => item.key === selectedKey);
     }
     const visible = state.dungeonFilterExpanded ? dungeons : collapsed.filter(Boolean);
     const fragment = document.createDocumentFragment();
     for (const dungeon of visible) {
-      const selected = dungeon.key === state.dungeonKey;
+      const selected = dungeon.key === selectedKey;
       const button = document.createElement("button");
       button.type = "button";
       button.className = "filter-option-button dungeon-filter-button";
@@ -4619,7 +4660,7 @@
       const label = document.createElement("span");
       label.textContent = dungeonName(dungeon);
       button.append(label);
-      if (dungeon.key === SNOWFIELD_DUNGEON.key) {
+      if (dungeon.key === SNOWFIELD_DUNGEON.key || SNOWFIELD_STATISTICS_KEYS.includes(dungeon.key)) {
         const badge = document.createElement("b");
         badge.className = "feature-new-badge dungeon-new-badge";
         badge.textContent = "NEW";
@@ -4639,6 +4680,31 @@
     moreButton.title = t(state.dungeonFilterExpanded ? "collapseDungeons" : "expandDungeons");
     moreButton.setAttribute("aria-label", moreButton.title);
     moreButton.setAttribute("aria-expanded", String(state.dungeonFilterExpanded));
+    renderDungeonDifficultyButtons();
+  }
+
+  function renderDungeonDifficultyButtons() {
+    const control = elements["dungeon-difficulty"];
+    const list = elements["dungeon-difficulty-buttons"];
+    control.hidden = !SNOWFIELD_STATISTICS_KEYS.includes(state.dungeonKey);
+    const fragment = document.createDocumentFragment();
+    if (!control.hidden) {
+      for (const key of SNOWFIELD_STATISTICS_KEYS) {
+        if (!state.data?.dungeons?.some(dungeon => dungeon.key === key)) continue;
+        const selected = key === state.dungeonKey;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "filter-option-button dungeon-difficulty-button";
+        button.classList.toggle("is-active", selected);
+        button.dataset.difficultyKey = key;
+        button.setAttribute("role", "radio");
+        button.setAttribute("aria-checked", String(selected));
+        button.tabIndex = selected ? 0 : -1;
+        button.textContent = t(key.endsWith("-hard") ? "difficultyHard" : "difficultyNormal");
+        fragment.append(button);
+      }
+    }
+    list.replaceChildren(fragment);
   }
 
   function renderBossFilterButtons(bosses = null) {
@@ -5083,6 +5149,9 @@
 
   function bossResistanceDungeons() {
     const excludedDungeonKeys = new Set([
+      "sorrow-snowfield",
+      "sorrow-snowfield-easy",
+      "sorrow-snowfield-normal",
       "training-dummy-60s",
       "abyss-horn-4",
       "fallen-deva-hard",
@@ -6522,7 +6591,7 @@
     generation) {
     const requestPath = `${lookupKey}?g=${encodeURIComponent(generation)}`;
     const request = new Request(
-      `${DETAIL_ENDPOINTS[0]}${requestPath}`,
+      `${DETAIL_LOCAL_CACHE_ROOT}${requestPath}`,
       { mode: "cors", credentials: "omit" });
     let cache = null;
     if ("caches" in window) {
@@ -6617,7 +6686,7 @@
       }
     } catch {
     }
-    return DETAIL_ENDPOINTS;
+    throw new Error(t("detailUnavailable"));
   }
 
   async function parseRankingCombatDetail(
@@ -8178,6 +8247,10 @@
   function dungeonName(dungeon) {
     if (!dungeon) {
       return "";
+    }
+    if (dungeon.key === SNOWFIELD_DUNGEON.key) {
+      return state.locale === "en" ? "Snowfield of Sorrow"
+        : state.locale === "zh-TW" ? "悲嘆雪原" : SNOWFIELD_DUNGEON.displayName;
     }
     if (state.locale === "en") {
       return DUNGEON_NAMES_EN[dungeon.key] || dungeon.displayName;

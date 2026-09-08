@@ -1746,6 +1746,29 @@ p {
   grid-column: 1 / -1;
 }
 
+.dungeon-difficulty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.dungeon-difficulty > span {
+  flex: 0 0 auto;
+  font-size: 14px;
+  color: var(--muted, #a8aab4);
+}
+
+.dungeon-difficulty-button {
+  min-width: 76px;
+}
+
+#dungeon-difficulty-buttons {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .filter-choice-heading {
   display: flex;
   min-height: 18px;

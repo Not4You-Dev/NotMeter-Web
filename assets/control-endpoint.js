@@ -12,7 +12,7 @@
   const STORAGE_KEY = "notmeter-control-endpoint-v1";
   const REFRESH_MS = 5 * 60 * 1000;
   const MAX_LIFETIME_SECONDS = 14 * 24 * 60 * 60;
-  const LEGACY_HOSTS = new Set([
+  const RETIRED_HOSTS = new Set([
     "notmeter.112-168-140-142.sslip.io",
     "notmeter.112-168-140-142.nip.io",
   ]);
@@ -32,7 +32,7 @@
       const url = new URL(String(value || "").trim());
       if (url.protocol !== "https:" || (url.port && url.port !== "443") ||
           url.username || url.password || url.search || url.hash ||
-          (url.pathname && url.pathname !== "/")) return "";
+          (url.pathname && url.pathname !== "/") || RETIRED_HOSTS.has(url.hostname.toLowerCase())) return "";
       return `${url.protocol}//${url.hostname}`;
     } catch {
       return "";
@@ -173,13 +173,10 @@
     const originalUrl = typeof input === "string" || input instanceof URL ? String(input) : input?.url;
     let parsed;
     try { parsed = new URL(originalUrl, window.location.href); } catch { return nativeFetch(input, init); }
-    if (!LEGACY_HOSTS.has(parsed.hostname.toLowerCase())) return nativeFetch(input, init);
+    if (parsed.hostname !== "notmeter-control.invalid" && !RETIRED_HOSTS.has(parsed.hostname.toLowerCase())) return nativeFetch(input, init);
 
     const endpoints = await getEndpoints();
-    // The legacy HTTPS authority is compiled into the page and remains a safe
-    // last resort. A temporary GitHub/manifest outage must not turn a healthy
-    // calculator into a client-side connection error.
-    if (!endpoints.length) return nativeFetch(input, init);
+    if (!endpoints.length) throw new Error("Current server endpoint unavailable");
     const baseRequest = input instanceof Request ? new Request(input, init) : new Request(parsed.toString(), init);
     let lastError = null;
     let lastTransientResponse = null;
@@ -216,7 +213,7 @@
     }
     if (lastTransientResponse) return lastTransientResponse;
     if (lastError) throw lastError;
-    return nativeFetch(input, init);
+    throw new Error("Current server endpoint unavailable");
   };
 
   window.NotMeterControlEndpoint = Object.freeze({ getEndpoints, refresh });

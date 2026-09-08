@@ -4,7 +4,7 @@
   const surface = document.getElementById("stat-efficiency-surface");
   if (!surface) return;
 
-  const API_URL = "https://notmeter.112-168-140-142.sslip.io/stat-efficiency/v1/calculate";
+  const API_URL = "https://notmeter-control.invalid/stat-efficiency/v1/calculate";
   const CLIPBOARD_PREFIX = "NOTMETER_STATS_V4:";
   const CLIPBOARD_SCHEMA = "notmeter-stat-efficiency-profile-v4";
   const REQUEST_TIMEOUT_MS = 12_000;
