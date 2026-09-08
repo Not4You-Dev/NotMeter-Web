@@ -1238,6 +1238,7 @@
     dungeonDifficultyAria: "비탄의 설원 난이도 선택",
     difficultyNormal: "보통",
     difficultyHard: "어려움",
+    dungeonStatisticsPending: "선택한 난이도의 통계가 아직 게시되지 않았습니다. 게시되면 이곳에 표시됩니다.",
     rankerDungeonSnowfieldTitle: "비탄의 설원(보통·어려움)",
     rankerDungeonSnowfieldBosses: "귀환자 트리톤 · 델트라스 (2페이즈)",
     rankerDungeonSnowfieldScope: "보통·어려움은 각각 랭커 표시와 구간 TOP 3 닉네임 효과 대상입니다. 쉬움과 델트라스 1페이즈는 제외됩니다.",
@@ -1259,6 +1260,7 @@
     dungeonDifficultyAria: "Select Snowfield of Sorrow difficulty",
     difficultyNormal: "Normal",
     difficultyHard: "Hard",
+    dungeonStatisticsPending: "Statistics for this difficulty have not been published yet. They will appear here once available.",
     rankerDungeonSnowfieldTitle: "Snowfield of Sorrow (Normal · Hard)",
     rankerDungeonSnowfieldBosses: "Triton the Returned · Deltras (Phase 2)",
     rankerDungeonSnowfieldScope: "Normal and Hard each qualify for rank markers and bracket TOP 3 nickname effects. Easy and Deltras Phase 1 are excluded.",
@@ -1280,6 +1282,7 @@
     dungeonDifficultyAria: "選擇悲嘆雪原難度",
     difficultyNormal: "普通",
     difficultyHard: "困難",
+    dungeonStatisticsPending: "此難度的統計尚未公布，公布後將顯示於此。",
     rankerDungeonSnowfieldTitle: "悲嘆雪原（普通・困難）",
     rankerDungeonSnowfieldBosses: "歸來者特里同・德爾特拉斯（第2階段）",
     rankerDungeonSnowfieldScope: "普通與困難各自適用排名標記及區間前 3 名暱稱特效。簡單與德爾特拉斯第 1 階段不列入。",
@@ -2019,8 +2022,7 @@
 
   function applyDungeonSelection(dungeonKey) {
     if (dungeonKey === SNOWFIELD_DUNGEON.key) {
-      dungeonKey = ["sorrow-snowfield-hard", "sorrow-snowfield-normal"]
-        .find(key => state.data?.dungeons?.some(dungeon => dungeon.key === key)) || dungeonKey;
+      dungeonKey = "sorrow-snowfield-hard";
     }
     state.dungeonKey = dungeonKey;
     state.bossIndex = 0;
@@ -2250,7 +2252,8 @@
         return;
       }
       const previousDungeon = state.dungeonKey;
-      const nextDungeon = cache.dungeons.some(item => item.key === previousDungeon)
+      const nextDungeon = cache.dungeons.some(item => item.key === previousDungeon) ||
+          SNOWFIELD_STATISTICS_KEYS.includes(previousDungeon)
         ? previousDungeon
         : cache.dungeons[0]?.key || "";
       const globalViews = Array.isArray(cache.views)
@@ -2262,7 +2265,7 @@
         : [];
       const initialDungeonViews = embeddedViews.filter(view =>
         String(view?.dungeonKey || "").toLowerCase() === nextDungeon.toLowerCase());
-      const initialViews = initialDungeonViews.length > 0
+      const initialViews = isPendingSnowfield(nextDungeon, cache) ? [] : initialDungeonViews.length > 0
         ? initialDungeonViews
         : await fetchViewRankingCache(nextDungeon, cache.generatedAt, force);
       // 현재 Release의 웹 본문에는 모든 던전 요약 뷰가 이미 들어 있다.
@@ -2284,7 +2287,8 @@
       }
       let preparedCustomCp = null;
       let preparedCustomCpRank = null;
-      if (state.cpFilterMode === "custom" && (generationChanged || force)) {
+      if (state.cpFilterMode === "custom" && (generationChanged || force) &&
+          !isPendingSnowfield(nextDungeon, cache)) {
         try {
           const prepared = await prepareCustomCpGeneration(
             cache.generatedAt,
@@ -4563,7 +4567,7 @@
     }
     replaceOptions(
       elements["dungeon-filter"],
-      state.data.dungeons,
+      selectableRankingDungeons(),
       item => item.key,
       item => dungeonName(item),
       state.dungeonKey);
@@ -4629,7 +4633,7 @@
     }
     return dungeons.some(dungeon => dungeon.key === SNOWFIELD_DUNGEON.key)
       ? dungeons
-      : [{ ...SNOWFIELD_DUNGEON, previewOnly: true }, ...dungeons];
+      : [SNOWFIELD_DUNGEON, ...dungeons];
   }
 
   function renderDungeonFilterButtons() {
@@ -4653,10 +4657,7 @@
       button.dataset.dungeonKey = dungeon.key;
       button.setAttribute("role", "radio");
       button.setAttribute("aria-checked", String(selected));
-      button.disabled = Boolean(dungeon.previewOnly);
-      if (button.disabled) {
-        button.title = t("dungeonComingSoon");
-      }
+      button.disabled = false;
       const label = document.createElement("span");
       label.textContent = dungeonName(dungeon);
       button.append(label);
@@ -4690,7 +4691,6 @@
     const fragment = document.createDocumentFragment();
     if (!control.hidden) {
       for (const key of SNOWFIELD_STATISTICS_KEYS) {
-        if (!state.data?.dungeons?.some(dungeon => dungeon.key === key)) continue;
         const selected = key === state.dungeonKey;
         const button = document.createElement("button");
         button.type = "button";
@@ -4976,6 +4976,7 @@
     leaveClassView();
     populateFilters();
     render();
+    if (isPendingSnowfield()) return;
     const rankLoad = ensureCustomCpRankCache(state.dungeonKey)
       .catch(error => {
         console.warn("custom CP rank cache prefetch failed", error);
@@ -5777,6 +5778,7 @@
   }
 
   function renderSummary() {
+    if (renderPendingDungeon()) return;
     if (!state.loadedViewDungeonKeys.has(state.dungeonKey)) {
       showState("loading");
       void ensureViewRankingCache(state.dungeonKey)
@@ -6162,6 +6164,7 @@
   }
 
   function renderClassRanking() {
+    if (renderPendingDungeon()) return;
     const customRankCacheKey = customCpRankCacheKey(
       state.dungeonKey,
       state.bossIndex);
@@ -8068,7 +8071,7 @@
   }
 
   function updateCacheAge() {
-    if (!state.data?.generatedAt) {
+    if (!state.data?.generatedAt || isPendingSnowfield()) {
       elements["cache-age"].textContent = "";
       return;
     }
@@ -8224,7 +8227,33 @@
   }
 
   function currentDungeon() {
-    return state.data?.dungeons?.find(item => item.key === state.dungeonKey) || null;
+    return selectableRankingDungeons().find(item => item.key === state.dungeonKey) || null;
+  }
+
+  function selectableRankingDungeons() {
+    const dungeons = state.data?.dungeons || [];
+    return dungeons.concat(SNOWFIELD_STATISTICS_KEYS
+      .filter(key => !dungeons.some(dungeon => dungeon.key === key))
+      .map(key => ({
+        key,
+        displayName: `${SNOWFIELD_DUNGEON.displayName} (${t(key.endsWith("-hard") ? "difficultyHard" : "difficultyNormal")})`,
+        bossNames: BOSS_PRESENTATION_NAMES[key],
+      })));
+  }
+
+  function isPendingSnowfield(dungeonKey = state.dungeonKey, data = state.data) {
+    return SNOWFIELD_STATISTICS_KEYS.includes(dungeonKey) &&
+      !data?.dungeons?.some(dungeon => dungeon.key === dungeonKey);
+  }
+
+  function renderPendingDungeon() {
+    if (!isPendingSnowfield()) return false;
+    elements["class-heading"].hidden = true;
+    elements["empty-message"].textContent = t("dungeonStatisticsPending");
+    updateSnapshot(null);
+    elements["generated-meta"].textContent = "—";
+    showState("empty");
+    return true;
   }
 
   function orderDungeonsForDisplay(dungeons) {
