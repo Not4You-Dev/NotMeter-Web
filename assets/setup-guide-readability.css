@@ -1,0 +1,215 @@
+/* Keep guide typography separate from the shared theme. */
+body.contribution-view .setup-guide-surface {
+  font-size: 1rem;
+  line-height: 1.6;
+  --guide-secondary: #bab6c3;
+}
+
+body.contribution-view .setup-guide-surface .contribution-heading p,
+body.contribution-view .setup-guide-surface .contribution-method article p,
+body.contribution-view .setup-guide-surface .contribution-caution {
+  color: var(--guide-secondary) !important;
+  font-size: 1rem !important;
+  font-weight: 450;
+  line-height: 1.7 !important;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+body.contribution-view .setup-guide-surface .contribution-kicker {
+  font-size: .75rem;
+  letter-spacing: .08em;
+}
+
+body.contribution-view .setup-guide-surface .contribution-summary {
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+body.contribution-view .setup-guide-surface .contribution-summary span,
+body.contribution-view .setup-guide-surface .contribution-content-heading span,
+body.contribution-view .setup-guide-surface .contribution-tab small {
+  color: var(--guide-secondary) !important;
+  font-size: .875rem;
+  line-height: 1.5;
+}
+
+body.contribution-view .setup-guide-surface .contribution-summary strong {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+body.contribution-view .setup-guide-surface .contribution-summary > div:first-child strong {
+  font-size: .875rem;
+  font-weight: 550;
+}
+
+body.contribution-view .setup-guide-surface .contribution-tabs {
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+body.contribution-view .setup-guide-surface .contribution-tab {
+  min-height: 2.75rem;
+  padding: .5rem .875rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+body.contribution-view .setup-guide-surface .contribution-rows {
+  gap: 1.5rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-section-heading {
+  flex-wrap: wrap;
+  gap: .375rem 1rem;
+  padding-block: 1rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-section-heading > h3 {
+  font-size: 1.125rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-section-note {
+  color: var(--guide-secondary) !important;
+  font-size: .875rem;
+  font-weight: 450;
+  line-height: 1.6;
+  text-align: left;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-section-body {
+  padding-block: 1rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-card-grid,
+body.contribution-view .setup-guide-surface .setup-guide-slot-grid,
+body.contribution-view .setup-guide-surface .setup-guide-skill-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: .75rem 1.5rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-soul-slot-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-soul-columns {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-slot > h4,
+body.contribution-view .setup-guide-surface .setup-guide-subgroup > h4 {
+  padding-block: .625rem;
+  margin-bottom: .5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-slot-category > h5 {
+  margin-bottom: .5rem;
+  font-size: .875rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-card {
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: .75rem;
+  min-height: 4rem;
+  padding: .75rem .5rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-card-no-icon {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-card-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-card strong {
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.5;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-card-meta {
+  gap: .25rem .625rem;
+  margin-top: .375rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-card-meta span {
+  color: var(--guide-secondary) !important;
+  font-size: .875rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-traits {
+  margin-top: .75rem;
+  padding-top: .5rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-traits-summary {
+  color: var(--guide-secondary);
+  font-size: .8125rem;
+  line-height: 1.5;
+  white-space: normal;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-trait-list {
+  margin-top: .5rem;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-trait {
+  padding: .5rem 0;
+  line-height: 1.5;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-trait-index,
+body.contribution-view .setup-guide-surface .setup-guide-trait-rate {
+  font-size: .875rem;
+  font-weight: 650;
+}
+
+body.contribution-view .setup-guide-surface .setup-guide-trait-index,
+body.contribution-view .setup-guide-surface .setup-guide-trait.is-empty {
+  color: var(--guide-secondary);
+}
+
+body.contribution-view .setup-guide-surface .contribution-method summary,
+body.contribution-view .setup-guide-surface .contribution-method article strong {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+body.contribution-view .setup-guide-surface .contribution-method article b {
+  font-size: .8125rem;
+}
+
+@media (max-width: 48rem) {
+  body.contribution-view .setup-guide-surface .contribution-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.contribution-view .setup-guide-surface .contribution-summary > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  body.contribution-view .setup-guide-surface .contribution-method-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
