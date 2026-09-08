@@ -362,8 +362,8 @@
       classPerformanceGradeAText: "고유 250명+ · 콘텐츠 75% 이상·최소 6개 · 추정 폭 ±4% 이하",
       classPerformanceGradeBText: "고유 100명+ · 콘텐츠 50% 이상·최소 4개 · 추정 폭 ±7% 이하",
       classPerformanceGradeCText: "고유 40명+ · 콘텐츠 최소 3개 · 추정 폭 ±12% 이하",
-      classPerformanceGradeOffText: "C 기준 미달은 표본 부족으로 표시하고 순위에서 제외",
-      classPerformanceConfidenceNote: "추정 변동 범위은 콘텐츠를 하나씩 제외했을 때의 점수 변화와 고유 캐릭터 수를 함께 반영한 추정 범위입니다. 집계 가능한 전체 콘텐츠가 기준 개수보다 적으면 전체 콘텐츠 수를 기준으로 판정합니다.",
+      classPerformanceGradeOffText: "인원·콘텐츠·변동 폭 중 미달한 조건을 표시하고 순위에서 제외",
+      classPerformanceConfidenceNote: "A·B·C는 표본 안정성 기준이며 정확도나 승률이 아닙니다. 추정 변동 범위는 콘텐츠를 하나씩 제외한 점수 변화와 인원 수를 반영한 참고 범위이며, 통계적으로 검증된 95% 신뢰구간이 아닙니다. 콘텐츠가 기준 개수보다 적으면 집계 가능한 전체 콘텐츠 수로 판정합니다.",
       classPerformanceCompositionKicker: "직업 제외 필터",
       classPerformanceCompositionTitle: "제외할 직업 선택",
       classPerformanceCompositionText: "보고 싶지 않은 직업을 여러 개 선택하면 해당 직업이 한 명도 없는 파티 기록만 다시 집계합니다.",
@@ -396,8 +396,11 @@
       classPerformanceNoticeText: "CP 800K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 조건과 보스·중복 캐릭터·표본 부족 보정을 적용한 이번 주 실전 비교 지표입니다. A가 가장 안정적이고 C는 참고 가능한 최소 기준입니다. 파티 버프·보스별 역할·숙련도 차이까지 완전히 제거할 수는 없으므로 밸런스의 절대 판정이나 이론상 최대 DPS가 아니라, 실제 수집 기록에서 반복 관측된 경향으로 해석해 주세요.",
       classPerformanceNoticeText900: "CP 900K 이상·파티 CP 차이 100K 이하·기여도 10% 초과 조건과 보스·중복 캐릭터·표본 부족 보정을 적용한 이번 주 고CP 실전 비교 지표입니다. A가 가장 안정적이고 C는 참고 가능한 최소 기준입니다. 파티 버프·보스별 역할·숙련도 차이까지 완전히 제거할 수는 없으므로 밸런스의 절대 판정이나 이론상 최대 DPS가 아니라, 실제 수집 기록에서 반복 관측된 경향으로 해석해 주세요.",
       classPerformanceSummary: "{scope} · {period} · 순위 {jobs}개 직업 · 고유 캐릭터 {characters}명 · 콘텐츠 {contents}개",
-      classPerformanceInsufficient: "표본 부족",
-      classPerformanceGrade: "표본 신뢰도 {grade}",
+      classPerformanceInsufficient: "공개 기준 미달",
+      classPerformanceGrade: "표본 안정성 {grade}",
+      performanceReasonSamples: "고유 캐릭터 {count}/40명",
+      performanceReasonCoverage: "비교 콘텐츠 {count}/{required}개",
+      performanceReasonSpread: "콘텐츠별 편차 큼 · 추정 폭 ±{width}% (기준 ±12%)",
       classPerformanceBaseline: "기준 100",
       classPerformanceInsufficientHint: "순위 제외",
       classPerformanceCi: "P75 추정 변동 범위 {low}~{high}",
@@ -588,7 +591,14 @@
       combatDistribution: "유효 {count}명 · 타격 {hits}회 · 중앙값 {median}% · 중간 50% {low}~{high}%",
       fieldObservationUnknown: "관측 시각 미확인",
       exactSummaryUnavailable: "선택 구간의 정확한 통계를 준비 중입니다. 제공된 전투력 구간을 선택해 주세요.",
-      pairedInsufficient: "비교 표본 부족",
+      pairedInsufficient: "비교 {count}/20명",
+      pairedUnavailable: "주간 비교 자료 미확인",
+      pairedPreviousMissing: "전주 비교 기록 없음",
+      pairedCurrentMissing: "이번 주 비교 기록 없음",
+      pairedPopulation: "이번 주 {current}명 · 전주 {previous}명 · 최종 비교 {matched}명",
+      pairedConditions: "양쪽 주 동일 캐릭터 {both}명 → 동일 보스·CP {conditions}명 → 동일 계산 기준 {matched}명",
+      pairedRequirement: "전체 표본 수와 다릅니다. 양쪽 주에 동일 캐릭터·보스·CP·계산 기준이 맞는 20명 이상이 필요합니다.",
+      representativeSamplesValue: "{metric} 대표 표본 {count}명",
       pairedUncertain: "변화 불확실",
       pairedSample: "비교 캐릭터 {count}명 · 최소 20명",
       pairedRange: "변화 추정 범위 {low}% ~ {high}%",
@@ -606,7 +616,7 @@
       weeklyGuidePurposeTitle: "표시 목적",
       weeklyGuidePurpose: "참여자 구성이 바뀌어 생기는 착시를 줄인 관측 지표입니다. 장비·파티·숙련도 변화가 포함되므로 패치 효과 자체를 뜻하지는 않습니다.",
       weeklyGuideBasisTitle: "비교 기준",
-      weeklyGuideBasis: "수요일 오전 5시(한국시간)를 기준으로 이번 주 집계 시점과 전주의 같은 경과 시간까지 비교합니다. 동일 캐릭터·직업·보스·전투력 10K 구간의 기록을 짝지으며, 선택 범위에 완전히 포함되는 구간만 사용합니다. nDPS는 양쪽의 계산 기준도 같아야 합니다.",
+      weeklyGuideBasis: "수요일 오전 5시(한국시간)를 기준으로 이번 주 집계 시점과 전주의 같은 경과 시간까지 비교합니다. 동일 캐릭터·직업·보스를 같은 10K CP 조건 안에서 비교하며, 선택한 25K 구간의 경계도 빠짐없이 포함합니다. nDPS는 양쪽의 계산 기준도 같아야 합니다.",
       weeklyGuideMeaningTitle: "퍼센트 의미",
       weeklyGuideMeaning: "조건별 최근 40회 이내 기록의 중앙값으로 캐릭터별 변화율을 구한 뒤, 각 캐릭터에 같은 비중을 주어 중앙값을 표시합니다. 비교 캐릭터 20명 미만은 표본 부족, 추정 범위가 0%를 포함하면 변화 불확실로 표시합니다. 범위는 파티 간 상관관계까지 보장하지 않습니다.",
       weeklyGuideRankingTitle: "랭킹 반영 방식",
@@ -821,8 +831,8 @@
       classPerformanceGradeAText: "250+ unique characters · 75%+ coverage and 6+ encounters · estimated spread within ±4%",
       classPerformanceGradeBText: "100+ unique characters · 50%+ coverage and 4+ encounters · estimated spread within ±7%",
       classPerformanceGradeCText: "40+ unique characters · 3+ encounters · estimated spread within ±12%",
-      classPerformanceGradeOffText: "Below C is shown as a small sample and excluded from ranking",
-      classPerformanceConfidenceNote: "The estimated variability range estimates score variation by removing encounters one at a time and accounting for unique-character count. If fewer encounters are eligible than a grade requires, all eligible encounters become the requirement.",
+      classPerformanceGradeOffText: "Show which count, coverage or variability requirement failed; exclude from ranking",
+      classPerformanceConfidenceNote: "A/B/C describe sample stability, not accuracy. This heuristic range reflects leave-one-encounter-out variation and character count, not a validated 95% confidence interval. If fewer encounters are eligible than required, use all eligible encounters.",
       classPerformanceCompositionKicker: "CLASS EXCLUSION FILTER",
       classPerformanceCompositionTitle: "Select classes to exclude",
       classPerformanceCompositionText: "Select multiple classes to recalculate only from parties that contain none of those classes.",
@@ -855,8 +865,11 @@
       classPerformanceNoticeText: "This weekly comparison applies 800K+ CP, a party CP spread of 100K or less, over 10% damage contribution, boss matching, character deduplication, and small-sample controls. A is the most stable grade, while C is the minimum useful reference. Party buffs, encounter roles, and player skill cannot be removed completely, so this is a repeatedly observed trend rather than an absolute balance verdict or theoretical maximum DPS.",
       classPerformanceNoticeText900: "This high-CP weekly comparison applies 900K+ CP, a party CP spread of 100K or less, over 10% damage contribution, boss matching, character deduplication, and small-sample controls. A is the most stable grade, while C is the minimum useful reference. Party buffs, encounter roles, and player skill cannot be removed completely, so this is a repeatedly observed trend rather than an absolute balance verdict or theoretical maximum DPS.",
       classPerformanceSummary: "{scope} · {period} · {jobs} ranked classes · {characters} unique characters · {contents} encounters",
-      classPerformanceInsufficient: "Small sample",
-      classPerformanceGrade: "Sample confidence {grade}",
+      classPerformanceInsufficient: "Publication criteria unmet",
+      classPerformanceGrade: "Sample stability {grade}",
+      performanceReasonSamples: "Unique characters {count}/40",
+      performanceReasonCoverage: "Encounters {count}/{required}",
+      performanceReasonSpread: "Large encounter variation · estimated width ±{width}% (limit ±12%)",
       classPerformanceBaseline: "Baseline 100",
       classPerformanceInsufficientHint: "Not ranked",
       classPerformanceCi: "P75 estimated variability {low}–{high}",
@@ -1047,7 +1060,14 @@
       combatDistribution: "{count} valid characters · {hits} hits · median {median}% · middle 50% {low}–{high}%",
       fieldObservationUnknown: "Observation time unknown",
       exactSummaryUnavailable: "Exact statistics are unavailable for this range. Select a published CP bracket.",
-      pairedInsufficient: "Insufficient matches",
+      pairedInsufficient: "{count}/20 matched",
+      pairedUnavailable: "Weekly comparison unavailable",
+      pairedPreviousMissing: "No previous-week comparison records",
+      pairedCurrentMissing: "No current-week comparison records",
+      pairedPopulation: "Current {current} · previous {previous} · matched {matched} characters",
+      pairedConditions: "Both weeks {both} → same boss/CP {conditions} → same calculation {matched} characters",
+      pairedRequirement: "Not the total sample count. At least 20 characters must match across weeks, bosses, CP brackets and calculation methods.",
+      representativeSamplesValue: "{count} representative {metric} character samples",
       pairedUncertain: "Inconclusive change",
       pairedSample: "{count} matched characters · minimum 20",
       pairedRange: "Estimated change range {low}% to {high}%",
@@ -1065,7 +1085,7 @@
       weeklyGuidePurposeTitle: "Purpose",
       weeklyGuidePurpose: "An observational measure that reduces participant-mix bias. Gear, party and practice changes remain; it does not isolate a patch effect.",
       weeklyGuideBasisTitle: "Comparison basis",
-      weeklyGuideBasis: "Weeks start Wednesday at 05:00 KST. Both windows end at the same elapsed time. Match the same character, class, boss and 10K CP cell, fully within the selected range. nDPS also requires compatible calculation methods.",
+      weeklyGuideBasis: "Weeks start Wednesday at 05:00 KST. Both windows end at the same elapsed time. Match character, class and boss within 10K CP conditions, including both edges of each selected 25K bracket. nDPS also requires the same calculation method.",
       weeklyGuideMeaningTitle: "Percentage meaning",
       weeklyGuideMeaning: "Compare medians of up to 40 recent runs per matched condition, then take the median change with one vote per character. Fewer than 20 matches is insufficient; a range crossing zero is inconclusive. The range does not account for party correlation.",
       weeklyGuideRankingTitle: "How ranking uses it",
@@ -5416,6 +5436,7 @@
     grade.textContent = row.confidenceGrade === "insufficient"
       ? t("classPerformanceInsufficient")
       : t("classPerformanceGrade", { grade: row.confidenceGrade });
+    grade.title = t("classPerformanceConfidenceNote");
     identityText.append(job, grade);
     identity.append(identityText);
 
@@ -5448,6 +5469,11 @@
 
     const evidence = document.createElement("div");
     evidence.className = "class-performance-evidence";
+    if (insufficient) {
+      const reasons = document.createElement("span");
+      reasons.textContent = classPerformanceExclusionReasons(row, totalContentCount).join(" · ");
+      evidence.append(reasons);
+    }
     const overallScore = Number(overallRow?.[state.performanceMetric]);
     if (!insufficient && Number.isFinite(overallScore) && overallScore > 0) {
       const difference = scoreValue - overallScore;
@@ -5474,6 +5500,19 @@
 
     article.append(rank, identity, graph, score, evidence);
     return article;
+  }
+
+  function classPerformanceExclusionReasons(row, totalContentCount) {
+    const reasons = [];
+    const count = Number(row.uniqueCharacters);
+    const coverage = Number(row.contentCoverage);
+    const required = Math.min(3, Number(totalContentCount));
+    const score = Number(row.p75Score);
+    const width = score > 0 ? (Number(row.confidenceHigh) - Number(row.confidenceLow)) * 50 / score : NaN;
+    if (count < 40) reasons.push(t("performanceReasonSamples", { count: formatInteger(count) }));
+    if (coverage < required) reasons.push(t("performanceReasonCoverage", { count: coverage, required }));
+    if (width > 12) reasons.push(t("performanceReasonSpread", { width: formatDecimal(width, 1) }));
+    return reasons.length ? reasons : [t("classPerformanceInsufficient")];
   }
 
   function renderClassTop10() {
@@ -7817,10 +7856,13 @@
     elements["weekly-guide"].hidden = state.period !== "Weekly";
     elements["sample-meta"].textContent = view
       ? state.cpFilterMode === "custom"
-        ? t("recordSamplesValue", {
-            count: formatInteger(view.playerSampleCount),
+        ? t("representativeSamplesValue", {
+            metric: usesNormalizedRanking() ? "nDPS" : "DPS",
+            count: formatInteger((view.rows || []).reduce((sum, row) =>
+              sum + Number(projectSummaryRowForMetric(row)?.sampleCount || 0), 0)),
           })
-        : `${t("records")} ${formatInteger(view.recordCount)} · ${t("samples")} ${formatInteger(view.playerSampleCount)}`
+        : `${t("records")} ${formatInteger(view.recordCount)} · ${t("samples")} ${formatInteger(
+            (view.rows || []).reduce((sum, row) => sum + Number(projectSummaryRowForMetric(row)?.sampleCount || 0), 0))}`
       : "—";
     elements["generated-meta"].textContent = state.data
       ? `${t("updated")} ${formatDateTime(state.data.generatedAt)}`
@@ -8117,26 +8159,45 @@
     }
     const paired = row?.weeklyComparison;
     const badge = document.createElement("span");
-    const change = pairedWeeklyChange(paired);
-    if (!change) {
-      badge.className = "weekly-change flat";
-      badge.textContent = t("pairedInsufficient");
-      badge.title = t("pairedSample", { count: formatInteger(paired?.matchedCharacters || 0) });
-      return badge;
-    }
-    badge.className = `weekly-change ${change.direction}`;
-    badge.textContent = change.label;
-    badge.title =
-      `${t("weeklyTooltip")}\n` +
-      `${t("pairedSample", { count: formatInteger(paired.matchedCharacters) })}\n` +
-      `${t("pairedRange", { low: formatDecimal(paired.lowerChangePercent, 1), high: formatDecimal(paired.upperChangePercent, 1) })}\n` +
-      `${formatDateTime(paired.previousStart)} ~ ${formatDateTime(paired.previousEnd)}\n` +
-      `${formatDateTime(paired.currentStart)} ~ ${formatDateTime(paired.currentEnd)}`;
+    const display = weeklyComparisonDisplay(paired);
+    badge.className = `weekly-change ${display.direction}`;
+    badge.textContent = display.label;
+    badge.title = display.title;
     return badge;
   }
 
+  function weeklyComparisonDisplay(paired) {
+    const change = pairedWeeklyChange(paired);
+    const valid = ["paired-character-median-v1", "paired-character-median-v2"].includes(paired?.method) &&
+      [paired.matchedCharacters, paired.currentCharacters, paired.previousCharacters]
+        .every(value => Number.isInteger(value) && value >= 0) &&
+      paired.matchedCharacters <= Math.min(paired.currentCharacters, paired.previousCharacters);
+    if (!valid) return { direction: "flat", label: t("pairedUnavailable"), title: t("pairedRequirement") };
+    const population = t("pairedPopulation", {
+      current: formatInteger(paired.currentCharacters), previous: formatInteger(paired.previousCharacters),
+      matched: formatInteger(paired.matchedCharacters),
+    });
+    const conditions = Number.isInteger(paired.bothWeeksCharacters) && Number.isInteger(paired.sameConditionsCharacters)
+      ? `\n${t("pairedConditions", { both: formatInteger(paired.bothWeeksCharacters),
+          conditions: formatInteger(paired.sameConditionsCharacters), matched: formatInteger(paired.matchedCharacters) })}` : "";
+    if (!change) {
+      const label = paired.matchedCharacters >= 20 ? t("pairedUnavailable")
+        : paired.currentCharacters === 0 ? t("pairedCurrentMissing")
+        : paired.previousCharacters === 0 ? t("pairedPreviousMissing")
+        : t("pairedInsufficient", { count: formatInteger(paired.matchedCharacters) });
+      return { direction: "flat", label, title: `${population}${conditions}\n${t("pairedRequirement")}` };
+    }
+    return { ...change, title:
+      `${t("weeklyTooltip")}\n` +
+      `${population}${conditions}\n` +
+      `${t("pairedRange", { low: formatDecimal(paired.lowerChangePercent, 1), high: formatDecimal(paired.upperChangePercent, 1) })}\n` +
+      `${formatDateTime(paired.previousStart)} ~ ${formatDateTime(paired.previousEnd)}\n` +
+      `${formatDateTime(paired.currentStart)} ~ ${formatDateTime(paired.currentEnd)}` };
+  }
+
   function pairedWeeklyChange(paired) {
-    if (paired?.method !== "paired-character-median-v1" || Number(paired.matchedCharacters) < 20 ||
+    if (!["paired-character-median-v1", "paired-character-median-v2"].includes(paired?.method) ||
+        !Number.isInteger(paired.matchedCharacters) || paired.matchedCharacters < 20 ||
         ![paired.medianChangePercent, paired.lowerChangePercent, paired.upperChangePercent]
           .every(value => typeof value === "number" && Number.isFinite(value)) ||
         paired.lowerChangePercent > paired.medianChangePercent ||
