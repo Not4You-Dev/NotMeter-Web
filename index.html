@@ -18,12 +18,13 @@
   <title>NotMeter 던전 통계</title>
   <link rel="canonical" href="https://notmeter.com/">
   <link rel="icon" type="image/png" href="./assets/notmeter-icon.png">
-  <link rel="stylesheet" href="./assets/app.css?v=20260908-5">
+  <link rel="stylesheet" href="./assets/app.css?v=20260909-1">
   <link rel="stylesheet" href="./assets/character.css?v=20260901-2">
   <link rel="stylesheet" href="./assets/stat-efficiency.css?v=20260826-2">
   <link rel="stylesheet" href="./assets/theme-current-polish.css?v=20260901-1">
   <link rel="stylesheet" href="./assets/theme-purchased.css?v=20260907-15">
   <link rel="stylesheet" href="./assets/setup-guide-readability.css?v=20260908-1">
+  <link rel="stylesheet" href="./assets/combat-detail.css?v=20260909-1">
   <script>
     (() => {
       const rawView = new URLSearchParams(window.location.search).get("view") || "ranking";
@@ -210,13 +211,13 @@
   <script src="./assets/control-endpoint.js?v=20260829-2" defer></script>
   <script src="./assets/field-boss-catalog.js?v=20260905-4" defer></script>
   <script src="./assets/field-boss-kibelisk-catalog.js?v=20260819-2" defer></script>
-  <script src="./assets/combat-detail-buffs.js?v=20260908-5" defer></script>
-  <script src="./assets/stats-copy.zh-TW.js?v=20260908-5" defer></script>
+  <script src="./assets/combat-detail-buffs.js?v=20260909-1" defer></script>
+  <script src="./assets/stats-copy.zh-TW.js?v=20260909-1" defer></script>
   <script src="./assets/character-snapshot.js?v=20260901-5" defer></script>
   <script src="./assets/character.js?v=20260908-4" defer></script>
-  <script src="./assets/artifact.js?v=20260908-4" defer></script>
+  <script src="./assets/artifact.js?v=20260909-1" defer></script>
   <script src="./assets/stat-efficiency.js?v=20260908-4" defer></script>
-  <script src="./assets/app.js?v=20260908-5" defer></script>
+  <script src="./assets/app.js?v=20260909-1" defer></script>
   <script src="./assets/theme-purchased-icons.js?v=20260907-7" defer></script>
 </head>
 <body>
@@ -1504,46 +1505,40 @@
   <div class="detail-modal" id="combat-detail-modal" hidden>
     <section class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title">
       <header class="detail-header">
-        <div class="detail-identity">
-          <span id="detail-job-icon"></span>
-          <div>
-            <div class="detail-title-line">
-              <img class="detail-boss-icon" src="./assets/boss-icon.png" alt="">
-              <h2 id="detail-title">전투 상세 정보</h2>
-              <span class="detail-duration" id="detail-duration">01:00</span>
-            </div>
+        <div class="detail-heading">
+          <h2 id="detail-title" data-i18n="combatDetails">전투 상세 정보</h2>
+          <div class="detail-identity">
+            <span id="detail-job-icon"></span>
             <strong class="detail-character-line" id="detail-character"></strong>
+            <span class="detail-header-cp" id="detail-cp-row"><img src="./assets/combat-power.png" alt="CP"><strong id="detail-cp">—</strong></span>
+            <span class="detail-boss-separator" aria-hidden="true">/</span>
+            <span id="detail-boss-name"></span>
           </div>
         </div>
-        <button class="detail-close" id="detail-close" type="button" aria-label="닫기" data-i18n-aria-label="closeAria">×</button>
-      </header>
-
-      <nav class="detail-party-tabs" id="detail-party-tabs" aria-label="파티원" data-i18n-aria-label="partyTabsAria" hidden></nav>
-
-      <div class="detail-display-settings">
-        <div>
-          <span class="detail-settings-mark" aria-hidden="true"></span>
-          <strong><span data-i18n="visibleItems">표시 항목</span> <span id="detail-visible-count">14/14</span></strong>
+        <div class="detail-header-actions">
+          <button id="detail-settings-toggle" type="button" aria-controls="detail-settings-options" aria-expanded="false">
+            <span data-i18n="visibleItems">표시 항목</span> <span id="detail-visible-count">15/15</span><span class="detail-settings-symbol" aria-hidden="true">+</span>
+          </button>
+          <button class="detail-close" id="detail-close" type="button" aria-label="닫기" data-i18n-aria-label="closeAria">×</button>
         </div>
-        <button id="detail-settings-toggle" type="button" data-i18n="openSettings">설정 열기</button>
-      </div>
+      </header>
+      <nav class="detail-party-tabs" id="detail-party-tabs" aria-label="파티원" data-i18n-aria-label="partyTabsAria" hidden></nav>
       <div class="detail-settings-options" id="detail-settings-options" hidden></div>
 
-      <div class="detail-content">
-        <aside class="detail-summary">
+      <section class="detail-summary">
+        <div class="detail-primary-metrics">
           <div class="detail-summary-metric detail-damage-metric"><span data-i18n="totalDamage">총 데미지</span><strong id="detail-total-damage">—</strong></div>
           <div class="detail-summary-metric detail-dps-metric"><span>DPS</span><strong id="detail-dps">—</strong></div>
-          <div class="detail-summary-metric detail-ndps-metric" id="detail-ndps-row" hidden><span>nDPS</span><strong id="detail-ndps">—</strong></div>
-          <div class="detail-summary-metric detail-contribution-metric"><span data-i18n="contribution">기여도</span><strong id="detail-share">—</strong></div>
+          <div class="detail-summary-metric detail-ndps-metric" id="detail-ndps-row"><span>nDPS</span><strong id="detail-ndps">—</strong></div>
+          <div class="detail-summary-metric detail-contribution-metric"><span data-i18n="detailContribution">파티 내 기여도</span><strong id="detail-share">—</strong></div>
+          <div class="detail-context-metrics">
           <div class="detail-summary-metric"><span data-i18n="duration">전투 시간</span><strong id="detail-summary-duration">—</strong></div>
           <div class="detail-summary-metric detail-death-metric"><span data-i18n="deathCount">사망 횟수</span><strong id="detail-death-count">—</strong></div>
+          </div>
+        </div>
+          <div class="detail-rate-grid">
           <div class="detail-summary-metric" data-detail-metric="hits"><span data-i18n="hits">타수</span><strong id="detail-hits">—</strong></div>
           <div class="detail-summary-metric" data-detail-metric="parry"><span data-i18n="parry">페리</span><strong id="detail-parry-rate">—</strong></div>
-          <div class="detail-summary-metric detail-cp-metric" id="detail-cp-row">
-            <span class="detail-cp-label"><img src="./assets/combat-power.png" alt=""><span data-i18n="combatPower">전투력 CP</span></span>
-            <strong id="detail-cp">—</strong>
-          </div>
-          <div class="detail-rate-grid">
             <div data-detail-metric="critical"><span data-i18n="critical">크리</span><strong id="detail-critical-rate">—</strong></div>
             <div data-detail-metric="front"><span data-i18n="front">전방</span><strong id="detail-front-rate">—</strong></div>
             <div data-detail-metric="back"><span data-i18n="back">후방</span><strong id="detail-back-rate">—</strong></div>
@@ -1552,25 +1547,26 @@
             <div data-detail-metric="avoidance"><span data-i18n="avoidance">회피</span><strong id="detail-evade-rate">—</strong></div>
             <div id="detail-block-row" data-detail-metric="avoidance" title="내 공격이 막힌 횟수가 아니라, 보스의 공격을 해당 캐릭터가 막아낸 횟수와 받은 직접 공격 대비 비율입니다"><span data-i18n="block">받은 공격 막기</span><strong id="detail-block-rate">—</strong></div>
           </div>
-        </aside>
+      </section>
 
+      <div class="detail-content">
         <section class="detail-ledger">
           <div class="detail-ledger-header">
             <strong data-i18n="skill">스킬</strong>
             <strong data-i18n="damageHealing">피해 / 치유</strong>
+            <strong data-i18n="detailSkillShare">딜지분</strong>
           </div>
           <div class="detail-skill-list" id="detail-skill-rows"></div>
         </section>
-      </div>
 
       <section class="detail-buff-strip" id="detail-buffs-section">
         <h3>
           <span data-i18n="buffUptime">버프 업타임</span>
-          <span data-i18n="buffUptimeCaption"> / 전투 시간 대비 유지율</span>
           <span id="detail-buff-count"></span>
         </h3>
         <div class="detail-buffs" id="detail-buffs"></div>
       </section>
+      </div>
     </section>
   </div>
 </body>

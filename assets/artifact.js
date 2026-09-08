@@ -5,7 +5,7 @@
     ? new URLSearchParams(window.location.search).get("artifactApi") : "";
   const PUBLIC_CACHE_PATH = "./presence/notmeter-artifact-occupation-public.json";
   const EXPECTED_SCHEMA = "notmeter-artifact-occupation-public-v1";
-  const EXPECTED_REVISION = "kr-2026-08-26";
+  const EXPECTED_REVISION = "kr-2026-09-09";
   const MATCH_DURATION_DAYS = 14;
   const MATCH_BATTLE_WEEKDAYS = new Set([3, 6]);
   const DAY_MS = 24 * 60 * 60_000;
@@ -27,17 +27,17 @@
     east: "./assets/artifact-east.png",
   });
   const PAIRS = [
-    [1, 1001, "시엘", 2001, "이스라펠"], [2, 2002, "지켈", 2006, "아스펠"],
-    [3, 1003, "바이젤", 2007, "에레슈키갈"], [4, 1004, "카이시넬", 1002, "네자칸"],
-    [5, 2005, "마르쿠탄", 2003, "트리니엘"], [6, 1005, "유스티엘", 2018, "바바룽"],
-    [7, 1006, "아리엘", 2004, "루미엘"], [8, 1009, "히타니에", 1014, "다미누"],
-    [9, 1010, "나니아", 1019, "이슈타르"], [10, 2011, "루드라", 2008, "브리트라"],
-    [11, 1011, "타하바타", 2019, "파프니르"], [12, 1012, "루터스", 1018, "코치룽"],
-    [13, 1013, "페르노스", 2012, "울고른"], [14, 2015, "젠카카", 2013, "무닌"],
-    [15, 1015, "카사카", 2017, "콰이링"], [16, 2016, "크로메데", 2009, "네몬"],
-    [17, 1016, "바카르마", 2020, "인드나흐"], [18, 1017, "챈가룽", 2014, "오다르"],
-    [19, 1020, "티아마트", 1008, "메스람타에다"], [20, 2021, "이스할겐", 2010, "하달"],
-    [21, 1021, "포에타", 1007, "프레기온"],
+    [1, 1001, "시엘", 2005, "마르쿠탄"], [2, 2002, "지켈", 2003, "트리니엘"],
+    [3, 1002, "네자칸", 2008, "브리트라"], [4, 1003, "바이젤", 2021, "이스할겐"],
+    [5, 1004, "카이시넬", 2018, "바바룽"], [6, 1005, "유스티엘", 2013, "무닌"],
+    [7, 1006, "아리엘", 2004, "루미엘"], [8, 2007, "에레슈키갈", 2001, "이스라펠"],
+    [9, 1007, "프레기온", 1016, "바카르마"], [10, 2009, "네몬", 2011, "루드라"],
+    [11, 1009, "히타니에", 1012, "루터스"], [12, 1010, "나니아", 2016, "크로메데"],
+    [13, 1011, "타하바타", 2019, "파프니르"], [14, 1013, "페르노스", 1014, "다미누"],
+    [15, 1015, "카사카", 2010, "하달"], [16, 2017, "콰이링", 2012, "울고른"],
+    [17, 1017, "챈가룽", 2014, "오다르"], [18, 1018, "코치룽", 2020, "인드나흐"],
+    [19, 1019, "이슈타르", 2006, "아스펠"], [20, 1020, "티아마트", 1008, "메스람타에다"],
+    [21, 1021, "포에타", 2015, "젠카카"],
   ].map(([pairId, westId, west, eastId, east]) => ({
     pairId, west: { serverId: westId, name: west }, east: { serverId: eastId, name: east },
   }));
@@ -319,16 +319,19 @@
     if (new Set(payload.pairs.map(pair => pair?.pairId)).size !== PAIRS.length) return false;
     const servers = new Set();
     return payload.pairs.every(pair => {
+        const expected = PAIRS.find(item => item.pairId === pair?.pairId);
         const validServer = server => server && KNOWN_SERVERS.get(server.serverId) === server.name &&
           !servers.has(server.serverId) && Boolean(servers.add(server.serverId));
         return Number.isInteger(pair.pairId) && pair.pairId >= 1 && pair.pairId <= PAIRS.length &&
           pair.group === ((pair.pairId - 1) % 3) + 1 && validServer(pair.west) && validServer(pair.east) &&
+          pair.west.serverId === expected?.west.serverId && pair.east.serverId === expected?.east.serverId &&
           Number.isSafeInteger(pair.nextBattleAt) && pair.nextBattleAt > 0 &&
           Array.isArray(pair.layers) && pair.layers.length === 2;
       });
   }
 
   function validPairingRevision(revision) {
+    if (revision !== EXPECTED_REVISION) return false;
     if (!/^kr-\d{4}-\d{2}-\d{2}$/.test(String(revision))) return false;
     const date = new Date(`${revision.slice(3)}T00:00:00Z`);
     return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === revision.slice(3) && date.getUTCDay() === 3;

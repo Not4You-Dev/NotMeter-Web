@@ -1,0 +1,198 @@
+#combat-detail-modal {
+  --detail-bg: #1e2021;
+  --detail-panel: #242928;
+  --detail-line: #343c37;
+  --detail-text: #e7e9e5;
+  --detail-muted: #a0aea5;
+  --detail-share: #d9be95;
+  --detail-gold: #e7be76;
+  --detail-green: #82ceb6;
+  --detail-blue: #8fbae8;
+  --detail-purple: #bea4e7;
+  padding: 24px;
+  font-family: "Pretendard Variable", Pretendard, "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--detail-text);
+  line-height: 1.45;
+}
+#combat-detail-modal *, #combat-detail-modal *::before, #combat-detail-modal *::after { box-sizing: border-box; }
+#combat-detail-modal [hidden] { display: none !important; }
+#combat-detail-modal button { font: inherit; cursor: pointer; }
+#combat-detail-modal button:focus-visible { outline: 2px solid var(--detail-share); outline-offset: -3px; }
+#combat-detail-modal .detail-panel {
+  width: min(1540px, 100%);
+  height: min(960px, calc(100dvh - 48px));
+  min-height: 0;
+  border: 1px solid var(--detail-line) !important;
+  border-radius: 10px !important;
+  background: var(--detail-bg) !important;
+  box-shadow: 0 24px 90px #0007 !important;
+}
+#combat-detail-modal .detail-header {
+  flex: 0 0 auto;
+  min-height: 64px;
+  padding: 9px 22px;
+  background: #181b1b;
+  border-bottom: 1px solid var(--detail-line);
+  gap: 20px;
+}
+#combat-detail-modal .detail-heading { min-width: 0; }
+#combat-detail-modal #detail-title { margin: 0 0 4px; color: var(--detail-text); font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
+#combat-detail-modal .detail-identity { display: flex; min-width: 0; align-items: center; gap: 10px; }
+#combat-detail-modal .job-icon-frame { border: 0; border-radius: 0; background: transparent; box-shadow: none; flex: 0 0 auto; }
+#combat-detail-modal #detail-job-icon { display: flex; flex: 0 0 auto; align-items: center; }
+#combat-detail-modal #detail-job-icon .job-icon-frame { width: 24px; height: 24px; }
+#combat-detail-modal #detail-job-icon img { width: 24px; height: 24px; object-fit: contain; }
+#combat-detail-modal #detail-character { margin: 0; max-width: 220px; color: var(--detail-text); font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#combat-detail-modal .detail-header-cp { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; color: var(--detail-muted); font-size: 13px; }
+#combat-detail-modal .detail-header-cp img { width: 16px; height: 16px; object-fit: contain; }
+#combat-detail-modal .detail-header-cp strong { font-weight: 600; }
+#combat-detail-modal .detail-boss-separator { color: #656462; padding: 0 2px; }
+#combat-detail-modal #detail-boss-name { min-width: 0; color: var(--detail-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#combat-detail-modal .detail-header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 12px; }
+#combat-detail-modal #detail-settings-toggle { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; color: var(--detail-muted); border: 1px solid var(--detail-line); border-radius: 4px; background: transparent; }
+#combat-detail-modal #detail-visible-count { color: var(--detail-text); font-weight: 600; }
+#combat-detail-modal .detail-settings-symbol { margin-left: 6px; color: var(--detail-text); font-size: 17px; }
+#combat-detail-modal .detail-close { width: 32px; height: 32px; min-width: 32px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--detail-muted); font-size: 25px; font-weight: 400; line-height: 1; }
+#combat-detail-modal #detail-settings-toggle:hover, #combat-detail-modal .detail-close:hover { background: #ffffff09; color: var(--detail-text); }
+#combat-detail-modal .detail-party-tabs { margin: 0; padding: 0 22px; gap: 20px; min-height: 48px; border: 0; border-bottom: 1px solid var(--detail-line); border-radius: 0; background: var(--detail-panel); }
+#combat-detail-modal .detail-party-tab { flex: 0 0 auto; min-width: 0; max-width: 240px; padding: 10px 2px; border-radius: 0 !important; border: 0 !important; border-bottom: 2px solid transparent !important; color: var(--detail-muted) !important; background: transparent !important; box-shadow: none !important; }
+#combat-detail-modal .detail-party-tab.active { color: var(--detail-text) !important; border-bottom-color: var(--detail-share) !important; }
+#combat-detail-modal .detail-party-tab::after { display: none; }
+#combat-detail-modal .detail-party-tab:hover { color: var(--detail-text) !important; }
+#combat-detail-modal .detail-party-tab .job-icon-frame { width: 22px; height: 22px; }
+#combat-detail-modal .detail-party-tab > span:last-child { flex-direction: row; align-items: baseline; gap: 12px; }
+#combat-detail-modal .detail-party-tab strong { font-size: 13px; font-weight: 600; }
+#combat-detail-modal .detail-party-tab small { flex: 0 0 auto; color: var(--detail-share); font-size: 12px; font-weight: 600; }
+#combat-detail-modal .detail-settings-options { flex: 0 0 auto; margin: 0; padding: 10px 22px; gap: 6px; max-height: 140px; overflow-y: auto; background: var(--detail-panel); border-bottom: 1px solid var(--detail-line); }
+#combat-detail-modal .detail-settings-options button { padding: 5px 10px; border: 1px solid var(--detail-line); border-radius: 4px; background: transparent; color: var(--detail-muted); font-size: 12px; }
+#combat-detail-modal .detail-settings-options button.active { border-color: #d9be9570; background: #d9be9510; color: var(--detail-share); }
+#combat-detail-modal .detail-summary { display: block; flex: 0 0 auto; padding: 16px 22px 14px; overflow: visible; border: 0; border-bottom: 1px solid var(--detail-line); border-radius: 0; background: var(--detail-panel); }
+#combat-detail-modal .detail-primary-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) 200px; gap: 22px; }
+#combat-detail-modal .detail-summary-metric { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; min-width: 0; margin: 0; padding: 0; border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }
+#combat-detail-modal .detail-summary-metric span { color: var(--detail-muted); font-size: 12px; font-weight: 500; }
+#combat-detail-modal .detail-summary-metric { min-height: 0; }
+#combat-detail-modal .detail-summary-metric strong { width: auto; text-align: left; }
+#combat-detail-modal .detail-summary-metric strong { color: var(--detail-text); font-size: 28px; font-weight: 700; letter-spacing: -.025em; white-space: nowrap; }
+#combat-detail-modal #detail-dps, #combat-detail-modal #detail-critical-rate { color: var(--detail-gold); }
+#combat-detail-modal #detail-ndps { color: #bdcca9; }
+#combat-detail-modal #detail-perfect-rate { color: var(--detail-green); }
+#combat-detail-modal #detail-share { color: var(--detail-share); }
+#combat-detail-modal #detail-front-rate, #combat-detail-modal #detail-back-rate { color: var(--detail-blue); }
+#combat-detail-modal #detail-double-rate { color: var(--detail-purple); }
+#combat-detail-modal .detail-context-metrics { display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+#combat-detail-modal .detail-context-metrics .detail-summary-metric { flex-direction: row; justify-content: space-between; }
+#combat-detail-modal .detail-context-metrics strong { font-size: 13px; font-weight: 600; }
+#combat-detail-modal .detail-rate-grid { display: flex; flex-wrap: wrap; gap: 7px 22px; margin: 12px 0 0; padding: 0; border: 0; }
+#combat-detail-modal .detail-rate-grid > div { display: flex; flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 7px; padding: 0; border: 0; background: transparent; }
+#combat-detail-modal .detail-rate-grid span { color: var(--detail-muted); font-size: 13px; font-weight: 500; }
+#combat-detail-modal .detail-rate-grid strong { color: var(--detail-text); font-size: 13px; font-weight: 600; }
+#combat-detail-modal .detail-rate-grid span, #combat-detail-modal .detail-context-metrics span { white-space: nowrap; }
+#combat-detail-modal .detail-content { display: grid; grid-template-columns: minmax(0, 1fr) 266px; flex: 1 1 auto; gap: 0; min-height: 0; margin: 0; padding: 0; overflow: hidden; }
+#combat-detail-modal .detail-ledger { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 0; overflow: hidden; border: 0 !important; border-radius: 0 !important; background: var(--detail-bg) !important; }
+#combat-detail-modal .detail-ledger-header { display: grid; grid-template-columns: 1fr 180px 76px; gap: 16px; flex: 0 0 auto; height: 38px; min-height: 38px; align-items: center; padding: 0 22px; border-bottom: 1px solid var(--detail-line); background: transparent; color: var(--detail-muted); }
+#combat-detail-modal .detail-ledger-header strong { color: inherit; font-size: 12px; font-weight: 500; }
+#combat-detail-modal .detail-ledger-header strong:nth-child(n+2) { text-align: right; }
+#combat-detail-modal .detail-skill-list { flex: 1; min-height: 0; margin: 0; padding: 0 22px; overflow: auto; scrollbar-gutter: stable; }
+#combat-detail-modal .detail-skill-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 180px 76px; grid-template-rows: auto 4px auto; gap: 6px 12px; min-height: 0; margin: 0; padding: 12px 0; border: 0; border-bottom: 1px solid var(--detail-line); border-radius: 0; background: transparent; }
+#combat-detail-modal .detail-skill-row:nth-child(even) { background: transparent; }
+#combat-detail-modal .detail-skill-row { height: auto; overflow: visible; }
+#combat-detail-modal .detail-skill-row { padding: 6px 0; row-gap: 3px; }
+#combat-detail-modal .detail-skill-row:hover { background: #ffffff03; }
+#combat-detail-modal .detail-skill-icon { grid-row: 1; grid-column: 1; border: 0; border-radius: 4px; }
+#combat-detail-modal .detail-skill-title { grid-row: 1; grid-column: 2; gap: 8px; }
+#combat-detail-modal .detail-skill-name { color: var(--detail-text); font-size: 13px; font-weight: 600; }
+#combat-detail-modal .detail-skill-damage { grid-row: 1; grid-column: 3; color: var(--detail-text); font-size: 14px; font-weight: 600; }
+#combat-detail-modal .detail-skill-row.healing .detail-skill-damage { color: var(--detail-green); }
+#combat-detail-modal .detail-skill-row.support .detail-skill-damage { color: var(--detail-muted); }
+#combat-detail-modal .detail-skill-share { grid-row: 1; grid-column: 4; align-self: center; color: var(--detail-share); font-size: 16px; font-weight: 700; text-align: right; }
+#combat-detail-modal .detail-skill-track { grid-row: 2; grid-column: 2 / -1; height: 4px; overflow: hidden; background: var(--detail-line); }
+#combat-detail-modal .detail-skill-bar { position: static; display: block; height: 100%; min-width: 0; border-radius: 0; background: var(--detail-share); }
+#combat-detail-modal .detail-skill-chips { display: flex; flex-direction: column; grid-row: 3; grid-column: 2 / -1; align-items: stretch; gap: 3px; overflow: visible; }
+#combat-detail-modal .detail-metric-group { display: flex; flex-wrap: wrap; row-gap: 3px; min-width: 0; }
+#combat-detail-modal .detail-metric-group .detail-chip { line-height: 18px; }
+#combat-detail-modal .detail-chip { flex: 0 0 auto; max-width: 100%; padding: 0 12px 0 0; border: 0; border-radius: 0; background: transparent; color: var(--detail-muted); font-size: 13px; font-weight: 500; line-height: 19px; overflow: hidden; text-overflow: ellipsis; }
+#combat-detail-modal .detail-chip b { color: var(--detail-text); font-weight: 600; }
+#combat-detail-modal .detail-chip.critical b { color: var(--detail-gold); }
+#combat-detail-modal .detail-chip.position b { color: var(--detail-blue); }
+#combat-detail-modal .detail-chip.perfect b, #combat-detail-modal .detail-chip.healing b { color: var(--detail-green); }
+#combat-detail-modal .detail-chip.double b { color: var(--detail-purple); }
+#combat-detail-modal .detail-chip.maximum b { color: var(--detail-text); }
+#combat-detail-modal .detail-level-badge { display: inline-flex; flex: 0 0 auto; width: auto; min-width: 0; height: 16px; gap: 3px; padding: 0 4px; border: 0; border-radius: 3px; background: #ffffff08; }
+#combat-detail-modal .detail-level-prefix { border: 0; color: var(--detail-muted); font-size: 9px; font-weight: 500; }
+#combat-detail-modal .detail-level-number { color: var(--detail-text); font-size: 11px; font-weight: 600; }
+#combat-detail-modal .detail-spec-dots { gap: 3px; margin-left: 6px; }
+#combat-detail-modal .detail-spec-dots i { width: 7px; height: 7px; border-radius: 50%; background: #505052; }
+#combat-detail-modal .detail-spec-dots i.active { background: var(--detail-share); }
+#combat-detail-modal .detail-buff-strip { min-height: 0; max-height: none; margin: 0; padding: 0 14px; overflow-y: auto; border: 0 !important; border-left: 1px solid var(--detail-line) !important; border-radius: 0 !important; background: var(--detail-panel) !important; scrollbar-gutter: stable; }
+#combat-detail-modal .detail-buff-strip h3 { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; height: 38px; margin: 0; background: var(--detail-panel); border-bottom: 1px solid var(--detail-line); color: var(--detail-muted); font-size: 12px; font-weight: 500; }
+#combat-detail-modal .detail-buff-strip h3 span:nth-child(n+2) { color: var(--detail-muted); font-size: 12px; }
+#combat-detail-modal .detail-buffs { display: block; }
+#combat-detail-modal .detail-buff { width: 100%; height: 66px; padding: 9px 0; grid-template-columns: 30px minmax(0, 1fr); grid-template-rows: 38px 3px; gap: 4px 8px; border: 0; border-bottom: 1px solid var(--detail-line); border-radius: 0; background: transparent; }
+#combat-detail-modal .detail-buff-title { gap: 6px; }
+#combat-detail-modal .detail-buff-title strong { color: var(--detail-text); font-size: 13px; font-weight: 600; line-height: 18px; }
+#combat-detail-modal .detail-buff-percent { flex: 0 0 auto; color: var(--detail-green); font-size: 13px; font-weight: 600; }
+#combat-detail-modal .detail-buff-text > span { display: flex; align-items: center; gap: 3px; color: var(--detail-muted); font-size: 12px; font-weight: 500; line-height: 18px; }
+#combat-detail-modal .detail-buff-gauge { background: var(--detail-line); border-radius: 0; }
+#combat-detail-modal .detail-buff-gauge i { background: #82ceb699; }
+#combat-detail-modal .detail-buff-empty, #combat-detail-modal .detail-unavailable { padding: 22px 0; color: var(--detail-muted); font-size: 13px; }
+#combat-detail-modal .detail-unavailable { border: 0; background: transparent; }
+#combat-detail-modal .detail-unavailable strong { color: var(--detail-text); }
+#combat-detail-modal .detail-healing-heading { margin: 20px 0 4px; padding-bottom: 10px; border-bottom: 1px solid var(--detail-line); color: var(--detail-text); font-size: 13px; font-weight: 600; }
+#combat-detail-modal .detail-healing-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--detail-line); }
+#combat-detail-modal .detail-healing-metrics { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+#combat-detail-modal :is(.detail-skill-list, .detail-buff-strip, .detail-party-tabs, .detail-settings-options) { overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #555450 transparent; }
+@media (max-width: 1280px), (max-height: 780px) {
+  #combat-detail-modal .detail-header { min-height: 66px; padding: 10px 16px; }
+  #combat-detail-modal #detail-title { font-size: 17px; margin-bottom: 4px; }
+  #combat-detail-modal .detail-primary-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)) 150px; gap: 16px; }
+  #combat-detail-modal .detail-summary { padding: 10px 16px; }
+  #combat-detail-modal .detail-summary-metric strong { font-size: 24px; }
+  #combat-detail-modal .detail-context-metrics strong, #combat-detail-modal .detail-rate-grid strong { font-size: 13px; }
+  #combat-detail-modal .detail-rate-grid { margin-top: 8px; }
+  #combat-detail-modal .detail-skill-list { padding: 0 16px; }
+  #combat-detail-modal .detail-skill-row { grid-template-columns: 28px minmax(0, 1fr) 140px 64px; padding: 10px 0; }
+}
+@media (max-width: 900px) {
+  #combat-detail-modal .detail-healing-row { grid-template-columns: 28px minmax(0, 1fr); }
+  #combat-detail-modal .detail-healing-metrics { grid-column: 2; justify-content: flex-start; }
+  #combat-detail-modal { padding: 12px; }
+  #combat-detail-modal .detail-panel { height: calc(100dvh - 24px); }
+  #combat-detail-modal .detail-header { gap: 10px; align-items: flex-start; }
+  #combat-detail-modal .detail-identity { flex-wrap: wrap; gap: 5px 8px; }
+  #combat-detail-modal #detail-boss-name { flex-basis: 100%; }
+  #combat-detail-modal .detail-boss-separator { display: none; }
+  #combat-detail-modal .detail-primary-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 10px; }
+  #combat-detail-modal .detail-context-metrics { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; gap: 24px; }
+  #combat-detail-modal .detail-context-metrics .detail-summary-metric { gap: 10px; }
+  #combat-detail-modal .detail-content { grid-template-columns: minmax(0, 1fr) 236px; }
+  #combat-detail-modal .detail-skill-row { grid-template-columns: 28px minmax(0, 1fr) 66px; }
+  #combat-detail-modal .detail-skill-title { grid-column: 2 / -1; padding-right: 0; }
+  #combat-detail-modal .detail-skill-damage { grid-column: 2; grid-row: 2; text-align: left; }
+  #combat-detail-modal .detail-skill-share { grid-column: 3; grid-row: 2; }
+  #combat-detail-modal .detail-skill-track { grid-row: 3; }
+  #combat-detail-modal .detail-skill-chips { grid-row: 4; }
+  #combat-detail-modal .detail-skill-row { grid-template-rows: auto auto 4px auto; }
+  #combat-detail-modal .detail-ledger-header { grid-template-columns: 1fr auto; padding: 0 16px; }
+  #combat-detail-modal .detail-ledger-header strong:nth-child(2) { display: none; }
+}
+@media (max-width: 640px) {
+  #combat-detail-modal { padding: 0; }
+  #combat-detail-modal .detail-panel { height: 100dvh; width: 100%; border: 0 !important; border-radius: 0 !important; overflow-y: auto; }
+  #combat-detail-modal .detail-header { padding: 14px; }
+  #combat-detail-modal .detail-header-actions { gap: 3px; }
+  #combat-detail-modal #detail-settings-toggle { font-size: 11px; padding: 0 6px; gap: 4px; }
+  #combat-detail-modal .detail-settings-symbol { margin-left: 2px; }
+  #combat-detail-modal #detail-character { max-width: 145px; }
+  #combat-detail-modal .detail-primary-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #combat-detail-modal .detail-content { display: flex; flex: 0 0 auto; flex-direction: column; overflow: visible; }
+  #combat-detail-modal .detail-skill-list { overflow: visible; scrollbar-gutter: auto; }
+  #combat-detail-modal .detail-ledger { flex: 0 0 auto; overflow: visible; }
+  #combat-detail-modal .detail-buff-strip { flex: 0 0 auto; padding: 0 16px; overflow: visible; border-left: 0 !important; border-top: 1px solid var(--detail-line) !important; }
+  #combat-detail-modal .detail-buff-strip h3 { position: static; }
+  #combat-detail-modal .detail-buffs { display: grid; grid-template-columns: 1fr; }
+  #combat-detail-modal .detail-party-tabs { padding: 0 14px; gap: 16px; }
+  #combat-detail-modal .detail-rate-grid { gap: 5px 16px; }
+}

@@ -632,7 +632,11 @@
       viewDetails: "보기",
       characterProfile: "캐릭터 정보",
       characterProfileShort: "정보",
-      combatDetails: "전투 상세 정보",
+      combatDetails: "전투 상세",
+      detailContribution: "파티 내 기여도",
+      detailHealingHistory: "치유 내역",
+      detailSkillShare: "딜지분",
+      detailShareDescription: "해당 스킬 피해량 / 본인의 총 피해량",
       detailLoading: "전투 상세 정보를 불러오는 중입니다",
       detailUnavailable: "전투 상세 정보를 불러오지 못했습니다 다시 시도해 주세요",
       detailUnavailableTitle: "상세 기록 없음",
@@ -1102,6 +1106,10 @@
       characterProfile: "Character profile",
       characterProfileShort: "Profile",
       combatDetails: "Combat Details",
+      detailContribution: "Party contribution",
+      detailHealingHistory: "Healing breakdown",
+      detailSkillShare: "Share",
+      detailShareDescription: "Skill damage / your total damage",
       detailLoading: "Loading combat details",
       detailUnavailable: "Combat details are temporarily unavailable. Please try again.",
       detailUnavailableTitle: "Details unavailable",
@@ -1462,7 +1470,7 @@
       "back-button", "loading-state", "error-state", "error-message", "empty-state", "empty-message",
       "summary-view", "summary-rows", "class-view", "class-rows", "cache-age",
       "combat-detail-modal", "detail-close", "detail-job-icon", "detail-title",
-      "detail-character", "detail-duration", "detail-cp", "detail-total-damage",
+      "detail-character", "detail-boss-name", "detail-cp", "detail-total-damage",
       "detail-dps", "detail-ndps-row", "detail-ndps", "detail-share", "detail-summary-duration", "detail-death-count", "detail-hits",
       "detail-parry-rate", "detail-critical-rate", "detail-front-rate", "detail-back-rate",
       "detail-perfect-rate", "detail-double-rate", "detail-evade-rate", "detail-block-row",
@@ -1762,8 +1770,7 @@
     elements["detail-settings-toggle"].addEventListener("click", () => {
       const options = elements["detail-settings-options"];
       options.hidden = !options.hidden;
-      elements["detail-settings-toggle"].textContent =
-        t(options.hidden ? "openSettings" : "closeSettings");
+      renderDetailSettings();
     });
     elements["combat-detail-modal"].addEventListener("click", event => {
       if (event.target === elements["combat-detail-modal"]) {
@@ -6455,6 +6462,7 @@
       state.selectedDetail = {
         player,
         actorId,
+        rankedActorId: actorId,
         record: detailDocument.record,
       };
       row.removeAttribute("title");
@@ -6686,6 +6694,7 @@
       elements["detail-buffs-section"],
       modal?.querySelector(".detail-content"),
       modal?.querySelector(".detail-summary"),
+      modal?.querySelector(".detail-panel"),
     ];
     for (const target of scrollTargets) {
       if (target) {
@@ -6722,56 +6731,58 @@
     const detailJob = detail.jobName || state.selectedJob;
     const durationSeconds = Math.max(
       0,
-      Number(record.durationSeconds) || Number(player.durationSeconds) || 60);
+      Number(record.durationSeconds ?? player.durationSeconds) || 0);
     const dungeon = currentDungeon();
     const bossIndex = Number(player.B ?? player.bossIndex ?? state.bossIndex);
     const bossName = localizeGameName(String(record.bossName || "") || (bossIndex > 0
       ? dungeon?.bossNames?.[bossIndex - 1]
       : dungeon?.bossNames?.[0] || dungeonName(dungeon)));
 
+    const isRankedPlayer = players.length === 1 ||
+      Number(detail.actorId) === Number(state.selectedDetail.rankedActorId ?? player.actorId);
     elements["detail-job-icon"].replaceChildren(createJobIcon(detailJob));
-    elements["detail-title"].textContent = bossName || t("combatDetails");
+    elements["detail-title"].textContent = t("combatDetails");
+    elements["detail-boss-name"].textContent = bossName;
+    elements["detail-boss-name"].title = bossName;
     elements["detail-character"].textContent = formatCharacterName(
-      detail.name || player.name,
-      Number(detail.serverId || player.serverId));
-    elements["detail-duration"].textContent = formatDuration(durationSeconds);
+      detail.name || (isRankedPlayer ? player.name : "—"),
+      Number(detail.serverId ?? (isRankedPlayer ? player.serverId : 0)));
+    elements["detail-character"].title = elements["detail-character"].textContent;
     renderDetailPartyTabs(players);
 
-    const combatPower = Number(detail.combatPower || player.combatPower) || 0;
+    const combatPower = Number(detail.combatPower ?? (isRankedPlayer ? player.combatPower : 0)) || 0;
     elements["detail-cp-row"].hidden = combatPower <= 0;
-    elements["detail-cp"].textContent = formatInteger(combatPower);
+    elements["detail-cp"].textContent = formatCombatPower(combatPower);
     elements["detail-total-damage"].textContent = unavailableReason
       ? "—"
       : formatInteger(detail.totalDamage);
-    elements["detail-dps"].textContent = formatCompact(
-      Number(detail.dps || player.dps) || 0);
+    setDetailDpsValue(elements["detail-dps"], Number(detail.dps ?? (isRankedPlayer ? player.dps : 0)) || 0);
     const normalizedDps = Math.max(0, Number(detail.normalizedDps) || 0);
-    const showNormalizedDps = !unavailableReason && normalizedDps > 0;
+    const showNormalizedDps = !unavailableReason && Number.isFinite(normalizedDps) && normalizedDps > 0;
     elements["detail-ndps-row"].hidden = false;
-    elements["detail-ndps"].textContent = showNormalizedDps
-      ? formatCompact(normalizedDps)
-      : t("normalizedDpsUnavailable");
+    setDetailDpsValue(elements["detail-ndps"], showNormalizedDps ? normalizedDps : null);
+    elements["detail-ndps-row"].title = t(showNormalizedDps ? "normalizedDpsVerifiedTitle" : "normalizedDpsUnavailableTitle");
     elements["detail-share"].textContent = unavailableReason
       ? "—"
-      : formatPercent(detail.sharePercent);
+      : formatDetailPercent(detail.sharePercent);
     elements["detail-summary-duration"].textContent = formatDuration(durationSeconds);
     elements["detail-death-count"].textContent = unavailableReason
       ? "—"
       : formatInteger(Math.max(0, Number(detail.deathCount) || 0));
     elements["detail-hits"].textContent = unavailableReason ? "—" : formatInteger(detail.hitCount);
-    elements["detail-parry-rate"].textContent = unavailableReason ? "—" : formatPercent(detail.parryRate);
-    elements["detail-critical-rate"].textContent = unavailableReason ? "—" : formatPercent(detail.criticalRate);
-    elements["detail-front-rate"].textContent = unavailableReason ? "—" : formatPositionPercent(detail.frontAttackRate);
-    elements["detail-back-rate"].textContent = unavailableReason ? "—" : formatPositionPercent(detail.backAttackRate);
-    elements["detail-perfect-rate"].textContent = unavailableReason ? "—" : formatPercent(detail.perfectRate);
-    elements["detail-double-rate"].textContent = unavailableReason ? "—" : formatPercent(detail.doubleDamageRate);
-    elements["detail-evade-rate"].textContent = unavailableReason ? "—" : formatPercent(detail.evadeRate);
+    elements["detail-parry-rate"].textContent = unavailableReason ? "—" : formatDetailPercent(detail.parryRate);
+    elements["detail-critical-rate"].textContent = unavailableReason ? "—" : formatDetailPercent(detail.criticalRate);
+    elements["detail-front-rate"].textContent = unavailableReason ? "—" : (detail.frontAttackRate == null ? "-%" : formatDetailPercent(detail.frontAttackRate));
+    elements["detail-back-rate"].textContent = unavailableReason ? "—" : (detail.backAttackRate == null ? "-%" : formatDetailPercent(detail.backAttackRate));
+    elements["detail-perfect-rate"].textContent = unavailableReason ? "—" : formatDetailPercent(detail.perfectRate);
+    elements["detail-double-rate"].textContent = unavailableReason ? "—" : formatDetailPercent(detail.doubleDamageRate);
+    elements["detail-evade-rate"].textContent = unavailableReason ? "—" : formatDetailPercent(detail.evadeRate);
     const blockDataReliable = Boolean(detail.blockDataReliable);
     elements["detail-block-row"].title = t("blockDescription");
     elements["detail-block-row"].setAttribute("aria-label", t("blockDescription"));
     elements["detail-block-rate"].textContent = unavailableReason || !blockDataReliable
       ? "—"
-      : `${formatInteger(Math.max(0, Number(detail.blockHits) || 0))} / ${formatPercent(detail.blockRate)}`;
+      : `${formatInteger(Math.max(0, Number(detail.blockHits) || 0))} / ${formatDetailPercent(detail.blockRate)}`;
     applyDetailMetricVisibility();
     elements["detail-block-row"].hidden =
       !blockDataReliable || !isDetailMetricVisible("avoidance");
@@ -6800,8 +6811,19 @@
       unavailable.append(title, description);
       skillRows.append(unavailable);
     } else {
+      const columns = buildDetailMetricColumns(skills);
       for (const skill of skills) {
-        skillRows.append(buildDetailSkillRow(skill));
+        skillRows.append(buildDetailSkillRow(skill, columns));
+      }
+      const healingSkills = skills.filter(skill => Number(skill.healingAmount) > 0)
+        .sort((a, b) => Number(b.healingAmount) - Number(a.healingAmount) || Number(b.useCount) - Number(a.useCount));
+      if (healingSkills.length) {
+        const heading = document.createElement("h3");
+        heading.className = "detail-healing-heading";
+        heading.textContent = t("detailHealingHistory");
+        skillRows.append(heading);
+        const totalHealing = healingSkills.reduce((total, skill) => total + Number(skill.healingAmount), 0);
+        for (const skill of healingSkills) skillRows.append(buildDetailHealingRow(skill, totalHealing));
       }
     }
     elements["detail-skill-rows"].replaceChildren(skillRows);
@@ -6861,7 +6883,8 @@
       const name = document.createElement("strong");
       name.textContent = formatCharacterName(player.name, Number(player.serverId));
       const dps = document.createElement("small");
-      dps.textContent = `DPS ${formatCompact(Number(player.dps) || 0)}`;
+      dps.textContent = formatPercent(player.sharePercent, 1);
+      button.setAttribute("aria-pressed", String(actorId === Number(state.selectedDetail?.actorId)));
       identity.append(name, dps);
       button.append(identity);
       button.title = `${t("partyMembers")} · ${name.textContent}`;
@@ -6876,7 +6899,82 @@
     host.hidden = false;
   }
 
-  function buildDetailSkillRow(skill) {
+  let detailSummaryObserver;
+  function setDetailDpsValue(element, value) {
+    const available = Number.isFinite(value) && value > 0;
+    element.dataset.fullValue = available ? formatInteger(Math.round(value)) : "—";
+    element.dataset.compactValue = available ? formatCompact(value) : "—";
+    element.textContent = element.dataset.fullValue;
+    element.title = element.dataset.fullValue;
+    if (!detailSummaryObserver && typeof ResizeObserver !== "undefined") {
+      detailSummaryObserver = new ResizeObserver(fitDetailDpsValues);
+      detailSummaryObserver.observe(elements["detail-dps"].parentElement);
+      detailSummaryObserver.observe(elements["detail-ndps"].parentElement);
+    }
+    requestAnimationFrame(fitDetailDpsValues);
+  }
+
+  function fitDetailDpsValues() {
+    const context = document.createElement("canvas").getContext("2d");
+    if (!context) return;
+    for (const id of ["detail-dps", "detail-ndps"]) {
+      const element = elements[id];
+      if (!element?.dataset.fullValue) continue;
+      const style = getComputedStyle(element);
+      context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      element.textContent = Math.ceil(context.measureText(element.dataset.fullValue).width) <= element.parentElement.clientWidth
+        ? element.dataset.fullValue : element.dataset.compactValue;
+    }
+  }
+
+  function buildDetailMetricColumns(skills) {
+    const hasHits = skills.some(skill => Number(skill.hitCount) > 0);
+    const has = key => skills.some(skill => Number(skill[key]) > 0);
+    const rate = key => skill => Number(skill.hitCount) > 0 ? formatPercent(skill[key]) : "—";
+    const position = key => skill => Number(skill.hitCount) > 0 ? formatPositionPercent(skill[key]) : "—";
+    const positive = (key, format = formatCompact) => skill => Number(skill[key]) > 0 ? format(skill[key]) : "—";
+    const columns = [];
+    const canvas = document.createElement("canvas").getContext("2d");
+    const font = getComputedStyle(elements["combat-detail-modal"]).fontFamily;
+    if (canvas) canvas.font = `600 13px ${font}`;
+    function add(key, label, color, available, value, group = 0, flag = key) {
+      if (!available || (flag && !isDetailMetricVisible(flag))) return;
+      const textWidth = text => canvas?.measureText(text).width ?? text.length * 13;
+      const width = key === "specialization"
+        ? Math.max(104, textWidth(t(label)) + 65)
+        : Math.max(68, ...skills.map(skill => textWidth(`${t(label)} ${value(skill)}`) + 16));
+      columns.push({ key, label, color, value, group, flag, width: Math.ceil(width) });
+    }
+    add("critical", "critical", "critical", hasHits, rate("criticalRate"));
+    add("front", "front", "position", hasHits, position("frontAttackRate"));
+    add("back", "back", "position", hasHits, position("backAttackRate"));
+    add("perfect", "perfect", "perfect", hasHits, rate("perfectRate"));
+    add("double", "doubleDamage", "double", hasHits, rate("doubleDamageRate"));
+    add("multiHit", "multiHit", "double", hasHits, skill => Number(skill.hitCount) > 0
+      ? formatPercent((Number(skill.multiHitCount) || 0) / Number(skill.hitCount) * 100) : "—");
+    add("parry", "parry", "", hasHits, rate("parryRate"));
+    add("avoidance", "avoidance", "", hasHits || has("evadeCount"), skill =>
+      Number(skill.hitCount) > 0 || Number(skill.evadeCount) > 0
+        ? `${formatInteger(skill.evadeCount)} / ${formatPercent(skill.evadeRate)}` : "—");
+    add("interval", "averageInterval", "", has("averageUseIntervalMilliseconds"),
+      positive("averageUseIntervalMilliseconds", value => `${Number(value).toFixed(2)}ms`), 1, null);
+    add("uses", "useCount", "", has("useCount"), positive("useCount", formatUseCount), 1, null);
+    add("specialization", "specialization", "", skills.length > 0, () => "—", 1);
+    add("hits", "hits", "", hasHits, positive("hitCount", formatInteger), 1);
+    add("averageDamage", "averageDamage", "", has("totalDamage"), skill =>
+      Number(skill.totalDamage) > 0 ? formatCompact(skill.averageDamage) : "—", 1);
+    add("maximumDamage", "maximumDamage", "maximum", has("maxHit"), positive("maxHit", formatInteger), 1);
+    add("periodic", "periodicDamage", "", has("periodicDamage") || has("periodicHitCount"), skill =>
+      Number(skill.periodicHitCount) > 0
+        ? `${formatCompact(skill.periodicDamage)} / ${formatUseCount(skill.periodicHitCount)}`
+        : positive("periodicDamage")(skill), 1);
+    add("healing", "healing", "healing", has("healingAmount"), positive("healingAmount"), 1);
+    add("healingHits", "healingCount", "healing", has("healingHitCount"), positive("healingHitCount", formatInteger), 1, "healing");
+    add("drainHealing", "drainHealing", "healing", has("drainHealingAmount"), positive("drainHealingAmount"), 1);
+    return columns;
+  }
+
+  function buildDetailSkillRow(skill, columns = buildDetailMetricColumns([skill])) {
     const row = document.createElement("article");
     row.className = "detail-skill-row";
     const recordedSkillName = globalThis.NotMeterCombatDetailBuffs?.skillDisplayName?.(skill, state.locale) ||
@@ -6899,6 +6997,11 @@
     bar.className = "detail-skill-bar";
     bar.style.width = `${Math.max(0, Math.min(100, Number(skill.damagePercentage) || 0))}%`;
 
+    const track = document.createElement("span");
+    track.className = "detail-skill-track";
+    track.title = t("detailShareDescription");
+    track.append(bar);
+
     const icon = document.createElement("span");
     icon.className = "detail-skill-icon";
     applyDetailSkillIcon(icon, skill, 28);
@@ -6918,82 +7021,33 @@
     damage.className = "detail-skill-damage";
     if (totalDamage > 0) {
       damage.append(document.createTextNode(formatInteger(totalDamage)));
-      const share = document.createElement("span");
-      share.textContent = ` (${formatPercent(skill.damagePercentage, 1)})`;
-      damage.append(share);
+
     } else if (healingAmount > 0) {
       damage.textContent = `${t("healing")} ${formatCompact(healingAmount)}`;
     } else {
       damage.textContent = `${t("useCount")} ${formatUseCount(useCount)}`;
     }
 
+    const share = document.createElement("strong");
+    share.className = "detail-skill-share";
+    share.textContent = totalDamage > 0 ? formatPercent(skill.damagePercentage, 1) : "—";
+    share.title = t("detailShareDescription");
     const chips = document.createElement("div");
     chips.className = "detail-skill-chips";
-    const interval = Number(skill.averageUseIntervalMilliseconds);
-    if (Number.isFinite(interval) && interval > 0) {
-      chips.append(buildDetailChip(t("averageInterval"), `${interval.toFixed(2)}ms`, "accent"));
+    for (const group of [0, 1]) {
+      const strip = document.createElement("div");
+      strip.className = "detail-metric-group";
+      for (const column of columns.filter(column => column.group === group)) {
+        const chip = column.key === "specialization" && skill.specializationFlags?.length
+          ? buildSpecializationChip(skill.specializationFlags)
+          : buildDetailChip(t(column.label), column.value(skill), column.color);
+        chip.dataset.detailMetric = column.flag || column.key;
+        chip.style.width = `${column.width}px`;
+        strip.append(chip);
+      }
+      if (strip.children.length) chips.append(strip);
     }
-    if (useCount > 0) {
-      chips.append(buildDetailChip(t("useCount"), formatUseCount(useCount), "accent"));
-    }
-    if (isDetailMetricVisible("specialization")) {
-      chips.append(buildSpecializationChip(skill.specializationFlags));
-    }
-    if (isDetailMetricVisible("hits") && Number(skill.hitCount) > 0) {
-      chips.append(buildDetailChip(t("hits"), formatInteger(skill.hitCount)));
-    }
-    if (isDetailMetricVisible("parry") && Number(skill.hitCount) > 0) {
-      chips.append(buildDetailChip(t("parry"), formatPercent(skill.parryRate), "accent"));
-    }
-    if (isDetailMetricVisible("avoidance") && Number(skill.evadeCount) > 0) {
-      chips.append(buildDetailChip(
-        t("avoidance"),
-        `${formatInteger(skill.evadeCount)} / ${formatPercent(skill.evadeRate)}`));
-    }
-    if (isDetailMetricVisible("multiHit") && Number(skill.hitCount) > 0) {
-      const hits = Math.max(0, Number(skill.hitCount) || 0);
-      const ratio = hits > 0 ? (Number(skill.multiHitCount) || 0) / hits * 100 : 0;
-      chips.append(buildDetailChip(t("multiHit"), formatPercent(ratio), "double"));
-    }
-    if (isDetailMetricVisible("critical") && Number(skill.hitCount) > 0) {
-      chips.append(buildDetailChip(t("critical"), formatPercent(skill.criticalRate), "critical"));
-    }
-    if (isDetailMetricVisible("front") && Number(skill.hitCount) > 0) {
-      chips.append(buildDetailChip(t("front"), formatPositionPercent(skill.frontAttackRate), "position"));
-    }
-    if (isDetailMetricVisible("back") && Number(skill.hitCount) > 0) {
-      chips.append(buildDetailChip(t("back"), formatPositionPercent(skill.backAttackRate), "position"));
-    }
-    if (isDetailMetricVisible("perfect") && Number(skill.hitCount) > 0) {
-      chips.append(buildDetailChip(t("perfect"), formatPercent(skill.perfectRate), "perfect"));
-    }
-    if (isDetailMetricVisible("double") && Number(skill.hitCount) > 0) {
-      chips.append(buildDetailChip(t("doubleDamage"), formatPercent(skill.doubleDamageRate), "double"));
-    }
-    if (isDetailMetricVisible("periodic") &&
-        (Number(skill.periodicDamage) > 0 || Number(skill.periodicHitCount) > 0)) {
-      const periodic = Number(skill.periodicHitCount) > 0
-        ? `${formatCompact(skill.periodicDamage)} / ${formatInteger(skill.periodicHitCount)}${state.locale === "ko" ? "회" : state.locale === "zh-TW" ? "次" : "x"}`
-        : formatCompact(skill.periodicDamage);
-      chips.append(buildDetailChip(t("periodicDamage"), periodic, "perfect"));
-    }
-    if (isDetailMetricVisible("healing") && Number(skill.healingAmount) > 0) {
-      chips.append(buildDetailChip(t("healing"), formatCompact(skill.healingAmount), "healing"));
-    }
-    if (Number(skill.healingHitCount) > 0) {
-      chips.append(buildDetailChip(t("healingCount"), formatInteger(skill.healingHitCount), "healing"));
-    }
-    if (isDetailMetricVisible("drainHealing") && Number(skill.drainHealingAmount) > 0) {
-      chips.append(buildDetailChip(t("drainHealing"), formatCompact(skill.drainHealingAmount), "healing"));
-    }
-    if (isDetailMetricVisible("averageDamage") && totalDamage > 0) {
-      chips.append(buildDetailChip(t("averageDamage"), formatCompact(skill.averageDamage)));
-    }
-    if (isDetailMetricVisible("maximumDamage") && totalDamage > 0 && Number(skill.maxHit) > 0) {
-      chips.append(buildDetailChip(t("maximumDamage"), formatCompact(skill.maxHit), "maximum"));
-    }
-
-    row.append(bar, icon, title, damage, chips);
+    row.append(icon, title, damage, share, track, chips);
     return row;
   }
 
@@ -7013,6 +7067,39 @@
     number.textContent = String(level);
     badge.append(prefix, number);
     return badge;
+  }
+
+  function buildDetailHealingRow(skill, totalHealing) {
+    const row = document.createElement("article");
+    row.className = "detail-healing-row";
+    const icon = document.createElement("span");
+    icon.className = "detail-skill-icon";
+    applyDetailSkillIcon(icon, skill, 28);
+    const name = document.createElement("strong");
+    name.className = "detail-skill-name";
+    name.textContent = localizeGameName(
+      globalThis.NotMeterCombatDetailBuffs?.skillDisplayName?.(skill, state.locale) || skill.skillName || "—",
+      "skill", skill.rawSkillCode, skill.skillCode);
+    name.title = name.textContent;
+    const title = document.createElement("div");
+    title.className = "detail-skill-title";
+    title.append(name);
+    const level = buildDetailSkillLevelBadge(skill.skillLevel);
+    if (level) title.append(level);
+    const metrics = document.createElement("div");
+    metrics.className = "detail-healing-metrics";
+    metrics.append(
+      buildDetailChip(t("healing"), formatCompact(skill.healingAmount), "healing"),
+      buildDetailChip(t("drainHealing"), Number(skill.drainHealingAmount) > 0 ? formatCompact(skill.drainHealingAmount) : "—", "healing"),
+      buildDetailChip(t("useCount"), formatUseCount(skill.useCount)),
+      buildDetailChip(t("detailSkillShare"), formatDetailPercent(Number(skill.healingAmount) / totalHealing * 100)));
+    row.append(icon, title, metrics);
+    return row;
+  }
+
+  function formatDetailPercent(value) {
+    const safe = Math.max(0, Math.min(100, Number(value) || 0));
+    return formatPercent(safe, Math.abs(safe - Math.round(safe)) < 0.05 ? 0 : 1);
   }
 
   function formatUseCount(value) {
@@ -7076,13 +7163,15 @@
     name.textContent = buffDisplayName(buff);
     title.append(name);
     const levelBadge = buildDetailSkillLevelBadge(buff.skillLevel);
-    if (levelBadge) {
-      title.append(levelBadge);
-    }
     const uptime = document.createElement("span");
     const appliedCount = Math.max(1, Number(buff.count) || 0);
     uptime.textContent =
-      `${formatPercent(ratio)} · ${formatDuration(seconds)} · ${state.locale === "zh-TW" ? `${appliedCount}次` : `x${appliedCount}`}`;
+      `${formatDuration(seconds)} · ${formatUseCount(appliedCount)}`;
+    if (levelBadge) uptime.append(" · ", levelBadge);
+    const percent = document.createElement("b");
+    percent.className = "detail-buff-percent";
+    percent.textContent = formatDetailPercent(ratio);
+    title.append(percent);
     text.append(title, uptime);
 
     const gauge = document.createElement("span");
@@ -7136,6 +7225,7 @@
       button.type = "button";
       button.textContent = t(labelKey);
       button.classList.toggle("active", isDetailMetricVisible(key));
+      button.setAttribute("aria-pressed", String(isDetailMetricVisible(key)));
       button.addEventListener("click", () => {
         if (state.visibleMetrics.has(key)) {
           state.visibleMetrics.delete(key);
@@ -7155,8 +7245,10 @@
     elements["detail-settings-options"].replaceChildren(fragment);
     elements["detail-visible-count"].textContent =
       `${state.visibleMetrics.size}/${DETAIL_METRICS.length}`;
-    elements["detail-settings-toggle"].textContent =
-      t(elements["detail-settings-options"].hidden ? "openSettings" : "closeSettings");
+    const expanded = !elements["detail-settings-options"].hidden;
+    elements["detail-settings-toggle"].setAttribute("aria-expanded", String(expanded));
+    elements["detail-settings-toggle"].title = t(expanded ? "closeSettings" : "openSettings");
+    elements["detail-settings-toggle"].querySelector(".detail-settings-symbol").textContent = expanded ? "−" : "+";
   }
 
   function isDetailMetricVisible(key) {
@@ -8561,11 +8653,14 @@
 
   function formatCombatPower(value) {
     const number = Math.max(0, Number(value) || 0);
+    if (number >= 1_000_000_000) {
+      return `${trimFixed(Math.floor(number / 100_000_000) / 10, 1)}B`;
+    }
     if (number >= 1_000_000) {
       return `${formatInteger(Math.floor(number / 1_000))}M`;
     }
     if (number >= 1_000) {
-      return `${trimFixed(number / 1_000, 1)}K`;
+      return `${trimFixed(Math.floor(number / 100) / 10, 1)}K`;
     }
     return formatInteger(Math.round(number));
   }
