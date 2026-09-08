@@ -41,6 +41,7 @@
   ].map(([pairId, westId, west, eastId, east]) => ({
     pairId, west: { serverId: westId, name: west }, east: { serverId: eastId, name: east },
   }));
+  const KNOWN_SERVERS = new Map(PAIRS.flatMap(pair => [pair.west, pair.east]).map(server => [server.serverId, server.name]));
   const ARTIFACTS = {
     1: [
       [1001, "에레슈란타의 뿌리 아티팩트"],
@@ -69,6 +70,7 @@
       snapshot: "이미지 복사", snapshotWorking: "이미지 만드는 중", snapshotCopied: "복사 완료",
       snapshotDownloaded: "파일 저장 완료", snapshotFailedShort: "다시 시도",
       loading: "아티팩트 현황을 불러오는 중입니다",
+      refreshFailed: "갱신 실패 · 이전 자료 표시 중",
       errorTitle: "현황을 불러오지 못했습니다", error: "잠시 후 다시 확인해 주세요.",
       west: "서부 진영", east: "동부 진영", occupied: "현재 점령", waiting: "현황 확인 중",
       partial: "일부 현황 확인 중",
@@ -96,6 +98,7 @@
       snapshot: "Copy image", snapshotWorking: "Creating image", snapshotCopied: "Copied",
       snapshotDownloaded: "File saved", snapshotFailedShort: "Try again",
       loading: "Loading artifact status",
+      refreshFailed: "Refresh failed · showing previous data",
       errorTitle: "Artifact status is unavailable", error: "Please try again shortly.",
       west: "West", east: "East", occupied: "Current control", waiting: "Checking status",
       partial: "Some locations pending",
@@ -123,6 +126,7 @@
       snapshot: "複製圖片", snapshotWorking: "正在建立圖片", snapshotCopied: "已複製",
       snapshotDownloaded: "檔案已儲存", snapshotFailedShort: "再試一次",
       loading: "正在載入神器佔領狀態",
+      refreshFailed: "更新失敗 · 顯示先前資料",
       errorTitle: "無法載入佔領狀態", error: "請稍後再試。",
       west: "西部陣營", east: "東部陣營", occupied: "目前佔領", waiting: "確認中",
       partial: "部分地點確認中",
@@ -289,10 +293,15 @@
         if (!response.ok) throw new Error("unavailable");
         const payload = await response.json();
         if (!isValidPayload(payload)) throw new Error("invalid");
+        if (Number(payload.generatedAt) < Number(state.data?.generatedAt || 0)) throw new Error("older-generation");
+        PAIRS.splice(0, PAIRS.length, ...payload.pairs.map(pair => ({ pairId: pair.pairId, west: pair.west, east: pair.east })));
         state.data = { ...payload, history: normalizeHistory(payload.history) };
         if (state.active) render();
       } catch (error) {
-        if (error?.name !== "AbortError" && state.active && !state.data) showError();
+        if (state.active) {
+          if (!state.data) showError();
+          else elements["artifact-updated-at"].textContent = `${text("refreshFailed")} · ${text("updated", { time: formatObservedAt(state.data.generatedAt) })}`;
+        }
       } finally {
         window.clearTimeout(timeout);
         if (state.requestController === controller) state.requestController = null;
@@ -304,17 +313,25 @@
 
   function isValidPayload(payload) {
     if (!(payload && payload.schema === EXPECTED_SCHEMA && payload.version === 1 &&
-      payload.pairingRevision === EXPECTED_REVISION && payload.region === "KR" &&
+      validPairingRevision(payload.pairingRevision) && payload.region === "KR" &&
+      Number.isSafeInteger(payload.generatedAt) && payload.generatedAt > 0 &&
       Array.isArray(payload.pairs) && payload.pairs.length === PAIRS.length)) return false;
     if (new Set(payload.pairs.map(pair => pair?.pairId)).size !== PAIRS.length) return false;
+    const servers = new Set();
     return payload.pairs.every(pair => {
-        const expected = PAIRS.find(item => item.pairId === pair?.pairId);
-        return expected && pair.group === ((pair.pairId - 1) % 3) + 1 &&
-          pair.west?.serverId === expected.west.serverId && pair.west?.name === expected.west.name &&
-          pair.east?.serverId === expected.east.serverId && pair.east?.name === expected.east.name &&
+        const validServer = server => server && KNOWN_SERVERS.get(server.serverId) === server.name &&
+          !servers.has(server.serverId) && Boolean(servers.add(server.serverId));
+        return Number.isInteger(pair.pairId) && pair.pairId >= 1 && pair.pairId <= PAIRS.length &&
+          pair.group === ((pair.pairId - 1) % 3) + 1 && validServer(pair.west) && validServer(pair.east) &&
           Number.isSafeInteger(pair.nextBattleAt) && pair.nextBattleAt > 0 &&
           Array.isArray(pair.layers) && pair.layers.length === 2;
       });
+  }
+
+  function validPairingRevision(revision) {
+    if (!/^kr-\d{4}-\d{2}-\d{2}$/.test(String(revision))) return false;
+    const date = new Date(`${revision.slice(3)}T00:00:00Z`);
+    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === revision.slice(3) && date.getUTCDay() === 3;
   }
 
   function normalizeHistory(history) {
@@ -449,7 +466,7 @@
   }
 
   function matchingPeriod(now = Date.now()) {
-    const revisionDate = EXPECTED_REVISION.replace(/^kr-/, "");
+    const revisionDate = (state.data?.pairingRevision || EXPECTED_REVISION).replace(/^kr-/, "");
     const startAt = Date.parse(`${revisionDate}T00:00:00+09:00`);
     const endAt = startAt + MATCH_DURATION_DAYS * DAY_MS;
     const elapsedWeeks = Math.floor(Math.max(0, now - startAt) / (7 * DAY_MS));

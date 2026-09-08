@@ -1006,7 +1006,7 @@
       const scroll = node("div", "character-ranking-scroll");
       const table = node("div", "character-ranking-table");
       const header = node("div", "character-ranking-row character-ranking-header");
-      for (const label of [copy.rank, copy.dungeon, copy.boss, copy.dps]) {
+      for (const label of [copy.rank, copy.dungeon, copy.boss, "DPS / nDPS / s"]) {
         header.append(textNode("span", label));
       }
       table.append(header);
@@ -1018,7 +1018,9 @@
           rank,
           textNode("strong", row.dungeonName),
           textNode("span", row.bossName),
-          textNode("strong", formatNumber(Math.round(row.dps)), "character-ranking-dps"),
+          textNode("strong", row.rankingValue > 0
+            ? `${formatNumber(row.rankingUnit === "s" ? Math.round(row.rankingValue * 10) / 10 : Math.round(row.rankingValue))} ${row.rankingUnit}`
+            : `— ${row.rankingUnit}`, "character-ranking-dps"),
         );
         table.append(item);
       }
@@ -1100,6 +1102,9 @@
         rows.push({
           rank,
           dps,
+          rankingValue: dungeonKey === "nightmare-atheron-10" ? number(placement?.U)
+            : periodKey === "weekly" ? number(placement?.N) : dps,
+          rankingUnit: dungeonKey === "nightmare-atheron-10" ? "s" : periodKey === "weekly" ? "nDPS" : "DPS",
           dungeonKey,
           dungeonName: localizeGameName(dungeon?.displayName || dungeonKey),
           bossName: cleanBossName(localizeGameName(dungeon?.bossNames?.[bossIndex - 1] || "—", "mob")),

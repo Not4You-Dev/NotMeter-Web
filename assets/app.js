@@ -220,7 +220,7 @@
       subtitle: "선택한 DPS / nDPS의 직업별 상위 25% 기준으로 정렬합니다",
       characterPageTitle: "NotMeter 캐릭터 검색",
       characterPageSubtitle: "장비 · 영혼 각인 · 마석 · 스킬을 한눈에 확인합니다",
-      dailyUsers: "일일 사용자",
+      dailyUsers: "일일 활성 미터기",
       classPerformance: "직업 성능",
       newFeature: "새로 추가된 기능",
       dungeonComingSoon: "통계 준비 중",
@@ -295,7 +295,7 @@
       peopleValue: "{value}명",
       advertisement: "광고",
       serviceLinksAria: "NotMeter 바로가기",
-      dailyUsersTitle: "최근 집계된 일일 사용자 수",
+      dailyUsersTitle: "설치 ID 기준 일일 활성 미터기 수 · 실제 사람 수와 다를 수 있습니다",
       normalizedDpsVerified: "nDPS 산정 완료",
       normalizedDpsUnavailable: "nDPS 산정 불가",
       normalizedDpsVerifiedTitle: "외부 파티 효과를 제외한 nDPS를 산정할 수 있는 기록입니다.",
@@ -359,11 +359,11 @@
       classPerformanceConfidenceKicker: "순위 공개 기준",
       classPerformanceConfidenceTitle: "신뢰도 A·B·C는 무엇인가요?",
       classPerformanceConfidenceBasis: "P75 기준",
-      classPerformanceGradeAText: "고유 250명+ · 콘텐츠 75% 이상·최소 6개 · 95% 오차 ±4% 이하",
-      classPerformanceGradeBText: "고유 100명+ · 콘텐츠 50% 이상·최소 4개 · 95% 오차 ±7% 이하",
-      classPerformanceGradeCText: "고유 40명+ · 콘텐츠 최소 3개 · 95% 오차 ±12% 이하",
+      classPerformanceGradeAText: "고유 250명+ · 콘텐츠 75% 이상·최소 6개 · 추정 폭 ±4% 이하",
+      classPerformanceGradeBText: "고유 100명+ · 콘텐츠 50% 이상·최소 4개 · 추정 폭 ±7% 이하",
+      classPerformanceGradeCText: "고유 40명+ · 콘텐츠 최소 3개 · 추정 폭 ±12% 이하",
       classPerformanceGradeOffText: "C 기준 미달은 표본 부족으로 표시하고 순위에서 제외",
-      classPerformanceConfidenceNote: "95% 신뢰구간은 콘텐츠를 하나씩 제외했을 때의 점수 변화와 고유 캐릭터 수를 함께 반영한 추정 범위입니다. 집계 가능한 전체 콘텐츠가 기준 개수보다 적으면 전체 콘텐츠 수를 기준으로 판정합니다.",
+      classPerformanceConfidenceNote: "추정 변동 범위은 콘텐츠를 하나씩 제외했을 때의 점수 변화와 고유 캐릭터 수를 함께 반영한 추정 범위입니다. 집계 가능한 전체 콘텐츠가 기준 개수보다 적으면 전체 콘텐츠 수를 기준으로 판정합니다.",
       classPerformanceCompositionKicker: "직업 제외 필터",
       classPerformanceCompositionTitle: "제외할 직업 선택",
       classPerformanceCompositionText: "보고 싶지 않은 직업을 여러 개 선택하면 해당 직업이 한 명도 없는 파티 기록만 다시 집계합니다.",
@@ -400,7 +400,7 @@
       classPerformanceGrade: "표본 신뢰도 {grade}",
       classPerformanceBaseline: "기준 100",
       classPerformanceInsufficientHint: "순위 제외",
-      classPerformanceCi: "P75 95% 신뢰구간 {low}~{high}",
+      classPerformanceCi: "P75 추정 변동 범위 {low}~{high}",
       classPerformanceCharacters: "캐릭터 {value}명",
       classPerformanceSamples: "대표 기록 {value}개",
       classPerformanceCoverage: "콘텐츠 {value}/{total}",
@@ -580,28 +580,38 @@
       rankerDungeonGuideBakronRewardExcluded: "시련: 바크론의 공중섬은 랭커 마크에는 반영되지만, 랭커 권한 닉네임 효과 대상에서는 임시 제외됩니다.",
       rankerDungeonGuideDummy: "훈련용 허수아비(1분)는 홈페이지 랭킹만 제공하며, 딜미터기 전투 종료 구간 순위·상위% 배지와 실시간 랭커 마크 대상에서는 제외됩니다.",
       rankerDungeonGuidePeriod: "상위 %는 800K 미만에서 전체 기간, 800K 이상에서 이번 주를 사용하며 nDPS 우선 설정에서는 각 기간의 nDPS를 우선합니다. 이번 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.",
-      weeklyCompare: "▲▼는 직전 주 동일 조건의 직업별 상위 25% DPS 변화",
-      weeklyCompareNdps: "▲▼는 직전 주 동일 조건의 직업별 상위 25% nDPS 변화",
-      weeklyTooltip: "직전 주 동일 조건 비교",
+      weeklyCompare: "동일 캐릭터의 주간 DPS 변화 · 같은 경과 시간 비교",
+      weeklyCompareNdps: "동일 캐릭터의 주간 nDPS 변화 · 같은 경과 시간 비교",
+      setupCoverageMeaning: "표본 확보율 등급입니다. 옵션의 우수함이나 정확도를 보장하지 않으며 확인되지 않은 장비 정보가 포함될 수 있습니다.",
+      setupSnapshotRange: "참고 스냅샷 {range}",
+      setupUsageCount: "확인된 사용 {count}/{total}명 ({rate})",
+      combatDistribution: "유효 {count}명 · 타격 {hits}회 · 중앙값 {median}% · 중간 50% {low}~{high}%",
+      fieldObservationUnknown: "관측 시각 미확인",
+      exactSummaryUnavailable: "선택 구간의 정확한 통계를 준비 중입니다. 제공된 전투력 구간을 선택해 주세요.",
+      pairedInsufficient: "비교 표본 부족",
+      pairedUncertain: "변화 불확실",
+      pairedSample: "비교 캐릭터 {count}명 · 최소 20명",
+      pairedRange: "변화 추정 범위 {low}% ~ {high}%",
+      weeklyTooltip: "동일 캐릭터 주간 변화 중앙값 · 패치 효과의 확정값이 아닙니다",
       weeklyPreviousShort: "전주",
       weeklyPreviousTitle: "지난주 통계",
       weeklyPreviousRange: "동일 조건 · {range}",
       weeklyPreviousChange: "상위 25% 대비 {value}",
       weeklyPreviousNoData: "지난주 동일 조건 표본 없음",
       weeklyGuideTitle: "▲▼ 이번 주 변화 표시 안내",
-      weeklyGuideSubtitle: "기본 nDPS로 직전 주 동일 조건의 직업별 상위 25%와 비교합니다",
+      weeklyGuideSubtitle: "양쪽 주에 기록이 있는 동일 캐릭터끼리, 같은 시간만큼 비교합니다",
       weeklyUp: "상승",
       weeklyDown: "하락",
       weeklyFlat: "변화 없음",
       weeklyGuidePurposeTitle: "표시 목적",
-      weeklyGuidePurpose: "밸런스 패치 이후 직업별 실전 성능 흐름을 빠르게 비교하기 위한 참고 지표입니다.",
+      weeklyGuidePurpose: "참여자 구성이 바뀌어 생기는 착시를 줄인 관측 지표입니다. 장비·파티·숙련도 변화가 포함되므로 패치 효과 자체를 뜻하지는 않습니다.",
       weeklyGuideBasisTitle: "비교 기준",
-      weeklyGuideBasis: "상위 25% nDPS는 직업별 전체 표본에서 상위 25%가 시작되는 경계값(P75)입니다. 현재 선택한 던전·보스·CP 구간을 동일하게 맞춰 이번 주와 직전 주의 P75를 비교하며, DPS를 선택하면 같은 방식으로 DPS를 비교합니다. 한 주는 매주 수요일 오전 5시부터 다음 수요일 오전 5시까지입니다.",
+      weeklyGuideBasis: "수요일 오전 5시(한국시간)를 기준으로 이번 주 집계 시점과 전주의 같은 경과 시간까지 비교합니다. 동일 캐릭터·직업·보스·전투력 10K 구간의 기록을 짝지으며, 선택 범위에 완전히 포함되는 구간만 사용합니다. nDPS는 양쪽의 계산 기준도 같아야 합니다.",
       weeklyGuideMeaningTitle: "퍼센트 의미",
-      weeklyGuideMeaning: "변화율은 (이번 주 P75−직전 주 P75)÷직전 주 P75×100으로 계산합니다. ▲2.4%는 이번 주 값이 2.4% 높고, ▼2.4%는 2.4% 낮다는 뜻입니다.",
+      weeklyGuideMeaning: "조건별 최근 40회 이내 기록의 중앙값으로 캐릭터별 변화율을 구한 뒤, 각 캐릭터에 같은 비중을 주어 중앙값을 표시합니다. 비교 캐릭터 20명 미만은 표본 부족, 추정 범위가 0%를 포함하면 변화 불확실로 표시합니다. 범위는 파티 간 상관관계까지 보장하지 않습니다.",
       weeklyGuideRankingTitle: "랭킹 반영 방식",
       weeklyGuideRanking: "직업 순서는 기본적으로 이번 주 상위 25% nDPS로 정렬합니다. 구간 1~20위와 TOP 3 닉네임 효과 권한은 전투력 800K 이상에서 전체 기간 DPS 또는 이번 주 nDPS 중 하나만 충족해도 인정합니다. 보스 처치 후 상위 %는 nDPS 우선 설정에서 800K 미만은 전체 기간 nDPS, 800K 이상은 이번 주 nDPS를 사용하고 안전하게 계산할 수 없으면 DPS로 표시합니다.",
-      weeklyGuideNote: "각 직업 행 아래에서 직전 주의 표본·상위 10%·상위 25%·중앙값·최고값을 함께 확인할 수 있습니다. 직전 주에 같은 조건의 기록이 없으면 비교 수치와 화살표가 표시되지 않습니다.",
+      weeklyGuideNote: "행 아래 전주 수치는 전주 전체 기간의 참고용 분포입니다. 참여자와 기간이 달라 이 수치들끼리의 차이를 상승률로 표시하지 않습니다. 주간 변화의 비교 인원·기간·추정 범위는 변화 표시에서 확인할 수 있습니다.",
       classDps: "{job} DPS 1~{count}위",
       classCombatTime: "{job} 전투 시간 1~{count}위",
       top20: "TOP {count}",
@@ -670,7 +680,7 @@
       subtitle: "Classes are ranked by the top quartile of the selected DPS / nDPS metric",
       characterPageTitle: "NotMeter Character Search",
       characterPageSubtitle: "Equipment · Soul Engravings · Manastones · Skills",
-      dailyUsers: "Daily users",
+      dailyUsers: "Daily active meters",
       classPerformance: "Class Performance",
       newFeature: "Newly added feature",
       dungeonComingSoon: "Statistics coming soon",
@@ -744,7 +754,7 @@
       peopleValue: "{value}",
       advertisement: "Ad",
       serviceLinksAria: "NotMeter shortcuts",
-      dailyUsersTitle: "Recently counted daily users",
+      dailyUsersTitle: "Daily active installations, not unique people",
       normalizedDpsVerified: "nDPS ready",
       normalizedDpsUnavailable: "nDPS unavailable",
       normalizedDpsVerifiedTitle: "This record can calculate nDPS with external party effects removed.",
@@ -808,11 +818,11 @@
       classPerformanceConfidenceKicker: "RANKING THRESHOLDS",
       classPerformanceConfidenceTitle: "What do confidence grades A, B, and C mean?",
       classPerformanceConfidenceBasis: "P75 basis",
-      classPerformanceGradeAText: "250+ unique characters · 75%+ coverage and 6+ encounters · 95% error within ±4%",
-      classPerformanceGradeBText: "100+ unique characters · 50%+ coverage and 4+ encounters · 95% error within ±7%",
-      classPerformanceGradeCText: "40+ unique characters · 3+ encounters · 95% error within ±12%",
+      classPerformanceGradeAText: "250+ unique characters · 75%+ coverage and 6+ encounters · estimated spread within ±4%",
+      classPerformanceGradeBText: "100+ unique characters · 50%+ coverage and 4+ encounters · estimated spread within ±7%",
+      classPerformanceGradeCText: "40+ unique characters · 3+ encounters · estimated spread within ±12%",
       classPerformanceGradeOffText: "Below C is shown as a small sample and excluded from ranking",
-      classPerformanceConfidenceNote: "The 95% interval estimates score variation by removing encounters one at a time and accounting for unique-character count. If fewer encounters are eligible than a grade requires, all eligible encounters become the requirement.",
+      classPerformanceConfidenceNote: "The estimated variability range estimates score variation by removing encounters one at a time and accounting for unique-character count. If fewer encounters are eligible than a grade requires, all eligible encounters become the requirement.",
       classPerformanceCompositionKicker: "CLASS EXCLUSION FILTER",
       classPerformanceCompositionTitle: "Select classes to exclude",
       classPerformanceCompositionText: "Select multiple classes to recalculate only from parties that contain none of those classes.",
@@ -849,7 +859,7 @@
       classPerformanceGrade: "Sample confidence {grade}",
       classPerformanceBaseline: "Baseline 100",
       classPerformanceInsufficientHint: "Not ranked",
-      classPerformanceCi: "P75 95% CI {low}–{high}",
+      classPerformanceCi: "P75 estimated variability {low}–{high}",
       classPerformanceCharacters: "{value} characters",
       classPerformanceSamples: "{value} representative runs",
       classPerformanceCoverage: "{value}/{total} encounters",
@@ -1029,28 +1039,38 @@
       rankerDungeonGuideBakronRewardExcluded: "Trial: Bakron's Sky Island is included in rank markers but remains temporarily excluded from ranker-granted nickname effects.",
       rankerDungeonGuideDummy: "Training Dummy (1 min) provides website rankings only. It does not show the meter's post-combat bracket-rank or Top % badge, and it does not award a live rank marker.",
       rankerDungeonGuidePeriod: "Top % uses all-time records below 800K CP and current-week records at 800K CP or above; Prefer nDPS prioritizes nDPS in the selected period. The current week runs from Wednesday 05:00 KST to the following Wednesday 05:00 KST.",
-      weeklyCompare: "▲▼ shows the change in each class's top-25% DPS under the same filters",
-      weeklyCompareNdps: "▲▼ shows the change in each class's top-25% nDPS under the same filters",
-      weeklyTooltip: "Previous week, same filters",
+      weeklyCompare: "Paired character DPS change over equal elapsed windows",
+      weeklyCompareNdps: "Paired character nDPS change over equal elapsed windows",
+      setupCoverageMeaning: "Sample coverage, not option quality or statistical certainty. Missing equipment details may remain.",
+      setupSnapshotRange: "Source snapshots {range}",
+      setupUsageCount: "Observed on {count}/{total} characters ({rate})",
+      combatDistribution: "{count} valid characters · {hits} hits · median {median}% · middle 50% {low}–{high}%",
+      fieldObservationUnknown: "Observation time unknown",
+      exactSummaryUnavailable: "Exact statistics are unavailable for this range. Select a published CP bracket.",
+      pairedInsufficient: "Insufficient matches",
+      pairedUncertain: "Inconclusive change",
+      pairedSample: "{count} matched characters · minimum 20",
+      pairedRange: "Estimated change range {low}% to {high}%",
+      weeklyTooltip: "Median paired character change; observational, not a causal patch effect",
       weeklyPreviousShort: "Prev.",
       weeklyPreviousTitle: "Previous week",
       weeklyPreviousRange: "Same filters · {range}",
       weeklyPreviousChange: "Top 25% vs. previous week {value}",
       weeklyPreviousNoData: "No previous-week sample under the same filters",
       weeklyGuideTitle: "What the ▲▼ weekly change means",
-      weeklyGuideSubtitle: "Defaults to nDPS and compares each class's top 25% with the previous week under identical filters",
+      weeklyGuideSubtitle: "The same characters compared over equal elapsed time in both weeks",
       weeklyUp: "Higher",
       weeklyDown: "Lower",
       weeklyFlat: "No change",
       weeklyGuidePurposeTitle: "Purpose",
-      weeklyGuidePurpose: "A reference indicator for quickly spotting class performance trends after balance updates.",
+      weeklyGuidePurpose: "An observational measure that reduces participant-mix bias. Gear, party and practice changes remain; it does not isolate a patch effect.",
       weeklyGuideBasisTitle: "Comparison basis",
-      weeklyGuideBasis: "Top-25% nDPS is the P75 threshold where the highest quarter of a class's samples begins. It compares this week's P75 with the previous week's under the same dungeon, boss, and CP bracket; selecting DPS compares DPS the same way. A week runs from Wednesday at 05:00 KST to the following Wednesday at 05:00 KST.",
+      weeklyGuideBasis: "Weeks start Wednesday at 05:00 KST. Both windows end at the same elapsed time. Match the same character, class, boss and 10K CP cell, fully within the selected range. nDPS also requires compatible calculation methods.",
       weeklyGuideMeaningTitle: "Percentage meaning",
-      weeklyGuideMeaning: "The change is calculated as (this week's P75 − previous week's P75) ÷ previous week's P75 × 100. ▲2.4% means this week's value is 2.4% higher, while ▼2.4% means it is 2.4% lower.",
+      weeklyGuideMeaning: "Compare medians of up to 40 recent runs per matched condition, then take the median change with one vote per character. Fewer than 20 matches is insufficient; a range crossing zero is inconclusive. The range does not account for party correlation.",
       weeklyGuideRankingTitle: "How ranking uses it",
       weeklyGuideRanking: "Classes default to sorting by this week's top-25% nDPS. At 800K CP or above, bracket Top 20 and Top 3 nickname-effect access qualify from either all-time DPS or current-week nDPS. With Prefer nDPS, post-combat Top % uses all-time nDPS below 800K and current-week nDPS at 800K or above, with a safe DPS fallback when nDPS cannot be calculated.",
-      weeklyGuideNote: "Each class row includes the previous week's sample count, top 10%, top 25%, median, and maximum under the same filters. Comparison values and arrows are hidden when no previous-week sample exists.",
+      weeklyGuideNote: "Previous-week values under each row describe the full prior week. They have different participants and exposure, so their differences are not presented as growth. The change tooltip gives matched counts, windows and uncertainty.",
       classDps: "{job} DPS — Top {count}",
       classCombatTime: "{job} Combat Time — Top {count}",
       top20: "TOP {count}",
@@ -1169,7 +1189,7 @@
     sampleBasisBestChip: "DPS、nDPS 最近最多 40 場校正平均",
     sampleBasisColumnTooltip: "相同條件下，每名角色以最近最多 40 場的校正代表值計算後的不重複角色數",
     recordSampleColumnTooltip: "自訂 CP 範圍內的戰鬥紀錄數；可能包含同一角色的重複挑戰",
-    weeklyCompareNdps: "▲▼ 顯示相同條件下各職業前 25% nDPS 與上週的變化",
+    weeklyCompareNdps: "相同角色的每週 nDPS 變化 · 相同經過時間",
     weeklyPreviousShort: "上週",
     weeklyPreviousTitle: "上週統計",
     weeklyPreviousRange: "相同條件 · {range}",
@@ -2817,7 +2837,7 @@
         for (const entry of region?.entries || []) {
           currentTargets.set(
             `${Number(server?.serverId)}:${Number(region?.region)}:${Number(entry?.bossCode)}`,
-            Number(entry?.targetAt));
+            { targetAt: Number(entry?.targetAt), observedAt: Number(region?.observedAt) || 0 });
         }
       }
     }
@@ -2829,8 +2849,11 @@
         ...region,
         entries: (region?.entries || []).map(entry => {
           const key = `${Number(server?.serverId)}:${Number(region?.region)}:${Number(entry?.bossCode)}`;
-          const currentTarget = currentTargets.get(key);
+          const previous = currentTargets.get(key);
+          const currentTarget = previous?.targetAt;
           const candidateTarget = Number(entry?.targetAt);
+          // A newer observation may legitimately correct a distant predicted target.
+          if (Number(region?.observedAt) > Number(previous?.observedAt || 0)) return entry;
           if (!Number.isSafeInteger(currentTarget) ||
               currentTarget <= now ||
               Math.abs(candidateTarget - currentTarget) < FIELD_BOSS_TARGET_HOLD_THRESHOLD_MS) {
@@ -3363,9 +3386,11 @@
   }
 
   function fieldBossCacheAgeText() {
-    const generatedAt = Number(state.fieldBossData?.generatedAt) * 1_000;
+    const server = state.fieldBossData?.servers?.find(item => Number(item.serverId) === Number(state.fieldBossServerId));
+    const region = server?.regions?.find(item => Number(item.region) === Number(state.fieldBossRegion));
+    const generatedAt = (region ? Number(region.observedAt) : Number(state.fieldBossData?.generatedAt)) * 1_000;
     if (!Number.isFinite(generatedAt) || generatedAt <= 0) {
-      return "";
+      return t("fieldObservationUnknown");
     }
     const ageMinutes = Math.max(0, Math.floor((Date.now() - generatedAt) / 60_000));
     return ageMinutes < 2
@@ -3644,6 +3669,9 @@
       count: formatInteger(selected.inspectedCandidates),
     });
     elements["contribution-low-samples"].textContent = setupGuideConfidence(selected.confidence);
+    elements["contribution-low-samples"].title = t("setupCoverageMeaning");
+    const snapshotRange = `${selected.oldestSnapshotAt ? formatDateTime(selected.oldestSnapshotAt) : "—"} ~ ${selected.newestSnapshotAt ? formatDateTime(selected.newestSnapshotAt) : "—"}`;
+    elements["contribution-period"].textContent += ` · ${t("setupSnapshotRange", { range: snapshotRange })}`;
     elements["contribution-dungeon-title"].replaceChildren(createJobIcon(selected.jobName));
     const selectedJobName = document.createElement("span");
     selectedJobName.textContent = jobName(selected.jobName);
@@ -3664,6 +3692,12 @@
     rows.append(renderSetupGuideSkills(selected.skills));
     elements["contribution-rows"].replaceChildren(rows);
     showContributionState("content");
+  }
+
+  function setupGuideUsage(choice) {
+    const selected = state.contributionData?.jobs?.find(job => job.jobName === state.contributionDungeonKey);
+    return t("setupUsageCount", { count: formatInteger(choice.characterCount),
+      total: formatInteger(selected?.sampledCharacters || 0), rate: formatPercent(choice.usageRatePercent, 0) });
   }
 
   function setupGuideConfidence(value) {
@@ -3793,7 +3827,7 @@
     body.classList.add("setup-guide-card-grid");
     for (const stat of (Array.isArray(stats) ? stats : [])) {
       body.append(createSetupGuideCard(stat.name, stat.icon, setupGuideMeta(
-        t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }),
+        setupGuideUsage(stat),
         t("setupGuideTotalSlots", { value: formatInteger(stat.totalCount) }))));
     }
     if (!body.childElementCount) appendSetupGuideEmpty(body);
@@ -3880,9 +3914,9 @@
         columns.className = "setup-guide-soul-columns";
         const categories = [
           ["setupGuideSoulSkills", slot.skills, skill => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(skill.usageRatePercent, 0) }))],
+            setupGuideUsage(skill))],
           ["setupGuideSoulStats", slot.stats, stat => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(stat.usageRatePercent, 0) }))],
+            setupGuideUsage(stat))],
         ];
         for (const [labelKey, choices, meta] of categories) {
           if (!Array.isArray(choices) || choices.length === 0) continue;
@@ -3933,9 +3967,9 @@
         group.append(title);
         const categories = [
           ["setupGuideArcanaCards", slot.choices, choice => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }))],
+            setupGuideUsage(choice))],
           ["setupGuideArcanaSkills", slot.skills, choice => setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+            setupGuideUsage(choice),
             Number(choice.medianLevel) > 0
               ? t("setupGuideArcanaSkillLevel", { value: formatInteger(choice.medianLevel) })
               : "")],
@@ -3960,7 +3994,7 @@
     }
     const groups = [
       ["setupGuideArcanaSets", arcana?.sets, choice => setupGuideMeta(
-        t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+        setupGuideUsage(choice),
         t("setupGuideTotalSlots", { value: formatInteger(choice.medianEquippedCount) }))],
     ];
     for (const [labelKey, choices, meta] of groups) {
@@ -4009,7 +4043,7 @@
           choice.name,
           choice.icon,
           setupGuideMeta(
-            t("setupGuideUsage", { value: formatPercent(choice.usageRatePercent, 0) }),
+            setupGuideUsage(choice),
             t("setupGuideLevelRange", {
               low: formatInteger(choice.p25Level),
               high: formatInteger(choice.p75Level),
@@ -4991,6 +5025,13 @@
         for (const key of rateKeys) {
           const cell = document.createElement("td");
           const value = data?.[key];
+          const distribution = data?.distributions?.[key];
+          if (distribution && Number(distribution.sampleCount) > 0) {
+            cell.title = t("combatDistribution", {
+              count: formatInteger(distribution.sampleCount), hits: formatInteger(distribution.hitCount),
+              median: formatDecimal(distribution.median, 1), low: formatDecimal(distribution.p25, 1), high: formatDecimal(distribution.p75, 1),
+            });
+          }
           const valid = count > 0 && typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
           const number = document.createElement("span");
           number.className = "top100-value";
@@ -5341,9 +5382,10 @@
         index + 1,
         scaleMaximum,
         false,
-        compareWithOverall ? overallRows.get(row.jobName) : null)));
+        compareWithOverall ? overallRows.get(row.jobName) : null,
+        selectedSnapshot.totalContentCount)));
     insufficient.forEach(row => fragment.append(
-      buildClassPerformanceRow(row, 0, scaleMaximum, true, null)));
+      buildClassPerformanceRow(row, 0, scaleMaximum, true, null, selectedSnapshot.totalContentCount)));
     elements["class-performance-chart"].replaceChildren(fragment);
     elements["class-performance-chart"].hidden = false;
   }
@@ -5353,7 +5395,8 @@
     displayRank,
     scaleMaximum,
     insufficient,
-    overallRow = null) {
+    overallRow = null,
+    totalContentCount = 0) {
     const article = document.createElement("article");
     article.className = `class-performance-row${insufficient ? " insufficient" : ""}`;
     article.style.setProperty("--job-color", PERFORMANCE_JOB_COLORS[row.jobName] || "#46e0d5");
@@ -5425,7 +5468,7 @@
       <span>${t("classPerformanceSamples", { value: formatInteger(row.sampleCount) })}</span>
       <span>${t("classPerformanceCoverage", {
         value: row.contentCoverage,
-        total: state.data?.classPerformance?.totalContentCount || 0,
+        total: Number(totalContentCount) || 0,
       })}</span>
       <span>${ciText}</span>`);
 
@@ -5643,7 +5686,8 @@
       t(usesDirectCustomRange ? "recordSample" : "sample");
     elements["sample-column-heading"].title = t(
       usesDirectCustomRange ? "recordSampleColumnTooltip" : "sampleBasisColumnTooltip");
-    elements["empty-message"].textContent = t(usesNormalizedRanking() ? "ndpsEmpty" : "empty");
+    elements["empty-message"].textContent = view?.summaryUnavailable
+      ? t("exactSummaryUnavailable") : t(usesNormalizedRanking() ? "ndpsEmpty" : "empty");
     elements["class-heading"].hidden = true;
     elements["class-view"].hidden = true;
     if (!view || !Array.isArray(view.rows) || view.rows.length === 0) {
@@ -5810,7 +5854,9 @@
     const currentNumber = Number(currentMetric) || 0;
     const previousNumber = Number(previousMetricSelector(previous)) || 0;
     const previousText = formatter(previous);
-    const comparison = weeklyMetricChange(currentNumber, previousNumber);
+    // Unpaired descriptive summaries have different participants and exposure times.
+    // The separately published paired estimate is the only weekly change indicator.
+    const comparison = null;
     const previousValue = document.createElement("small");
     previousValue.className = "weekly-previous-inline";
     const previousLabel = document.createElement("span");
@@ -5955,6 +6001,7 @@
       maxDps: Number(metric.maxDps ?? metric.max) || 0,
       dpsPercentiles: percentiles,
       previousWeek: metric.previousWeek || null,
+      weeklyComparison: metric.weeklyComparison || null,
     };
   }
 
@@ -6661,10 +6708,10 @@
       Number(detail.dps || player.dps) || 0);
     const normalizedDps = Math.max(0, Number(detail.normalizedDps) || 0);
     const showNormalizedDps = !unavailableReason && normalizedDps > 0;
-    elements["detail-ndps-row"].hidden = !showNormalizedDps;
+    elements["detail-ndps-row"].hidden = false;
     elements["detail-ndps"].textContent = showNormalizedDps
       ? formatCompact(normalizedDps)
-      : "—";
+      : t("normalizedDpsUnavailable");
     elements["detail-share"].textContent = unavailableReason
       ? "—"
       : formatPercent(detail.sharePercent);
@@ -7247,11 +7294,15 @@
 
   function findSummaryView() {
     if (state.cpFilterMode === "custom") {
-      if (state.customCpPresetTierIndex > 0) {
+      const matchingTier = (state.customCpData?.cpTiers || []).find(tier =>
+        Number(tier.minCombatPower) === state.customCpMinK * 1000 &&
+        Number(tier.maxCombatPowerExclusive) === (state.customCpMaxK + 1) * 1000);
+      const presetTierIndex = state.customCpPresetTierIndex || Number(matchingTier?.index) || 0;
+      if (presetTierIndex > 0) {
         const presetViews = (state.customCpData?.views || []).filter(view =>
           view.dungeonKey === state.dungeonKey &&
           Number(view.bossIndex) === state.bossIndex &&
-          Number(view.cpTierIndex) === state.customCpPresetTierIndex);
+          Number(view.cpTierIndex) === presetTierIndex);
         const presetView = state.period === "Weekly"
           ? presetViews.find(view => parseWeeklyRange(view.periodLabel))
           : presetViews.find(view =>
@@ -7298,6 +7349,11 @@
 
   function buildCustomExactSummaryView() {
     const buckets = filterCustomCpSummaryBuckets(state.period);
+    // Six quantiles cannot reconstruct a distribution or deduplicate characters.
+    // Await an exact published view instead of synthesizing persuasive percentages.
+    if (buckets.length > 1 || state.customCpPresetTierIndex > 0) {
+      return { rows: [], summaryUnavailable: true, generatedAt: state.customCpData?.generatedAt };
+    }
     const previousBuckets = state.period === "Weekly"
       ? filterCustomCpSummaryBuckets("PreviousWeekly")
       : [];
@@ -7517,28 +7573,13 @@
   }
 
   function aggregateCustomMetric(rows, countKey, valueKeys) {
-    const samples = [];
-    let sampleCount = 0;
-    for (const row of rows) {
-      const count = Math.max(0, Number(row[countKey]) || 0);
-      sampleCount += count;
-      const values = valueKeys
-        .map(key => Number(row[key]))
-        .filter(value => value > 0);
-      const weight = values.length > 0 ? count / values.length : 0;
-      for (const value of values) {
-        if (weight > 0) samples.push([value, weight]);
-      }
-    }
-    samples.sort((left, right) => left[0] - right[0]);
+    if (rows.length !== 1) return { sampleCount: 0 };
+    const row = rows[0];
+    const values = valueKeys.map(key => Number(row[key]) || 0);
     return {
-      sampleCount,
-      minDps: weightedQuantile(samples, 0),
-      p25Dps: weightedQuantile(samples, 0.25),
-      medianDps: weightedQuantile(samples, 0.5),
-      p75Dps: weightedQuantile(samples, 0.75),
-      p90Dps: weightedQuantile(samples, 0.9),
-      maxDps: weightedQuantile(samples, 1),
+      sampleCount: Math.max(0, Number(row[countKey]) || 0),
+      minDps: values[0], p25Dps: values[1], medianDps: values[2],
+      p75Dps: values[3], p90Dps: values[4], maxDps: values[5],
     };
   }
 
@@ -7818,8 +7859,9 @@
   function updateDailyUsers(data = state.data) {
     const view = data?.views?.find(item => item.dungeonKey === DAILY_USER_KEY);
     elements["daily-user-count"].textContent = view
-      ? t("peopleValue", { value: formatInteger(view.recordCount) })
+      ? formatInteger(view.recordCount)
       : "—";
+    elements["daily-user-count"].title = `${t("dailyUsersTitle")} · ${view?.periodLabel || "—"} · ${view?.generatedAt ? formatDateTime(view.generatedAt) : "—"}`;
   }
 
   function updateCacheAge() {
@@ -8073,19 +8115,36 @@
     if (state.period !== "Weekly") {
       return null;
     }
-    const previous = resolvePreviousWeekStats(row);
-    const change = weeklyP75Change(row, previous);
-    if (!previous || !change) {
-      return null;
-    }
+    const paired = row?.weeklyComparison;
     const badge = document.createElement("span");
+    const change = pairedWeeklyChange(paired);
+    if (!change) {
+      badge.className = "weekly-change flat";
+      badge.textContent = t("pairedInsufficient");
+      badge.title = t("pairedSample", { count: formatInteger(paired?.matchedCharacters || 0) });
+      return badge;
+    }
     badge.className = `weekly-change ${change.direction}`;
     badge.textContent = change.label;
     badge.title =
       `${t("weeklyTooltip")}\n` +
-      `${t("top25")} ${formatDps(previous.p75)} → ${formatDps(row.p75Dps)}\n` +
-      `${t("samples")} ${formatInteger(previous.sampleCount)} → ${formatInteger(row.sampleCount)}`;
+      `${t("pairedSample", { count: formatInteger(paired.matchedCharacters) })}\n` +
+      `${t("pairedRange", { low: formatDecimal(paired.lowerChangePercent, 1), high: formatDecimal(paired.upperChangePercent, 1) })}\n` +
+      `${formatDateTime(paired.previousStart)} ~ ${formatDateTime(paired.previousEnd)}\n` +
+      `${formatDateTime(paired.currentStart)} ~ ${formatDateTime(paired.currentEnd)}`;
     return badge;
+  }
+
+  function pairedWeeklyChange(paired) {
+    if (paired?.method !== "paired-character-median-v1" || Number(paired.matchedCharacters) < 20 ||
+        ![paired.medianChangePercent, paired.lowerChangePercent, paired.upperChangePercent]
+          .every(value => typeof value === "number" && Number.isFinite(value)) ||
+        paired.lowerChangePercent > paired.medianChangePercent ||
+        paired.upperChangePercent < paired.medianChangePercent) return null;
+    const value = paired.medianChangePercent;
+    const direction = paired.lowerChangePercent > 0 ? "up" : paired.upperChangePercent < 0 ? "down" : "flat";
+    return { direction, value, label: direction === "flat" ? t("pairedUncertain")
+      : `${direction === "up" ? "▲" : "▼"} ${Math.abs(value).toFixed(1)}%` };
   }
 
   function rankMovementIdentity(player) {
@@ -8222,7 +8281,7 @@
     }
 
     if (String(stored.generation || "") === generation) {
-      return calculateRankMovements(players, stored.previousRanks);
+      return withRankMovementTime(calculateRankMovements(players, stored.previousRanks), stored.previousGeneration);
     }
     if (compareRankMovementGeneration(generation, stored.generation) < 0) {
       return new Map();
@@ -8233,10 +8292,16 @@
       generation,
       currentRanks,
       previousRanks,
+      previousGeneration: stored.generation,
       updatedAt: Date.now(),
     };
     saveRankMovementStore(store);
-    return calculateRankMovements(players, previousRanks);
+    return withRankMovementTime(calculateRankMovements(players, previousRanks), stored.generation);
+  }
+
+  function withRankMovementTime(movements, generation) {
+    for (const movement of movements.values()) movement.comparedAt = generation || null;
+    return movements;
   }
 
   function cellWithRank(rank, movement = null) {
@@ -8259,6 +8324,7 @@
           ? "rankMovementNew"
           : movement.direction === "up" ? "rankMovementUp" : "rankMovementDown",
         { count: movement.count });
+      if (movement.comparedAt) indicator.title += ` · ${formatDateTime(movement.comparedAt)}`;
       indicator.setAttribute("aria-label", indicator.title);
       stack.append(indicator);
     }
@@ -8306,7 +8372,8 @@
     normalizedLabel.textContent = normalizedRanking ? t("totalDpsShort") : "nDPS";
     const normalizedValue = document.createElement("span");
     normalizedValue.className = "class-dps-metric-value";
-    normalizedValue.textContent = formatInteger(Math.round(normalizedRanking ? dps : normalizedDps));
+    normalizedValue.textContent = !normalizedRanking && (!verified || normalizedDps <= 0)
+      ? "—" : formatInteger(Math.round(normalizedRanking ? dps : normalizedDps));
     normalized.append(normalizedLabel, normalizedValue);
     adjusted.append(...(normalizedRanking ? [normalized] : [status, normalized]));
 
