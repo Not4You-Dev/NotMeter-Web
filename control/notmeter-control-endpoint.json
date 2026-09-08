@@ -1,14 +1,14 @@
 {
   "schema": "notmeter-control-endpoint-v1",
   "version": 1,
-  "generation": "079d88c6b76151f9488415baec141555",
-  "generatedAtUnixSeconds": 1788558136,
-  "validUntilUnixSeconds": 1789162936,
+  "generation": "a9962869e854649dc55b93722ff5e670",
+  "generatedAtUnixSeconds": 1788903850,
+  "validUntilUnixSeconds": 1789508650,
   "primaryBaseUrl": "https://notmeter.59-27-108-81.sslip.io",
   "fallbackBaseUrls": [
     "https://notmeter.59-27-108-81.nip.io"
   ],
   "signatureAlgorithm": "RSA-SHA256-PKCS1-v1",
   "keyId": "notmeter-ranking-2026-07",
-  "signature": "QkYt2iPRiirOC29ysU6FvHqdUu/TyRur/RWdR0lKfljCyapt/TKreBC1GJKjGQglpTzG3VMUbwIRkr2QZsl3tlpaeC4yWjjAP39hlriuWwsJ1/Twzz7fUHKRHMjNpYxQmCj/wYB50wYfUrNqqE43Usw089DUeV9llRJrSsmjcOhukNJNjMjAsFFl9GojIHf/Dw7fFuc0ziITrfO0Q9jelM0dEjj0Utlzhci8cGuwmyogzLl6pxLqtbIAPg1GVp/nhrmqqGTMV9doblJ\u002BKHcOSiAa33DB3n5UG8RnB5uR4cH63ORWEBQF1N\u002B0QD8J3VUMzL\u002BicxGS5U7GbTdf2HRzSvsj\u002BJqmbAql/rmgROwNBbax21xpZD1cfnRQX\u002ByLdSTvzr3Iql7wRcKsLsKHOzUzwtn6sUqADt04DXpi8apmZvqzsWaEWccuMaG4BlCusKjz0JjzXZaJ\u002BZBCpaQQr/NSk/vKlYfXEwAgYfR3pY8z1B1yIUdXBB9VhdDrx77RNdme"
+  "signature": "BpfL4ANxIrkN1x7I/mKvRTer\u002B/81IN5LmTX9vO6sKKPjTZHBxdsZvtsKk3wYP7hDUJUGUh6CYUN0JvmbCWl/RC9UJo45PxAOHhxVgHy/RR1kbS8MPs1rySetlPoHYR0Em5ph9JF8Jvcbx\u002B/FgLedfwbJ/UCskYqysoALtBq8rFRf93qxM1Y4sHtb9H3c/ybEQQupnG1nhgzs1oHwsVGJysp08ugHnFi4pli7scnBGQBcXdZy3/XMhxAsLsXN2kDh7YiitmzusRaVdSM8LommAzmMpvXcvtZFLJgA7MIIk6Qojh34cWJluSs0Tvlzs5EieNIkrM79Bq72f/xClFxScda4bvcPHZNlauyDYcUwWUl2vJoPft\u002BPtWza2WzQSS4vWyjI7qBjXvnLyRDTEEbQbTlRAM2qtMbLepehM8zGZXr\u002B2aGwwTBMP8\u002BMScA2RJiBFrpbNLPrhiHB8XWmWNdy9Dx0BuO1Ypl93BrlpsvSmD0KyWHkl23IYixeyn4kGiQG"
 }
