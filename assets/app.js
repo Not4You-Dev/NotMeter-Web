@@ -5200,8 +5200,8 @@
       .filter(item => String(item?.dungeonKey || "") === dungeon.key)
       .map(item => [Number(item?.bossIndex), item]));
     const rows = document.createDocumentFragment();
-    dungeon.bossNames.forEach((rawBossName, index) => {
-      const stats = statsByBoss.get(index + 1);
+    bossFilterItems(dungeon).filter(boss => boss.index > 0).forEach(boss => {
+      const stats = statsByBoss.get(boss.index);
       const row = document.createElement("article");
       row.className = "boss-resistance-row";
 
@@ -5209,11 +5209,11 @@
       identity.className = "boss-resistance-boss";
       const order = document.createElement("span");
       order.className = "boss-resistance-order";
-      order.textContent = String(index + 1);
+      order.textContent = String(boss.order);
       const identityCopy = document.createElement("div");
       identityCopy.className = "boss-resistance-boss-copy";
       const bossName = document.createElement("strong");
-      bossName.textContent = localizeGameName(rawBossName);
+      bossName.textContent = boss.name;
       const sample = document.createElement("small");
       sample.className = "boss-resistance-sample";
       const recordCount = Math.max(0, Math.trunc(Number(stats?.recordCount) || 0));
