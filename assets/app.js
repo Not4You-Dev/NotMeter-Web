@@ -142,6 +142,7 @@
   };
   const GAME_NAME_OVERRIDES_ZH_TW = {
     "귀환자 트리톤": "歸來者特里同",
+    "델트라스 (1페이즈)": "德爾特拉斯（第1階段）",
     "델트라스 (2페이즈)": "德爾特拉斯（第2階段）",
     "각성한 아테론 10단계": "覺醒阿特隆 第10階段",
     "훈련용 허수아비 (1분)": "訓練用稻草人（1分鐘）",
@@ -149,11 +150,12 @@
   };
   const SNOWFIELD_DUNGEON = Object.freeze({ key: "sorrow-snowfield", displayName: "비탄의 설원" });
   const SNOWFIELD_STATISTICS_KEYS = ["sorrow-snowfield-normal", "sorrow-snowfield-hard"];
+  const SNOWFIELD_BOSS_NAMES = ["귀환자 트리톤", "델트라스 (2페이즈)", "델트라스 (1페이즈)"];
   const FEATURED_DUNGEON_KEYS = [...SNOWFIELD_STATISTICS_KEYS, SNOWFIELD_DUNGEON.key, "deus-research-hard", "noiran-legacy-4"];
   // Resolve display order by name so both old and current cache arrays remain compatible.
   const BOSS_PRESENTATION_NAMES = Object.freeze({
-    "sorrow-snowfield-normal": ["귀환자 트리톤", "델트라스 (2페이즈)"],
-    "sorrow-snowfield-hard": ["귀환자 트리톤", "델트라스 (2페이즈)"],
+    "sorrow-snowfield-normal": ["귀환자 트리톤", "델트라스 (1페이즈)", "델트라스 (2페이즈)"],
+    "sorrow-snowfield-hard": ["귀환자 트리톤", "델트라스 (1페이즈)", "델트라스 (2페이즈)"],
     "deus-research-hard": ["감독관 그롬카스", "연구소장 자일러스", "오만의 아티엘"],
     "noiran-legacy-4": ["불완전한 브라운트", "광기의 클로민스터", "아스크란"],
   });
@@ -1240,8 +1242,8 @@
     difficultyHard: "어려움",
     dungeonStatisticsPending: "선택한 난이도의 통계가 아직 게시되지 않았습니다. 게시되면 이곳에 표시됩니다.",
     rankerDungeonSnowfieldTitle: "비탄의 설원(보통·어려움)",
-    rankerDungeonSnowfieldBosses: "귀환자 트리톤 · 델트라스 (2페이즈)",
-    rankerDungeonSnowfieldScope: "보통·어려움은 각각 랭커 표시와 구간 TOP 3 닉네임 효과 대상입니다. 쉬움과 델트라스 1페이즈는 제외됩니다.",
+    rankerDungeonSnowfieldBosses: "귀환자 트리톤 · 델트라스 (1페이즈) · 델트라스 (2페이즈)",
+    rankerDungeonSnowfieldScope: "보통·어려움의 트리톤과 델트라스 각 페이즈는 랭커 표시와 구간 TOP 3 닉네임 효과 대상입니다. 쉬움은 제외됩니다.",
     bossCombatTitle: "네임드별 전투 지표",
     bossCombatCritical: "치명타",
     bossCombatBasis: "전체 기간 DPS TOP 100",
@@ -1262,8 +1264,8 @@
     difficultyHard: "Hard",
     dungeonStatisticsPending: "Statistics for this difficulty have not been published yet. They will appear here once available.",
     rankerDungeonSnowfieldTitle: "Snowfield of Sorrow (Normal · Hard)",
-    rankerDungeonSnowfieldBosses: "Triton the Returned · Deltras (Phase 2)",
-    rankerDungeonSnowfieldScope: "Normal and Hard each qualify for rank markers and bracket TOP 3 nickname effects. Easy and Deltras Phase 1 are excluded.",
+    rankerDungeonSnowfieldBosses: "Triton the Returned · Deltras (Phase 1) · Deltras (Phase 2)",
+    rankerDungeonSnowfieldScope: "Triton and each Deltras phase on Normal and Hard qualify for rank markers and bracket TOP 3 nickname effects. Easy is excluded.",
     bossCombatTitle: "Boss combat metrics",
     bossCombatCritical: "Critical",
     bossCombatBasis: "All-time DPS TOP 100",
@@ -1284,8 +1286,8 @@
     difficultyHard: "困難",
     dungeonStatisticsPending: "此難度的統計尚未公布，公布後將顯示於此。",
     rankerDungeonSnowfieldTitle: "悲嘆雪原（普通・困難）",
-    rankerDungeonSnowfieldBosses: "歸來者特里同・德爾特拉斯（第2階段）",
-    rankerDungeonSnowfieldScope: "普通與困難各自適用排名標記及區間前 3 名暱稱特效。簡單與德爾特拉斯第 1 階段不列入。",
+    rankerDungeonSnowfieldBosses: "歸來者特里同・德爾特拉斯（第1階段）・德爾特拉斯（第2階段）",
+    rankerDungeonSnowfieldScope: "普通與困難的特里同及德爾特拉斯各階段均適用排名標記及區間前 3 名暱稱特效。簡單不列入。",
     bossCombatTitle: "各首領戰鬥指標",
     bossCombatCritical: "暴擊",
     bossCombatBasis: "全期間 DPS TOP 100",
@@ -1329,7 +1331,7 @@
     customCpSummaryIndexes: new Map(),
     customCpRankIndexes: new Map(),
     locale: normalizeLocale(localStorage.getItem("notmeter-stats-locale")),
-    dungeonKey: "",
+    dungeonKey: "sorrow-snowfield-hard",
     dungeonFilterExpanded: false,
     bossIndex: 0,
     cpTierIndex: 0,
@@ -1929,6 +1931,7 @@
     const original = String(value || "").trim();
     if (state.locale === "en") {
       if (original === "귀환자 트리톤") return "Triton the Returned";
+      if (original === "델트라스 (1페이즈)") return "Deltras (Phase 1)";
       if (original === "델트라스 (2페이즈)") return "Deltras (Phase 2)";
     }
     if (state.locale !== "ko" && state.locale !== "zh-TW") {
@@ -8237,7 +8240,7 @@
       .map(key => ({
         key,
         displayName: `${SNOWFIELD_DUNGEON.displayName} (${t(key.endsWith("-hard") ? "difficultyHard" : "difficultyNormal")})`,
-        bossNames: BOSS_PRESENTATION_NAMES[key],
+        bossNames: SNOWFIELD_BOSS_NAMES,
       })));
   }
 
