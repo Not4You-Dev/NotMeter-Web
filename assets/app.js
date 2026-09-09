@@ -150,12 +150,12 @@
   };
   const SNOWFIELD_DUNGEON = Object.freeze({ key: "sorrow-snowfield", displayName: "비탄의 설원" });
   const SNOWFIELD_STATISTICS_KEYS = ["sorrow-snowfield-normal", "sorrow-snowfield-hard"];
-  const SNOWFIELD_BOSS_NAMES = ["귀환자 트리톤", "델트라스 (2페이즈)", "델트라스 (1페이즈)"];
+  const SNOWFIELD_BOSS_NAMES = ["귀환자 트리톤", "델트라스 (2페이즈)"];
   const FEATURED_DUNGEON_KEYS = [...SNOWFIELD_STATISTICS_KEYS, SNOWFIELD_DUNGEON.key, "deus-research-hard", "noiran-legacy-4"];
   // Resolve display order by name so both old and current cache arrays remain compatible.
   const BOSS_PRESENTATION_NAMES = Object.freeze({
-    "sorrow-snowfield-normal": ["귀환자 트리톤", "델트라스 (1페이즈)", "델트라스 (2페이즈)"],
-    "sorrow-snowfield-hard": ["귀환자 트리톤", "델트라스 (1페이즈)", "델트라스 (2페이즈)"],
+    "sorrow-snowfield-normal": ["귀환자 트리톤", "델트라스 (2페이즈)"],
+    "sorrow-snowfield-hard": ["귀환자 트리톤", "델트라스 (2페이즈)"],
     "deus-research-hard": ["감독관 그롬카스", "연구소장 자일러스", "오만의 아티엘"],
     "noiran-legacy-4": ["불완전한 브라운트", "광기의 클로민스터", "아스크란"],
   });
@@ -1242,8 +1242,8 @@
     difficultyHard: "어려움",
     dungeonStatisticsPending: "선택한 난이도의 통계가 아직 게시되지 않았습니다. 게시되면 이곳에 표시됩니다.",
     rankerDungeonSnowfieldTitle: "비탄의 설원(보통·어려움)",
-    rankerDungeonSnowfieldBosses: "귀환자 트리톤 · 델트라스 (1페이즈) · 델트라스 (2페이즈)",
-    rankerDungeonSnowfieldScope: "보통·어려움의 트리톤과 델트라스 각 페이즈는 랭커 표시와 구간 TOP 3 닉네임 효과 대상입니다. 쉬움은 제외됩니다.",
+    rankerDungeonSnowfieldBosses: "귀환자 트리톤 · 델트라스 (2페이즈)",
+    rankerDungeonSnowfieldScope: "보통·어려움의 트리톤과 델트라스 2페이즈는 랭커 표시와 구간 TOP 3 닉네임 효과 대상입니다. 쉬움과 1페이즈는 제외됩니다.",
     bossCombatTitle: "네임드별 전투 지표",
     bossCombatCritical: "치명타",
     bossCombatBasis: "전체 기간 DPS TOP 100",
@@ -1264,8 +1264,8 @@
     difficultyHard: "Hard",
     dungeonStatisticsPending: "Statistics for this difficulty have not been published yet. They will appear here once available.",
     rankerDungeonSnowfieldTitle: "Snowfield of Sorrow (Normal · Hard)",
-    rankerDungeonSnowfieldBosses: "Triton the Returned · Deltras (Phase 1) · Deltras (Phase 2)",
-    rankerDungeonSnowfieldScope: "Triton and each Deltras phase on Normal and Hard qualify for rank markers and bracket TOP 3 nickname effects. Easy is excluded.",
+    rankerDungeonSnowfieldBosses: "Triton the Returned · Deltras (Phase 2)",
+    rankerDungeonSnowfieldScope: "Triton and Deltras Phase 2 on Normal and Hard qualify for rank markers and bracket TOP 3 nickname effects. Easy and Phase 1 are excluded.",
     bossCombatTitle: "Boss combat metrics",
     bossCombatCritical: "Critical",
     bossCombatBasis: "All-time DPS TOP 100",
@@ -1286,8 +1286,8 @@
     difficultyHard: "困難",
     dungeonStatisticsPending: "此難度的統計尚未公布，公布後將顯示於此。",
     rankerDungeonSnowfieldTitle: "悲嘆雪原（普通・困難）",
-    rankerDungeonSnowfieldBosses: "歸來者特里同・德爾特拉斯（第1階段）・德爾特拉斯（第2階段）",
-    rankerDungeonSnowfieldScope: "普通與困難的特里同及德爾特拉斯各階段均適用排名標記及區間前 3 名暱稱特效。簡單不列入。",
+    rankerDungeonSnowfieldBosses: "歸來者特里同・德爾特拉斯（第2階段）",
+    rankerDungeonSnowfieldScope: "普通與困難的特里同及德爾特拉斯第2階段適用排名標記及區間前 3 名暱稱特效。簡單與第1階段不列入。",
     bossCombatTitle: "各首領戰鬥指標",
     bossCombatCritical: "暴擊",
     bossCombatBasis: "全期間 DPS TOP 100",
@@ -4578,7 +4578,7 @@
 
     const bosses = bossFilterItems();
     if (!bosses.some(item => item.index === state.bossIndex)) {
-      state.bossIndex = 0;
+      state.bossIndex = bosses[0]?.index ?? 0;
     }
     replaceOptions(
       elements["boss-filter"],
@@ -4747,8 +4747,13 @@
         configuredIndexes.every(index => index >= 1 && index <= names.length)
       ? configuredIndexes
       : names.map((_, index) => index + 1);
-    return [{ index: 0, order: 0, name: t("allBosses") }]
-      .concat(sourceIndexes.map((sourceIndex, displayIndex) => ({
+    // Old all-boss aggregates still include phase one until the next bot publication.
+    const allBosses = SNOWFIELD_STATISTICS_KEYS.includes(dungeon?.key) && names.length > 2
+      ? [] : [{ index: 0, order: 0, name: t("allBosses") }];
+    return allBosses
+      .concat(sourceIndexes.filter(sourceIndex =>
+        !SNOWFIELD_STATISTICS_KEYS.includes(dungeon?.key) || sourceIndex <= 2)
+        .map((sourceIndex, displayIndex) => ({
         index: sourceIndex,
         order: displayIndex + 1,
         name: localizeGameName(names[sourceIndex - 1]),
@@ -7679,6 +7684,7 @@
       customCpSummaryIndex(state.dungeonKey));
     const periodMask = customCpPeriodMask(period);
     return buckets.filter(bucket =>
+      (!SNOWFIELD_STATISTICS_KEYS.includes(state.dungeonKey) || Number(bucket.B) <= 2) &&
       (state.bossIndex === 0 || Number(bucket.B) === state.bossIndex) &&
       (Number(bucket.M) & periodMask) !== 0);
   }
@@ -7688,6 +7694,7 @@
       customCpRankIndex(state.dungeonKey));
     const periodMask = customCpPeriodMask(period);
     return buckets.filter(bucket =>
+      (!SNOWFIELD_STATISTICS_KEYS.includes(state.dungeonKey) || Number(bucket.B) <= 2) &&
       (state.bossIndex === 0 || Number(bucket.B) === state.bossIndex) &&
       Number(bucket.M) === periodMask);
   }

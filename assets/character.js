@@ -1096,6 +1096,7 @@
         const dps = number(placement?.P);
         if (!dungeonKey || !Number.isInteger(bossIndex) || bossIndex < 1 ||
             rank < 1 || rank > 20 || dps <= 0) continue;
+        if ((dungeonKey === "sorrow-snowfield-normal" || dungeonKey === "sorrow-snowfield-hard") && bossIndex > 2) continue;
         const combatPower = Math.max(0, Math.trunc(number(placement?.C)));
         const tierIndex = resolveRankerCombatPowerTierIndex(combatPower);
         const cpTier = cpTiers.find(tier => Number(tier?.index) === tierIndex);
